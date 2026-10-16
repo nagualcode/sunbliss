@@ -38,7 +38,9 @@ impl ClipMode {
     }
 }
 
-pub const CLIP_FILTER_HZ: f64 = 34_000.0;
+/// Prewarped bilinear one-pole; 32 kHz matches the reference at a 192 kHz
+/// top rate (-1.29 dB at 20 kHz). A 34 kHz analog pole maps to this.
+pub const CLIP_FILTER_HZ: f64 = 32_000.0;
 pub const OVERLOAD_THRESHOLD: f64 = 1.33;
 pub const OVERLOAD_TAU_S: f64 = 0.072;
 pub const OVERLOAD_RELEASE_S: f64 = 0.001;

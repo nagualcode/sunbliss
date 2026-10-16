@@ -31,31 +31,21 @@ impl ToneMode {
     }
 }
 
-/// (Hz, dB) breakpoints, interpolated in log-frequency.
-const CURVE_A: [(f64, f64); 9] = [
-    (20.0, 0.0),
-    (400.0, 0.0),
-    (1000.0, -0.07),
-    (3000.0, -0.18),
-    (5000.0, -0.16),
-    (8000.0, -0.18),
-    (10000.0, -0.24),
-    (15000.0, -0.33),
-    (20000.0, -0.45),
-];
-const CURVE_B: [(f64, f64); 8] = [
-    (20.0, 0.0),
-    (400.0, 0.0),
-    (1000.0, 0.03),
-    (3000.0, 0.06),
-    (5000.0, 0.05),
-    (8000.0, 0.02),
-    (15000.0, -0.14),
-    (20000.0, -0.33),
-];
-/// "Hyper-sonic" low-pass corner and order (applied on top of the contour).
-const LP_HZ: f64 = 21_500.0;
-const LP_ORDER: f64 = 12.0;
+use crate::tone_tables::*;
+
+/// Measured reference curves exist for three rate families. Within a family
+/// the top of the curve (the "hyper-sonic" low-pass) scales with fs, the
+/// contour below 20 kHz stays in Hz.
+fn table(mode: ToneMode, fs: f64) -> (&'static [(f64, f64)], f64) {
+    match (mode, fs) {
+        (ToneMode::A, f) if f < 46_000.0 => (&T44100_A, 44_100.0),
+        (ToneMode::B, f) if f < 46_000.0 => (&T44100_B, 44_100.0),
+        (ToneMode::A, f) if f < 70_000.0 => (&T48000_A, 48_000.0),
+        (ToneMode::B, f) if f < 70_000.0 => (&T48000_B, 48_000.0),
+        (ToneMode::A, _) => (&T96000_A, 96_000.0),
+        _ => (&T96000_B, 96_000.0),
+    }
+}
 
 fn interp_db(tab: &[(f64, f64)], f: f64) -> f64 {
     if f <= tab[0].0 {
@@ -68,18 +58,21 @@ fn interp_db(tab: &[(f64, f64)], f: f64) -> f64 {
             return d0 + t * (d1 - d0);
         }
     }
-    tab[tab.len() - 1].1
+    // beyond the last measured point: keep falling (4th order per octave)
+    let (fl, dl) = tab[tab.len() - 1];
+    dl - 24.0 * (f / fl).log2()
 }
 
-/// Target magnitude (dB) of a tone mode at frequency `f` Hz.
-pub fn curve_db(mode: ToneMode, f: f64) -> f64 {
-    let base = match mode {
-        ToneMode::Flat => return 0.0,
-        ToneMode::A => interp_db(&CURVE_A, f),
-        ToneMode::B => interp_db(&CURVE_B, f),
-    };
-    let lp = -10.0 * (1.0 + (f / LP_HZ).powf(2.0 * LP_ORDER)).log10();
-    base + lp
+/// Target magnitude (dB) of a tone mode at frequency `f` Hz, sample rate `fs`.
+pub fn curve_db(mode: ToneMode, f: f64, fs: f64) -> f64 {
+    if mode == ToneMode::Flat {
+        return 0.0;
+    }
+    let (tab, fs_ref) = table(mode, fs);
+    // frequencies above 20 kHz follow the rate (low-pass scales with fs)
+    let fm = if f > 20_000.0 { 20_000.0 + (f - 20_000.0) * (fs_ref / 2.0 - 20_000.0) / (fs / 2.0 - 20_000.0).max(1.0) } else { f };
+    let fm = if (fs - fs_ref).abs() < 1.0 { f } else { fm };
+    interp_db(tab, fm).max(-60.0)
 }
 
 pub struct Tone {
@@ -91,9 +84,9 @@ pub struct Tone {
 
 impl Tone {
     pub fn new(fs: f64, channels: usize, max_block: usize) -> Self {
-        let beta = kaiser_beta(90.0);
+        let beta = kaiser_beta(70.0);
         let design = |m: ToneMode| {
-            let mut h = freq_sampled(TAPS, beta, |fc| 10f64.powf(curve_db(m, fc * fs) / 20.0));
+            let mut h = freq_sampled(TAPS, beta, |fc| 10f64.powf(curve_db(m, fc * fs, fs) / 20.0));
             h.reverse();
             h
         };
