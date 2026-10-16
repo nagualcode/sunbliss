@@ -1,0 +1,12 @@
+/target
+.venv/
+.DS_Store
+refs/music/
+refs/hardware/
+lab/out/
+*.wav
+!lab/fixtures/*.wav
+__pycache__/
+# third-party material stays local
+refs/manual/
+refs/lavry-45-second-test-tones/

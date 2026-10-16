@@ -1,0 +1,317 @@
+{
+ "plugin": "Gold Clip (AU, /Library/Audio/Plug-Ins/Components/Gold Clip.component)",
+ "version": "1.5.0",
+ "manufacturer": "Schwabe Digital",
+ "parameters": {
+  "ceiling": {
+   "range": [
+    "-36.0",
+    "0.0",
+    "None"
+   ],
+   "default_raw": 1.0,
+   "default": "0.00 dB",
+   "valid_values": [
+    -36.0,
+    0.0
+   ],
+   "label": "dB"
+  },
+  "gold_mode": {
+   "range": [
+    "None",
+    "None",
+    "None"
+   ],
+   "default_raw": 1.0,
+   "default": "Modern",
+   "valid_values": [
+    "Classic",
+    "Modern"
+   ],
+   "label": null
+  },
+  "input_gain": {
+   "range": [
+    "-12.0",
+    "12.0",
+    "None"
+   ],
+   "default_raw": 0.5,
+   "default": "0.00 dB",
+   "valid_values": [
+    -12.0,
+    12.0
+   ],
+   "label": "dB"
+  },
+  "bypass": {
+   "range": [
+    "False",
+    "True",
+    "1"
+   ],
+   "default_raw": 0.0,
+   "default": "Off",
+   "valid_values": [
+    false,
+    true
+   ],
+   "label": null
+  },
+  "alchemy": {
+   "range": [
+    "0.0",
+    "2.0",
+    "0.01"
+   ],
+   "default_raw": 0.0,
+   "default": "0.00 dB",
+   "valid_values": [
+    0.0,
+    2.0
+   ],
+   "label": "dB"
+  },
+  "delta_phase": {
+   "range": [
+    "False",
+    "True",
+    "1"
+   ],
+   "default_raw": 0.0,
+   "default": "Off",
+   "valid_values": [
+    false,
+    true
+   ],
+   "label": null
+  },
+  "output_gain": {
+   "range": [
+    "-12.0",
+    "12.0",
+    "None"
+   ],
+   "default_raw": 0.5,
+   "default": "0.00 dB",
+   "valid_values": [
+    -12.0,
+    12.0
+   ],
+   "label": "dB"
+  },
+  "alchemy_on_off": {
+   "range": [
+    "False",
+    "True",
+    "1"
+   ],
+   "default_raw": 1.0,
+   "default": "On",
+   "valid_values": [
+    false,
+    true
+   ],
+   "label": null
+  },
+  "box_tone_mode": {
+   "range": [
+    "None",
+    "None",
+    "None"
+   ],
+   "default_raw": 0.0,
+   "default": "Flat",
+   "valid_values": [
+    "Flat",
+    "Classic",
+    "Modern"
+   ],
+   "label": null
+  },
+  "dry_wet_link": {
+   "range": [
+    "False",
+    "True",
+    "1"
+   ],
+   "default_raw": 1.0,
+   "default": "On",
+   "valid_values": [
+    false,
+    true
+   ],
+   "label": null
+  },
+  "clipper_on_off": {
+   "range": [
+    "False",
+    "True",
+    "1"
+   ],
+   "default_raw": 1.0,
+   "default": "On",
+   "valid_values": [
+    false,
+    true
+   ],
+   "label": null
+  },
+  "gold": {
+   "range": [
+    "0.0",
+    "6.0",
+    "0.01"
+   ],
+   "default_raw": 0.0,
+   "default": "0.00 dB",
+   "valid_values": [
+    0.0,
+    6.0
+   ],
+   "label": "dB"
+  },
+  "dry": {
+   "range": [
+    "0.0",
+    "100.0",
+    "1.0"
+   ],
+   "default_raw": 0.0,
+   "default": "0%",
+   "valid_values": [
+    0.0,
+    100.0
+   ],
+   "label": "%"
+  },
+  "wet": {
+   "range": [
+    "0.0",
+    "100.0",
+    "1.0"
+   ],
+   "default_raw": 1.0,
+   "default": "100%",
+   "valid_values": [
+    0.0,
+    100.0
+   ],
+   "label": "%"
+  },
+  "wet_mute": {
+   "range": [
+    "False",
+    "True",
+    "1"
+   ],
+   "default_raw": 0.0,
+   "default": "Off",
+   "valid_values": [
+    false,
+    true
+   ],
+   "label": null
+  },
+  "dry_mute": {
+   "range": [
+    "False",
+    "True",
+    "1"
+   ],
+   "default_raw": 0.0,
+   "default": "Off",
+   "valid_values": [
+    false,
+    true
+   ],
+   "label": null
+  },
+  "unity": {
+   "range": [
+    "False",
+    "True",
+    "1"
+   ],
+   "default_raw": 0.0,
+   "default": "Off",
+   "valid_values": [
+    false,
+    true
+   ],
+   "label": null
+  },
+  "clip_guard": {
+   "range": [
+    "False",
+    "True",
+    "1"
+   ],
+   "default_raw": 0.0,
+   "default": "Off",
+   "valid_values": [
+    false,
+    true
+   ],
+   "label": null
+  },
+  "clipper_mode": {
+   "range": [
+    "None",
+    "None",
+    "None"
+   ],
+   "default_raw": 0.0,
+   "default": "Classic",
+   "valid_values": [
+    "Classic",
+    "Modern",
+    "Hard"
+   ],
+   "label": null
+  },
+  "gold_on_off": {
+   "range": [
+    "False",
+    "True",
+    "1"
+   ],
+   "default_raw": 1.0,
+   "default": "On",
+   "valid_values": [
+    false,
+    true
+   ],
+   "label": null
+  },
+  "gain_link": {
+   "range": [
+    "False",
+    "True",
+    "1"
+   ],
+   "default_raw": 1.0,
+   "default": "On",
+   "valid_values": [
+    false,
+    true
+   ],
+   "label": null
+  },
+  "clipper_filter_on_off": {
+   "range": [
+    "False",
+    "True",
+    "1"
+   ],
+   "default_raw": 0.0,
+   "default": "Off",
+   "valid_values": [
+    false,
+    true
+   ],
+   "label": null
+  }
+ }
+}
