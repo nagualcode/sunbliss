@@ -1,0 +1,14 @@
+uuid = "fc8c2d92-2e19-4a22-ae7b-ef703faa2a81"
+name = "Drum Bus Snap"
+comment = "Parallel converter-A clip with heavy curve-B saturation under the dry signal"
+
+[params]
+input = 6.0
+link = true
+ceiling = -3.0
+clip_mode = 0
+sat = 5.0
+curve = 1
+mix_link = false
+wet = 0.7
+dry = 0.5

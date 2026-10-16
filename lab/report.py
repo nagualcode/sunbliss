@@ -20,7 +20,7 @@ def parity_md(p):
     L.append("|---|---|---|---|")
     if "static_clip" in p:
         for m, v in p["static_clip"].items():
-            L.append(f"| Curva estática DC, clip {m} (|x| ≥ −6 dB) | ≤ 0,5 dB | máx {v['max_db']:.3f} dB (média {v['mean_db']:.3f}) | {'✅' if v['max_db'] <= 0.5 else '❌'} |")
+            L.append(f"| Curva estática DC, clip {m} (amplitude ≥ −6 dB) | ≤ 0,5 dB | máx {v['max_db']:.3f} dB (média {v['mean_db']:.3f}) | {'✅' if v['max_db'] <= 0.5 else '❌'} |")
     if "levels" in p:
         for m, v in p["levels"].items():
             rows = [r for r in v["rows"] if r["level"] <= 8]
@@ -50,9 +50,38 @@ def parity_md(p):
 def sup_md(s):
     if not s:
         return ""
-    L = ["\n### Superioridade (§7.2)\n", "| Métrica | Referência | Sunbliss | Vence? |", "|---|---|---|---|"]
-    for r in s["rows"]:
-        L.append(f"| {r['name']} | {r['ref']} | {r['ours']} | {'✅' if r['win'] else '❌'} |")
+    L = ["\n### Superioridade (§7.2) — mesma grade, 48 kHz, High\n",
+         "| Métrica | Referência | Sunbliss | Vence? |", "|---|---|---|---|"]
+
+    def row(name, ref, ours, win, fmt="{:.1f}"):
+        L.append(f"| {name} | {fmt.format(ref)} | {fmt.format(ours)} | {'✅' if win else '❌'} |")
+
+    if "aliasing" in s:
+        for k, (r, o) in s["aliasing"].items():
+            mode, f = k.split("_")
+            row(f"Aliasing+ruído, tom {int(f)//1000} kHz +6 dB, clip {mode} (dB rel. fund.)", r, o, o < r)
+    if "imd" in s:
+        for k, (r, o) in s["imd"].items():
+            row(f"Produtos < 18 kHz, 19+20 kHz +3 dB, clip {k.split('_')[0]} (dB)", r, o, o < r)
+    if "true_peak" in s:
+        for k, v in s["true_peak"].items():
+            row(f"True-peak na mixagem, {k} (dBTP; nosso com guard)", v["tp_ref"], v["tp_ours"], v["tp_ours"] <= 0 < v["tp_ref"] or v["tp_ours"] < v["tp_ref"], "{:+.2f}")
+            row(f"  loudness no mesmo ajuste (LUFS)", v["lufs_ref"], v["lufs_ours"], v["lufs_ours"] >= v["lufs_ref"] - 0.3, "{:.2f}")
+    if "transparency" in s:
+        t = s["transparency"]
+        for m in ["A", "Hard", "B"]:
+            row(f"Resíduo abaixo do teto (−6 dB), clip {m}, banda 20 kHz (dB rms)", t[m][0], t[m][1], t[m][1] <= t[m][0] + 0.2)
+        row("Tudo neutro: resíduo de pico (dBFS)", t["neutral"][0], t["neutral"][1], t["neutral"][1] < t["neutral"][0])
+    if "recovery" in s:
+        for m, (r, o) in s["recovery"].items():
+            row(f"Recuperação pós-rajada +12 dB, clip {m}: erro do sinal de prova (dB)", r, o, o < r, "{:.3f}")
+    if "automation" in s:
+        for k, (r, o) in s["automation"].items():
+            row(f"Clique na troca '{k}': excesso de HF > 16 kHz em ±5 ms (dB)", r, o, o <= max(r, 0.5), "{:+.2f}")
+    if "cpu" in s:
+        c = s["cpu"]
+        row("CPU, mesmo host (pedalboard), High, estéreo 48 kHz (% de tempo real)", 100 * c["reference_high"], 100 * c["ours_high"], c["ours_high"] < c["reference_high"], "{:.2f}")
+        L.append(f"| CPU Pristine / Extra (nosso; a referência não expõe a troca) | — | {100*c['ours_pristine']:.2f} / {100*c['ours_extra']:.2f} | — |")
     return "\n".join(L)
 
 

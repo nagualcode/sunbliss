@@ -2,7 +2,8 @@
 //!
 //! The reference only clamps sample peaks, so after its downsampler the true
 //! peak can sit up to ~1 dB above the ceiling. Here:
-//!   1. 8x polyphase interpolation estimates inter-sample peaks;
+//!   1. 4x polyphase interpolation + parabolic refinement estimates
+//!      inter-sample peaks;
 //!   2. required gain r = min(1, c / peak) per sample, linked across channels;
 //!   3. sliding minimum over K+1+2H samples followed by a (K+1)-sample moving
 //!      average: every averaged window contains the minimum of r over
@@ -17,10 +18,10 @@ use crate::design::{kaiser_beta, lowpass};
 use crate::fir::Delay;
 
 pub const MAX_CH: usize = 8;
-const OSF: usize = 8;
-const ISP_TAPS: usize = 369; // delay 184 at 8x = 23 base samples
+const OSF: usize = 4;
+const ISP_TAPS: usize = 185; // delay 92 at 4x = 23 base samples
 const ISP_DELAY: usize = 23;
-const PH: usize = 47; // taps per phase (ceil(369/8))
+const PH: usize = 47; // taps per phase (ceil(185/4))
 pub const WINDOW_S: f64 = 0.001;
 /// Samples on each side of a peak that share its gain (sinc-tail coverage).
 const HOLD: usize = 16;
@@ -30,9 +31,24 @@ pub const RELEASE_S: f64 = 0.010;
 /// separate signal from image (measured worst case ~0.13 dB on noise clipped 12 dB).
 pub const MARGIN_DB: f64 = 0.15;
 
+/// What the limiter keeps under the ceiling.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum GuardMode {
+    /// Delay only.
+    Off,
+    /// Sample peaks <= ceiling (replaces a hard clamp, which aliases). The
+    /// detector still uses the true-peak estimate (>= every sample peak,
+    /// and constant on steady tones, where sample peaks beat against fs and
+    /// would modulate the gain), just without the safety margin.
+    Sample,
+    /// Inter-sample (true) peaks.
+    TruePeak,
+}
+
 pub struct Guard {
     phases: [[f64; PH]; OSF], // reversed polyphase coefficients
-    hist: Vec<[f64; PH]>,
+    hist: Vec<[f64; 2 * PH]>, // per channel ring, written twice so a window is contiguous
+    hpos: usize,
     prev_last: Vec<f64>, // last interpolated value of the previous sample (per channel)   // per channel last PH inputs (last = newest)
     audio: Vec<Delay>,
     k: usize,
@@ -69,7 +85,8 @@ impl Guard {
         audio.iter_mut().for_each(|d| d.set(k + HOLD + ISP_DELAY));
         Guard {
             phases,
-            hist: vec![[0.0; PH]; channels],
+            hist: vec![[0.0; 2 * PH]; channels],
+            hpos: 0,
             prev_last: vec![0.0; channels],
             audio,
             k,
@@ -93,7 +110,8 @@ impl Guard {
     }
 
     pub fn reset(&mut self) {
-        self.hist.iter_mut().for_each(|h| *h = [0.0; PH]);
+        self.hist.iter_mut().for_each(|h| *h = [0.0; 2 * PH]);
+        self.hpos = 0;
         self.prev_last.iter_mut().for_each(|v| *v = 0.0);
         self.audio.iter_mut().for_each(|d| d.reset());
         self.rq.iter_mut().for_each(|v| *v = 1.0);
@@ -105,33 +123,36 @@ impl Guard {
     }
 
     /// Process all channels in place for `n` samples.
-    /// `ceil` is the per-sample ceiling (linear); when `on` is false the audio
-    /// is only delayed.
-    pub fn process(&mut self, chans: &mut [&mut [f64]], n: usize, ceil: &[f64], on: bool) {
-        let target = 10f64.powf(-MARGIN_DB / 20.0);
+    /// `ceil` is the per-sample ceiling (linear).
+    pub fn process(&mut self, chans: &mut [&mut [f64]], n: usize, ceil: &[f64], mode: GuardMode) {
+        let on = mode != GuardMode::Off;
+        let tp = mode == GuardMode::TruePeak;
+        let target = if tp { 10f64.powf(-MARGIN_DB / 20.0) } else { 1.0 };
         let mut min_g: f64 = 1.0;
         for i in 0..n {
             // 1+2: inter-sample peak, linked
             let mut peak: f64 = 0.0;
+            let hp = self.hpos;
             for (ch, buf) in chans.iter().enumerate() {
-                let h = &mut self.hist[ch];
-                h.copy_within(1.., 0);
-                h[PH - 1] = buf[i];
-                // v[0] = previous grid point, v[1..=8] = this sample's 8 phases,
-                // v[9] = the next original sample (phase 0 of the next period)
-                let mut v = [0.0f64; 10];
+                let ring = &mut self.hist[ch];
+                ring[hp] = buf[i];
+                ring[hp + PH] = buf[i];
+                if !on {
+                    continue;
+                }
+                // oldest..newest window, newest at index PH-1
+                let h = &ring[hp + 1..hp + 1 + PH];
+                // v[0] = previous grid point, v[1..=OSF] = this sample's phases,
+                // v[OSF+1] = the next original sample (phase 0 of the next period)
+                let mut v = [0.0f64; OSF + 2];
                 v[0] = self.prev_last[ch];
                 for (p, ph) in self.phases.iter().enumerate() {
-                    let mut s = 0.0;
-                    for j in 0..PH {
-                        s += ph[j] * h[j];
-                    }
-                    v[p + 1] = s;
+                    v[p + 1] = crate::fir::dot(ph, h);
                 }
-                v[9] = h[PH - 1 - (ISP_DELAY - 1)];
-                self.prev_last[ch] = v[8];
+                v[OSF + 1] = h[PH - 1 - (ISP_DELAY - 1)];
+                self.prev_last[ch] = v[OSF];
                 // parabolic refinement around local maxima of |v|
-                for k in 1..=8 {
+                for k in 1..=OSF {
                     let b = v[k].abs();
                     peak = peak.max(b);
                     let sg = v[k].signum();
@@ -144,13 +165,15 @@ impl Guard {
                     }
                 }
             }
+            self.hpos = if self.hpos + 1 == PH { 0 } else { self.hpos + 1 };
             #[cfg(test)]
             {
                 self.max_est = self.max_est.max(peak);
             }
             // peak estimate refers to sample i - ISP_DELAY; audio delay aligns
             let c = ceil[i] * target;
-            let r = if peak > c { c / peak } else { 1.0 };
+            // Off: no requirement, the gain releases smoothly back to unity
+            let r = if on && peak > c { c / peak } else { 1.0 };
             // 3: sliding min over k+1+2*HOLD
             let nq = self.rq.len();
             self.rq[self.rpos] = r;
@@ -182,7 +205,10 @@ impl Guard {
             let a = (self.asum / na as f64).min(1.0);
             // 4: upward-only release, never above the averaged requirement
             self.g = a.min(self.g + (1.0 - self.g) * self.rel);
-            let g = if on { self.g } else { 1.0 };
+            if 1.0 - self.g < 1e-12 {
+                self.g = 1.0; // exact unity keeps the off/neutral path bit-transparent
+            }
+            let g = self.g;
             min_g = min_g.min(g);
             for (ch, buf) in chans.iter_mut().enumerate() {
                 let d = self.audio[ch].tick(buf[i]);
@@ -239,7 +265,7 @@ mod tests {
             let mut y = x.clone();
             let ceil = vec![1e-9; n];
             let mut refs: [&mut [f64]; 1] = [&mut y[..]];
-            g.process(&mut refs, n, &ceil, false);
+            g.process(&mut refs, n, &ceil, GuardMode::Off);
             eprintln!("estimator max {:.3} dB (ref {:.3} dB)", 20.0 * g.max_est.log10(), 20.0 * tp16(&x).log10());
         }
         let mut g = Guard::new(48000.0, 1);
@@ -247,7 +273,7 @@ mod tests {
         let ceil = vec![1.0; n];
         {
             let mut refs: [&mut [f64]; 1] = [&mut y[..]];
-            g.process(&mut refs, n, &ceil, true);
+            g.process(&mut refs, n, &ceil, GuardMode::TruePeak);
         }
         let after = tp16(&y[100..]);
         if let Ok(path) = std::env::var("GUARD_DUMP") {

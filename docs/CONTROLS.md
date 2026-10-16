@@ -66,8 +66,9 @@ Todos os números são de 48 kHz, salvo indicação.
 - É um passa-baixas de 1 polo, fc ≈ **34 kHz** (fixo em Hz: idêntico a 48 e 96 kHz), colocado **antes** do clipper. Prova: os harmônicos do clip Hard a +12 dB não mudam com o filtro (Δ ≤ 0,01 dB). No modo B o efeito é duplicado (−2,58 dB a 20 kHz contra −1,29 dB nos outros), e o filtro estabiliza o modo B em drive alto.
 
 ### Overshoot Guard
-- Na referência, o `clip_guard` quase não muda nada: −0,001 dB de pico, true-peak igual. O clamp amostral já está sempre ativo.
-- **Sunbliss:** o Guard passa a controlar **true-peak** (detecção ISP 4×, lookahead curto, sem cliques), garantindo TP ≤ ceiling. Essa é uma das alegações de superioridade.
+- Na referência, o `clip_guard` quase não muda nada: −0,001 dB de pico, true-peak igual. O que limita o pico é (1) um clamp amostral sempre ativo e (2) um **ducking adaptativo** de até −2 dB, com hold de ~0,4 s, disparado por bordas íngremes acima do teto (medido com degraus de DC 2,0 e 4,0 → −1 e −2 dB). O ducking explica por que a referência sai mais baixa em drive alto.
+- **Sunbliss, guard desligado:** um limitador suave de lookahead (1 ms + hold de 16 amostras) mantém os picos amostrais ≤ ceiling. Ele usa a estimativa de true-peak, que é constante em tons estáveis (os picos amostrais "batem" contra fs e modulariam o ganho). Substitui o clamp duro, que causava aliasing forte num tom agudo clipado, cuja fundamental limitada em banda chega a 4/π do platô. O clamp continua como rede de segurança.
+- **Sunbliss, guard ligado:** o mesmo limitador controla o **true-peak** com margem de 0,15 dB. Estimador 4× com refinamento parabólico, sem cliques, linkado entre canais. Resultado: TP ≤ −0,11 dBTP em todos os ajustes medidos.
 
 ### Saturation (Gold) — `docs/data/gc_gold_curves.json`
 - É aplicada **depois** do clipper, por amostra, sem memória (histerese < 1,5e−4).
@@ -97,5 +98,7 @@ Todos os números são de 48 kHz, salvo indicação.
 
 ### Oversampling
 - High 4× / Pristine 8× / Extra 16× a 44,1/48 kHz; metade disso a 88,2/96 kHz; um quarto acima disso.
+- Sunbliss: o decimador de conversor é plano até max(20 kHz; 0,4167·fs), limitado a 0,4535·fs (20 kHz a 44,1/48 kHz; 40 kHz a 96 kHz), com rejeição de 140 dB a partir de fs/2.
+- Render Quality permite usar outra qualidade só no render offline. A latência reportada acompanha a troca.
 - Latência medida da referência (High, fase linear): 764 amostras (44,1/48 kHz) e 1394 (88,2/96 kHz).
 - O caminho neutro da referência é plano até 20 kHz, com −6 dB em fs/2 (o último decimador é meia-banda centrado em Nyquist, o que deixa entrar aliasing na faixa 20–24 kHz).

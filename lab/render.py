@@ -23,7 +23,7 @@ import numpy as np
 import goldclip as G
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CLI = os.path.join(ROOT, "target", "release", "sunbliss")
+CLI = os.path.join(ROOT, "target", "release", "sunbliss-cli")
 
 DEFAULT = dict(clip=False, mode="B", filter=False, ceiling=0.0, input=0.0, output=0.0, guard=False,
                sat=0.0, curve="A", unity=False, contour=0.0, tone="Flat",

@@ -1,18 +1,20 @@
 //! Static transfer curves.
 //!
-//! Clip curves are tabulated together with their antiderivative so the
-//! clipper can run first-order antiderivative anti-aliasing (ADAA) for any
-//! shape. Saturation curves are closed-form (they are C1 and only act below
+//! Clip curves are tabulated together with their first and second
+//! antiderivatives so the clipper can run second-order antiderivative
+//! anti-aliasing (ADAA2) for any shape. Saturation curves are closed-form (they are C1 and only act below
 //! the ceiling, so they alias far less than the clip corner).
 
-/// A memoryless curve f(u), tabulated on [-R, R] with its antiderivative F.
-/// Outside the table f is held constant (all clip curves saturate before R).
+/// A memoryless curve f(u), tabulated on [-R, R] with its antiderivatives
+/// F (= F1) and F2. Outside the table f is held constant (all clip curves
+/// saturate before R), so F1 continues linearly and F2 quadratically.
 pub struct TabCurve {
     r: f64,
     inv_du: f64,
     du: f64,
     f: Vec<f64>,
     big_f: Vec<f64>,
+    big_f2: Vec<f64>,
 }
 
 impl TabCurve {
@@ -29,7 +31,17 @@ impl TabCurve {
         // anchor F(0) = 0 (keeps magnitudes small around the origin)
         let mid = big_f[n / 2];
         big_f.iter_mut().for_each(|v| *v -= mid);
-        TabCurve { r, inv_du: 1.0 / du, du, f, big_f }
+        // F2 by integrating the cubic Hermite of F exactly on each cell:
+        // int_0^1 H(t) dt = (p0 + p1)/2 + (m0 - m1)/12   (in cell units)
+        let mut big_f2 = vec![0.0; n + 1];
+        for i in 0..n {
+            let (p0, p1) = (big_f[i], big_f[i + 1]);
+            let (m0, m1) = (f[i] * du, f[i + 1] * du);
+            big_f2[i + 1] = big_f2[i] + du * (0.5 * (p0 + p1) + (m0 - m1) / 12.0);
+        }
+        let mid2 = big_f2[n / 2];
+        big_f2.iter_mut().for_each(|v| *v -= mid2);
+        TabCurve { r, inv_du: 1.0 / du, du, f, big_f, big_f2 }
     }
 
     #[inline]
@@ -68,6 +80,79 @@ impl TabCurve {
         let t2 = t * t;
         let t3 = t2 * t;
         (2.0 * t3 - 3.0 * t2 + 1.0) * p0 + (t3 - 2.0 * t2 + t) * m0 + (-2.0 * t3 + 3.0 * t2) * p1 + (t3 - t2) * m1
+    }
+
+    /// F2(u): quintic Hermite on (F2, F, f) nodes; quadratic continuation outside.
+    #[inline]
+    pub fn big_f2(&self, u: f64) -> f64 {
+        let n = self.f.len() - 1;
+        if u >= self.r {
+            let d = u - self.r;
+            return self.big_f2[n] + self.big_f[n] * d + 0.5 * self.f[n] * d * d;
+        }
+        if u <= -self.r {
+            let d = u + self.r;
+            return self.big_f2[0] + self.big_f[0] * d + 0.5 * self.f[0] * d * d;
+        }
+        let (i, t) = self.cell(u);
+        let h = self.du;
+        let (p0, p1) = (self.big_f2[i], self.big_f2[i + 1]);
+        let (v0, v1) = (self.big_f[i] * h, self.big_f[i + 1] * h);
+        let (a0, a1) = (self.f[i] * h * h, self.f[i + 1] * h * h);
+        let t2 = t * t;
+        let t3 = t2 * t;
+        let t4 = t3 * t;
+        let t5 = t4 * t;
+        let h0 = 1.0 - 10.0 * t3 + 15.0 * t4 - 6.0 * t5;
+        let h1 = t - 6.0 * t3 + 8.0 * t4 - 3.0 * t5;
+        let h2 = 0.5 * t2 - 1.5 * t3 + 1.5 * t4 - 0.5 * t5;
+        let h3 = 0.5 * t3 - t4 + 0.5 * t5;
+        let h4 = -4.0 * t3 + 7.0 * t4 - 3.0 * t5;
+        let h5 = 10.0 * t3 - 15.0 * t4 + 6.0 * t5;
+        h0 * p0 + h1 * v0 + h2 * a0 + h3 * a1 + h4 * v1 + h5 * p1
+    }
+
+    /// Divided difference of F2, falling back to F1 at the midpoint.
+    #[inline]
+    pub fn d2(&self, a: f64, b: f64) -> f64 {
+        let d = a - b;
+        if d.abs() > 1e-6 { (self.big_f2(a) - self.big_f2(b)) / d } else { self.big_f(0.5 * (a + b)) }
+    }
+
+    /// Divided difference of F2 with F2(b) already known.
+    #[inline]
+    pub fn d2_known(&self, a: f64, fa: f64, b: f64, fb: f64) -> f64 {
+        let d = a - b;
+        if d.abs() > 1e-6 { (fa - fb) / d } else { self.big_f(0.5 * (a + b)) }
+    }
+
+    /// ADAA2 from a fresh divided difference `d01` = D(u0,u1) and the previous
+    /// one `d12` = D(u1,u2) (callers cache it: one F2 evaluation per sample).
+    #[inline]
+    pub fn adaa2_cached(&self, u0: f64, u1: f64, u2: f64, d01: f64, d12: f64) -> f64 {
+        let d02 = u0 - u2;
+        if d02.abs() > 1e-5 {
+            return 2.0 / d02 * (d01 - d12);
+        }
+        self.adaa2(u0, u1, u2)
+    }
+
+    /// Second-order ADAA over u2 -> u1 -> u0 (u0 newest). Integer delay of one
+    /// sample; in the linear region it equals the 3-tap mean (u0+u1+u2)/3.
+    #[inline]
+    pub fn adaa2(&self, u0: f64, u1: f64, u2: f64) -> f64 {
+        let d02 = u0 - u2;
+        if d02.abs() > 1e-5 {
+            return 2.0 / d02 * (self.d2(u0, u1) - self.d2(u1, u2));
+        }
+        // u0 ~ u2: expand around their mean (Bilbao et al. ill-conditioning fix)
+        let xb = 0.5 * (u0 + u2);
+        let delta = xb - u1;
+        if delta.abs() > 1e-5 {
+            2.0 / delta * (self.big_f(xb) + (self.big_f2(u1) - self.big_f2(xb)) / delta)
+        } else {
+            self.f(0.5 * (xb + u1))
+        }
     }
 
     /// First-order ADAA between consecutive inputs u0 -> u1.
@@ -318,6 +403,23 @@ mod tests {
         let c = TabCurve::new(2.0, 4096, |u| u);
         let y = c.adaa(0.1, 0.3);
         assert!((y - 0.2).abs() < 1e-12);
+    }
+
+    #[test]
+    fn adaa2_linear_region_is_three_tap_mean() {
+        let c = TabCurve::new(2.0, 8192, |u| u);
+        let y = c.adaa2(0.3, 0.1, -0.2);
+        assert!((y - (0.3 + 0.1 - 0.2) / 3.0).abs() < 1e-9, "{y}");
+        let y = c.adaa2(0.2, 0.1, 0.2);
+        assert!((y - 0.5 / 3.0).abs() < 1e-6, "{y}");
+    }
+
+    #[test]
+    fn adaa2_saturated_region() {
+        let c = TabCurve::new(2.0, 8192, hard);
+        assert!((c.adaa2(1.5, 1.7, 1.6) - HARD_LEVEL).abs() < 1e-7);
+        assert!((c.adaa2(40.0, 60.0, 50.0) - HARD_LEVEL).abs() < 1e-7);
+        assert!((c.adaa2(-40.0, -60.0, -50.0) + HARD_LEVEL).abs() < 1e-7);
     }
 
     #[test]

@@ -1,0 +1,9 @@
+uuid = "fd678ea6-84e6-470a-89e8-75a894e5f7fd"
+name = "Peak Shaver"
+comment = "Transparent: only the loudest peaks touch the clipper"
+
+[params]
+input = 1.5
+link = true
+clip_mode = 2
+guard = true

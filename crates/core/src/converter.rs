@@ -2,7 +2,7 @@
 //!
 //! Per mode:
 //!   pre-emphasis "clip filter" (optional, one pole at ~34 kHz, twice in B)
-//!   -> static knee/clip curve with first-order ADAA
+//!   -> static knee/clip curve with second-order ADAA
 //!   -> (B only) overload memory: a held overload makes the plateau sag
 //!      toward zero (tau ~72 ms), released within ~1 ms once the input
 //!      falls back under 1.33 c. This is the "bass bloom" of the classic
@@ -41,6 +41,8 @@ impl ClipMode {
 /// Prewarped bilinear one-pole; 32 kHz matches the reference at a 192 kHz
 /// top rate (-1.29 dB at 20 kHz). A 34 kHz analog pole maps to this.
 pub const CLIP_FILTER_HZ: f64 = 32_000.0;
+/// |u| below which each curve is exactly the identity (A, B: none, Hard).
+const LINEAR_LIMIT: [f64; 3] = [crate::curves::KNEE_A, 0.0, crate::curves::HARD_LEVEL];
 pub const OVERLOAD_THRESHOLD: f64 = 1.33;
 pub const OVERLOAD_TAU_S: f64 = 0.072;
 pub const OVERLOAD_RELEASE_S: f64 = 0.001;
@@ -115,8 +117,13 @@ pub struct ClipStage {
     a1: f64,
     lp1: (f64, f64),
     lp2: (f64, f64),
-    prev_u: [f64; 2], // normalized input history: [single-filtered path, double-filtered path]
-    prev_x: f64,
+    // normalized input history [path][age]: path 0 = single-filtered, 1 = double
+    prev_u: [[f64; 2]; 2],
+    // ADAA2 caches per mode: F2(u1) and D(u1,u2) of the previous sample
+    prev_f2: [f64; 3],
+    prev_d: [f64; 3],
+    warm: [bool; 3],
+    prev_x: [f64; 2],
     mem: f64,
     mem_dec: f64,
     mem_rel: f64,
@@ -138,8 +145,11 @@ impl ClipStage {
             a1,
             lp1: (0.0, 0.0),
             lp2: (0.0, 0.0),
-            prev_u: [0.0; 2],
-            prev_x: 0.0,
+            prev_u: [[0.0; 2]; 2],
+            prev_f2: [0.0; 3],
+            prev_d: [0.0; 3],
+            warm: [false; 3],
+            prev_x: [0.0; 2],
             mem: 0.0,
             mem_dec: 1.0 - (-1.0 / (OVERLOAD_TAU_S * rate)).exp(),
             mem_rel: 1.0 - (-1.0 / (OVERLOAD_RELEASE_S * rate)).exp(),
@@ -156,8 +166,9 @@ impl ClipStage {
     pub fn reset(&mut self) {
         self.lp1 = (0.0, 0.0);
         self.lp2 = (0.0, 0.0);
-        self.prev_u = [0.0; 2];
-        self.prev_x = 0.0;
+        self.prev_u = [[0.0; 2]; 2];
+        self.prev_x = [0.0; 2];
+        self.warm = [false; 3];
         self.mem = 0.0;
     }
 
@@ -197,19 +208,40 @@ impl ClipStage {
             let xs = [xin + fw * (f1 - xin), xin + fw * (f2 - xin)];
             let us = [xs[0] * inv_c, xs[1] * inv_c];
 
-            // identity path (clip off): ADAA of identity == two-sample average
-            let ident = if adaa { 0.5 * (xin + self.prev_x) } else { xin };
-            self.prev_x = xin;
+            // identity path (clip off): ADAA2 of identity == 3-tap mean
+            let ident = if adaa { (xin + self.prev_x[0] + self.prev_x[1]) / 3.0 } else { xin };
+            self.prev_x = [xin, self.prev_x[0]];
 
             let mut acc = 0.0;
             for m in 0..3 {
                 let w = self.w[m].tick(if m == mi { 1.0 } else { 0.0 });
-                if w == 0.0 {
+                if w == 0.0 || on == 0.0 {
+                    self.warm[m] = false;
                     continue;
                 }
                 let path = if m == 1 { 1 } else { 0 };
                 let curve = &tables.curves[m];
-                let mut y = if adaa { curve.adaa(self.prev_u[path], us[path]) } else { curve.f(us[path]) };
+                let pu = self.prev_u[path];
+                let u0 = us[path];
+                let mut y = if !adaa {
+                    curve.f(u0)
+                } else if m != 1 && u0.abs().max(pu[0].abs()).max(pu[1].abs()) <= LINEAR_LIMIT[m] {
+                    // all three samples in the exactly-linear region: ADAA2 == mean
+                    self.warm[m] = false;
+                    (u0 + pu[0] + pu[1]) / 3.0
+                } else {
+                    if !self.warm[m] {
+                        self.prev_f2[m] = curve.big_f2(pu[0]);
+                        self.prev_d[m] = curve.d2(pu[0], pu[1]);
+                        self.warm[m] = true;
+                    }
+                    let f0 = curve.big_f2(u0);
+                    let d01 = curve.d2_known(u0, f0, pu[0], self.prev_f2[m]);
+                    let y = curve.adaa2_cached(u0, pu[0], pu[1], d01, self.prev_d[m]);
+                    self.prev_f2[m] = f0;
+                    self.prev_d[m] = d01;
+                    y
+                };
                 if m == 1 {
                     let over = us[1].abs() > OVERLOAD_THRESHOLD;
                     self.mem += if over { (1.0 - self.mem) * self.mem_dec } else { -self.mem * self.mem_rel };
@@ -220,7 +252,7 @@ impl ClipStage {
                 }
                 acc += w * y;
             }
-            self.prev_u = us;
+            self.prev_u = [[us[0], self.prev_u[0][0]], [us[1], self.prev_u[1][0]]];
             let clipped = acc * c;
             *x = ident + on * (clipped - ident);
         }

@@ -1,6 +1,6 @@
 //! WAV -> WAV (or raw f64) renderer for the lab and CI.
 //!
-//! sunbliss IN OUT [--params p.json] [--set key=value ...] [--block N]
+//! sunbliss-cli IN OUT [--params p.json] [--set key=value ...] [--block N]
 //!          [--compensate] [--rate HZ --channels N (raw input)] [--latency]
 //!
 //! Files ending in `.f64` are raw little-endian interleaved f64; `--rate` and
@@ -83,6 +83,7 @@ fn main() {
     let mut rate = 48000.0;
     let mut channels = 2usize;
     let mut print_latency = false;
+    let mut bench: Option<f64> = None;
     let mut i = 0;
     while i < args.len() {
         let a = &args[i];
@@ -111,6 +112,7 @@ fn main() {
             "--channels" => channels = next().parse().unwrap_or_else(|_| die("--channels")),
             "--compensate" => compensate = true,
             "--latency" => print_latency = true,
+            "--bench" => bench = Some(next().parse().unwrap_or_else(|_| die("--bench SECONDS"))),
             _ => pos.push(a.clone()),
         }
         i += 1;
@@ -127,8 +129,41 @@ fn main() {
         println!("{}", e2.latency());
         return;
     }
+    if let Some(secs) = bench {
+        // CPU benchmark: process `secs` of stereo pink-ish noise in memory
+        let mut e = Engine::new(rate, 2, block);
+        e.set_params(&p);
+        e.snap();
+        let n = (secs * rate) as usize;
+        let mut s: u64 = 1;
+        let mut lp = 0.0;
+        let src: Vec<f64> = (0..n)
+            .map(|_| {
+                s ^= s << 13;
+                s ^= s >> 7;
+                s ^= s << 17;
+                lp += 0.2 * (((s >> 11) as f64 / (1u64 << 53) as f64) * 2.0 - 1.0 - lp);
+                lp * 3.0
+            })
+            .collect();
+        let mut a = vec![0.0; block];
+        let mut b = vec![0.0; block];
+        let t = std::time::Instant::now();
+        let mut pos = 0;
+        while pos < n {
+            let m = block.min(n - pos);
+            a[..m].copy_from_slice(&src[pos..pos + m]);
+            b[..m].copy_from_slice(&src[pos..pos + m]);
+            let mut refs: [&mut [f64]; 2] = [&mut a[..m], &mut b[..m]];
+            e.process(&mut refs, m);
+            pos += m;
+        }
+        let el = t.elapsed().as_secs_f64();
+        println!("{:.4}", el / secs);
+        return;
+    }
     if pos.len() != 2 {
-        die("usage: sunbliss IN OUT [options]");
+        die("usage: sunbliss-cli IN OUT [options]");
     }
     // ---- read input (deinterleaved f64)
     let (fs, data): (f64, Vec<Vec<f64>>) = if pos[0].ends_with(".f64") {

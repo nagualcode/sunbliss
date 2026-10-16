@@ -1,0 +1,14 @@
+[vendor]
+name = "Jardim Sonoro"
+id = "com.jardimsonoro"
+url = "https://example.com"
+au_manufacturer = "JSon"
+
+[[plugin]]
+name = "Sunbliss"
+bundle_id = "sunbliss"
+crate = "sunbliss"
+category = "effect"
+fourcc = "Snbl"
+au_tag = "Effects"
+vst3_subcategory = "Mastering"

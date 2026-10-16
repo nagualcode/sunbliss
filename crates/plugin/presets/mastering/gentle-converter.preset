@@ -1,0 +1,12 @@
+uuid = "dff92690-1f69-4296-a5c2-8c610001d022"
+name = "Gentle Converter"
+comment = "A touch of converter overload and curve-A saturation, true-peak safe"
+
+[params]
+input = 2.0          # dB
+link = true
+clip_mode = 1        # 0 Converter A, 1 Converter B, 2 Hard
+sat = 1.5            # dB (nominal)
+curve = 0            # 0 A, 1 B
+contour = 0.8        # dB
+guard = true

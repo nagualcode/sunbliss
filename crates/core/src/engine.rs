@@ -13,7 +13,7 @@ use crate::contour::{self, ContourStage, Detector};
 use crate::converter::{ClipMode, ClipSettings, ClipStage, ClipTables, Ramp};
 use crate::curves::{self, SatACoeffs, SatB, SatBCoeffs};
 use crate::fir::Delay;
-use crate::guard::Guard;
+use crate::guard::{Guard, GuardMode};
 use crate::oversampling::{Oversampler, Quality};
 use crate::tone::{self, Tone, ToneMode};
 
@@ -136,7 +136,7 @@ struct Chain {
 
 impl Chain {
     fn new(fs: f64, factor: usize, channels: usize, max_block: usize) -> Self {
-        let os: Vec<Oversampler> = (0..channels).map(|_| Oversampler::new(factor, max_block)).collect();
+        let os: Vec<Oversampler> = (0..channels).map(|_| Oversampler::new(fs, factor, max_block)).collect();
         let top_rate = fs * factor as f64;
         let contour: Vec<ContourStage> = (0..channels).map(|_| ContourStage::new(top_rate)).collect();
         let l = factor;
@@ -147,8 +147,8 @@ impl Chain {
         let mut pad: Vec<Delay> = (0..channels).map(|_| Delay::new(pad_n.max(1))).collect();
         pad.iter_mut().for_each(|d| d.set(pad_n));
         let lat = (total + pad_n) / l;
-        let adaa_half = if os[0].uses_adaa() { 0.5 } else { 0.0 };
-        let g = (os[0].latency_up_top() + pad_n as f64 + adaa_half + contour[0].delay() as f64) / l as f64;
+        let adaa_delay = if os[0].uses_adaa() { 1.0 } else { 0.0 };
+        let g = (os[0].latency_up_top() + pad_n as f64 + adaa_delay + contour[0].delay() as f64) / l as f64;
         Chain {
             l,
             os,
@@ -231,6 +231,9 @@ pub struct Engine {
     max_clip_db: f64,
     os_running: bool,
     prime: usize,
+    last_sat: f64,
+    sat_a: SatACoeffs,
+    sat_b: SatBCoeffs,
 }
 
 const FADE_S: f64 = 0.010;
@@ -308,6 +311,9 @@ impl Engine {
             max_clip_db: 0.0,
             os_running: true,
             prime: 0,
+            last_sat: -1.0,
+            sat_a: SatACoeffs::new(1.0),
+            sat_b: SatB::new().coeffs(0.0),
         };
         e.look.iter_mut().for_each(|d| d.set(look_n));
         e.apply_latency();
@@ -500,8 +506,13 @@ impl Engine {
             let sat = self.s_sat.tick(t.sat);
             self.a_sat_on[i] = sat > 0.0;
             if sat > 0.0 {
-                self.a_sat_a[i] = SatACoeffs::new(db2lin(curves::knob_to_gain_a_db(sat)));
-                self.a_sat_b[i] = self.satb.coeffs(sat);
+                if sat != self.last_sat {
+                    self.last_sat = sat;
+                    self.sat_a = SatACoeffs::new(db2lin(curves::knob_to_gain_a_db(sat)));
+                    self.sat_b = self.satb.coeffs(sat);
+                }
+                self.a_sat_a[i] = self.sat_a;
+                self.a_sat_b[i] = self.sat_b;
             }
         }
         self.os_running = os_any;
@@ -562,13 +573,6 @@ impl Engine {
                 }
                 chain.os[ch].down(&mut w[..n]);
                 for i in 0..n {
-                    // sample clamp (reference behaviour). With the guard on it is
-                    // skipped: clamping re-creates energy at Nyquist and with it
-                    // the inter-sample peaks the guard is there to remove.
-                    if self.p.clip_on && !self.p.guard {
-                        let c = self.a_ceil[i];
-                        w[i] = w[i].clamp(-c, c);
-                    }
                     let a = self.a_os[i];
                     if a < 1.0 {
                         w[i] = self.lin[ch][i] + a * (w[i] - self.lin[ch][i]);
@@ -585,7 +589,28 @@ impl Engine {
             for r in refs.iter_mut().take(self.channels) {
                 *r = &mut it.next().unwrap()[..];
             }
-            self.guard.process(&mut refs[..self.channels], n, &self.a_ceil[..n], self.p.guard);
+            // The decimated signal can exceed the ceiling (a clipped HF tone's
+            // band-limited fundamental is 4/pi of the plateau). A hard clamp
+            // here would alias badly, so the limiter keeps sample peaks (or,
+            // with the guard, true peaks) under the ceiling smoothly instead.
+            let mode = if self.p.guard {
+                GuardMode::TruePeak
+            } else if self.p.clip_on {
+                GuardMode::Sample
+            } else {
+                GuardMode::Off
+            };
+            self.guard.process(&mut refs[..self.channels], n, &self.a_ceil[..n], mode);
+            if self.p.clip_on && !self.p.guard {
+                // safety net only (the limiter already holds the ceiling)
+                for (ch, w) in refs[..self.channels].iter_mut().enumerate() {
+                    let _ = ch;
+                    for i in 0..n {
+                        let c = self.a_ceil[i];
+                        w[i] = w[i].clamp(-c, c);
+                    }
+                }
+            }
         }
         for i in 0..n {
             let wm = self.r_wmute.tick(t.wmute);

@@ -1,0 +1,12 @@
+uuid = "edec31c8-5777-4300-92be-1c487def1d81"
+name = "Tape Bloom"
+comment = "Curve B (the manual's soft saturation) pushed hard, with tone B"
+
+[params]
+input = 3.0
+link = true
+clip_mode = 1
+sat = 4.0
+curve = 1
+contour = 2.0
+tone = 2             # 0 Flat, 1 A, 2 B

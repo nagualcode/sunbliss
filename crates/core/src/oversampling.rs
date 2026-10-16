@@ -1,18 +1,18 @@
 //! Oversampling cascade.
 //!
 //! Level 1 (base <-> 2x) is the "converter decimation filter": linear phase,
-//! passband to 0.4535 fs (20 kHz at 44.1 kHz), stopband from exactly fs/2
-//! with 140 dB rejection, so nothing above Nyquist can alias into the base
-//! band (a half-band design, as used by the reference, lets 20..24 kHz alias).
+//! flat to max(20 kHz, 0.4167 fs) (capped at 0.4535 fs), stopband from
+//! exactly fs/2 with 140 dB rejection, so nothing above Nyquist can alias
+//! into the base band (a half-band design, as used by the reference, lets
+//! 20..24 kHz alias). At 96 kHz this keeps the band flat to 40 kHz.
 //! Levels >= 2 are short half-bands whose transition sits far above audio.
 //!
-//! The non-linear stages run first-order ADAA, which delays by half a top-rate
-//! sample and rolls off as cos(pi f / f_top). To keep the whole wet path an
-//! integer delay with flat response, the top interpolator has even length
-//! (another half sample) and the level-1 decimator is designed with the
-//! inverse roll-off built in.
+//! The non-linear stages run second-order ADAA, which delays by one top-rate
+//! sample and, in its linear region, acts as the 3-tap mean
+//! (1 + 2 cos w)/3. The level-1 decimator is designed with the inverse of
+//! that roll-off built in, so the whole wet path is flat and an integer delay.
 
-use crate::design::{freq_sampled, halfband, kaiser_beta, kaiser_len, lowpass};
+use crate::design::{halfband, kaiser_beta, kaiser_len, lowpass, lowpass_shaped};
 use crate::fir::{Down2, Up2};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -47,7 +47,14 @@ impl Quality {
     }
 }
 
-pub const PASS_EDGE: f64 = 0.4535; // of fs
+pub const PASS_EDGE_MAX: f64 = 0.4535; // of fs
+pub const PASS_EDGE_MIN: f64 = 0.4167; // of fs
+pub const PASS_HZ: f64 = 20_000.0;
+
+/// Pass-band edge of the converter filter, as a fraction of fs.
+pub fn pass_edge(fs: f64) -> f64 {
+    (PASS_HZ / fs).clamp(PASS_EDGE_MIN, PASS_EDGE_MAX)
+}
 const ATTEN_DB: f64 = 140.0;
 
 pub struct Oversampler {
@@ -62,7 +69,7 @@ pub struct Oversampler {
 }
 
 impl Oversampler {
-    pub fn new(factor: usize, max_block: usize) -> Self {
+    pub fn new(fs: f64, factor: usize, max_block: usize) -> Self {
         assert!(factor.is_power_of_two());
         let k = factor.trailing_zeros() as usize;
         let adaa = k >= 1;
@@ -72,25 +79,24 @@ impl Oversampler {
         let mut lat = 0.0;
         let mut lat_up = 0.0;
         for lv in 1..=k {
-            let top = lv == k;
             let max_in = max_block << (lv - 1);
             let (hu, hd) = if lv == 1 {
                 // converter stage at rate 2 fs
-                let fp = PASS_EDGE / 2.0;
+                let fp = pass_edge(fs) / 2.0;
                 let fstop = 0.25;
                 let mut n = kaiser_len(ATTEN_DB, fstop - fp);
                 if n % 2 == 0 {
                     n += 1;
                 }
                 let fc = 0.5 * (fp + fstop);
-                let nu = if top { n + 1 } else { n };
-                let hu = lowpass(nu, fc, beta);
+                let hu = lowpass(n, fc, beta);
                 let comp_l = factor as f64;
-                let hd = freq_sampled(n, beta, |f| {
-                    if f < fc {
-                        if adaa { 1.0 / (std::f64::consts::PI * 2.0 * f / comp_l).cos() } else { 1.0 }
+                let hd = lowpass_shaped(n, fc, beta, |f| {
+                    if adaa {
+                        let w = 2.0 * std::f64::consts::PI * (2.0 * f / comp_l);
+                        3.0 / (1.0 + 2.0 * w.cos())
                     } else {
-                        0.0
+                        1.0
                     }
                 });
                 (hu, hd)
@@ -102,13 +108,7 @@ impl Oversampler {
                     n += 1;
                 }
                 let hd = halfband(n, beta);
-                let hu = if top {
-                    let ne = if n % 2 == 0 { n } else { n + 1 };
-                    lowpass(ne, 0.25, beta)
-                } else {
-                    hd.clone()
-                };
-                (hu, hd)
+                (hd.clone(), hd)
             };
             let w = (1usize << (k - lv)) as f64;
             lat += (hu.len() - 1) as f64 / 2.0 * w;
@@ -118,7 +118,7 @@ impl Oversampler {
             dn.push(Down2::new(&hd, max_in * 2));
         }
         if adaa {
-            lat += 0.5;
+            lat += 1.0;
         }
         let lvl = (0..=k).map(|lv| vec![0.0; max_block << lv]).collect();
         Oversampler { k, up, dn, lvl, adaa, latency_top: lat, latency_up_top: lat_up }
@@ -130,7 +130,7 @@ impl Oversampler {
     pub fn uses_adaa(&self) -> bool {
         self.adaa
     }
-    /// Round-trip delay in top-rate samples, including the ADAA half sample.
+    /// Round-trip delay in top-rate samples, including the ADAA2 sample.
     pub fn latency_top(&self) -> f64 {
         self.latency_top
     }
@@ -191,12 +191,12 @@ mod tests {
     use super::*;
 
     fn roundtrip(factor: usize) {
-        let mut os = Oversampler::new(factor, 512);
+        let mut os = Oversampler::new(48000.0, factor, 512);
         let lat = os.latency_top();
         let l = factor as f64;
         // the identity path at the top averages adjacent samples (ADAA identity)
         let n = 512;
-        let mut prev = 0.0;
+        let mut prev = [0.0f64; 2];
         assert!(lat.fract().abs() < 1e-9, "top latency not integer: {lat}");
         let lat_top = lat.round() as usize;
         let pad = (factor - lat_top % factor) % factor;
@@ -212,8 +212,8 @@ mod tests {
             if factor > 1 {
                 for v in top.iter_mut() {
                     let cur = *v;
-                    *v = 0.5 * (cur + prev);
-                    prev = cur;
+                    *v = (cur + prev[0] + prev[1]) / 3.0;
+                    prev = [cur, prev[0]];
                 }
             }
             let mut y = vec![0.0; n];
@@ -226,7 +226,10 @@ mod tests {
         for i in 4 * n..y_all.len() {
             err = err.max((y_all[i] - x_all[i - d]).abs());
         }
-        assert!(err < 2e-4, "factor {factor}: err {err}, latency {d}");
+        // at 2x the ADAA2 roll-off compensation reaches +5.9 dB at the band
+        // edge, which costs some ripple (-71 dB); higher factors stay < 2e-4
+        let tol = if factor == 2 { 5e-4 } else { 2e-4 };
+        assert!(err < tol, "factor {factor}: err {err}, latency {d}");
     }
 
     #[test]

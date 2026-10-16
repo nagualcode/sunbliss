@@ -39,3 +39,10 @@ Renderização de 1 s de seno OK.
 python3.11 -m venv .venv && .venv/bin/pip install pedalboard numpy scipy soundfile matplotlib pyloudnorm pymupdf pyyaml
 cd lab && ../.venv/bin/python probe_levels.py 48000
 ```
+
+## Validação de formatos (F5)
+
+- `make install` → CLAP, VST3 e AU v2 em `~/Library/Audio/Plug-Ins/`.
+- `auval -v aufx Snbl JSon` → **AU VALIDATION SUCCEEDED**. O `cargo truce validate --auval` chama `auval -a`, que trava varrendo AUs de terceiros nesta máquina; use o comando direto.
+- `lab/plugin_check.py {vst3,au}` → o binário produz o mesmo áudio que o CLI (pior caso −140 dBFS, limite do f32 na E/S do host).
+- Observação sobre o pedalboard: ele quantiza floats na própria grade e interpreta `%` como 0–100, então o script define valores normalizados exatos. Ele também lê a latência de uma preparação anterior ao trocar a taxa de amostragem.

@@ -105,6 +105,34 @@ pub fn freq_sampled(n: usize, beta: f64, desired: impl Fn(f64) -> f64) -> Vec<f6
         .collect()
 }
 
+/// Linear-phase low-pass whose pass band follows a smooth gain `comp(f)` up
+/// to `fc` (cycles/sample) and is zero above. The integral is taken only over
+/// [0, fc] with Simpson's rule, so the cutoff step adds no quadrature error
+/// (a uniform grid across the step leaves ~3e-5 of pass-band ripple).
+pub fn lowpass_shaped(n: usize, fc: f64, beta: f64, comp: impl Fn(f64) -> f64) -> Vec<f64> {
+    let w = kaiser_window(n, beta);
+    let c = (n - 1) as f64 / 2.0;
+    let k = 8192; // even number of Simpson intervals
+    let df = fc / k as f64;
+    let g: Vec<f64> = (0..=k).map(|j| comp(j as f64 * df)).collect();
+    let mut h: Vec<f64> = (0..n)
+        .map(|i| {
+            let m = i as f64 - c;
+            let mut acc = 0.0;
+            for (j, gj) in g.iter().enumerate() {
+                let wt = if j == 0 || j == k { 1.0 } else if j % 2 == 1 { 4.0 } else { 2.0 };
+                acc += wt * gj * (2.0 * PI * j as f64 * df * m).cos();
+            }
+            2.0 * acc * df / 3.0 * w[i]
+        })
+        .collect();
+    // exact unity at DC relative to comp(0)
+    let s: f64 = h.iter().sum();
+    let g0 = comp(0.0);
+    h.iter_mut().for_each(|v| *v *= g0 / s);
+    h
+}
+
 /// Magnitude of an FIR at frequency f (cycles/sample).
 pub fn mag_at(h: &[f64], f: f64) -> f64 {
     let (mut re, mut im) = (0.0, 0.0);

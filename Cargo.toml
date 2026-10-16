@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/core", "crates/cli"]
+members = ["crates/core", "crates/cli", "crates/plugin"]
 
 [workspace.package]
 version = "0.1.0"
@@ -9,6 +9,15 @@ license = "MIT"
 
 [workspace.dependencies]
 sunbliss-core = { path = "crates/core" }
+truce = { version = "6.3" }
+truce-core = { version = "6.3" }
+truce-params = { version = "6.3" }
+truce-egui = { version = "6.3" }
+truce-font = { version = "6.3" }
+truce-clap = { version = "6.3" }
+truce-vst3 = { version = "6.3" }
+truce-au = { version = "6.3" }
+truce-test = { version = "6.3" }
 
 [profile.release]
 debug = 1

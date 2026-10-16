@@ -3,24 +3,25 @@
 //! All buffers are sized at construction; `process` never allocates.
 
 #[inline]
-fn dot(a: &[f64], b: &[f64]) -> f64 {
-    // 4 independent accumulators so LLVM can vectorise and pipeline.
+pub(crate) fn dot(a: &[f64], b: &[f64]) -> f64 {
+    // 8 independent lanes over exact chunks: LLVM turns this into paired
+    // 2-wide FMAs (NEON) / 4-wide (AVX) without bounds checks.
     let n = a.len().min(b.len());
     let (a, b) = (&a[..n], &b[..n]);
-    let mut s = [0.0f64; 4];
-    let chunks = n / 4;
-    for i in 0..chunks {
-        let j = 4 * i;
-        s[0] += a[j] * b[j];
-        s[1] += a[j + 1] * b[j + 1];
-        s[2] += a[j + 2] * b[j + 2];
-        s[3] += a[j + 3] * b[j + 3];
+    let mut acc = [0.0f64; 8];
+    let ca = a.chunks_exact(8);
+    let cb = b.chunks_exact(8);
+    let (ra, rb) = (ca.remainder(), cb.remainder());
+    for (x, y) in ca.zip(cb) {
+        for k in 0..8 {
+            acc[k] = x[k].mul_add(y[k], acc[k]);
+        }
     }
-    let mut acc = (s[0] + s[1]) + (s[2] + s[3]);
-    for j in 4 * chunks..n {
-        acc += a[j] * b[j];
+    let mut s = ((acc[0] + acc[1]) + (acc[2] + acc[3])) + ((acc[4] + acc[5]) + (acc[6] + acc[7]));
+    for (x, y) in ra.iter().zip(rb) {
+        s = x.mul_add(*y, s);
     }
-    acc
+    s
 }
 
 enum Kernel {
@@ -188,8 +189,12 @@ impl Delay {
         }
         let len = self.buf.len();
         self.buf[self.pos] = x;
-        let r = (self.pos + len - self.d) % len;
-        self.pos = (self.pos + 1) % len;
+        // no integer division on the audio path
+        let r = if self.pos >= self.d { self.pos - self.d } else { self.pos + len - self.d };
+        self.pos += 1;
+        if self.pos == len {
+            self.pos = 0;
+        }
         self.buf[r]
     }
 }

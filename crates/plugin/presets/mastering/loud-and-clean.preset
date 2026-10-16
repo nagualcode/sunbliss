@@ -1,0 +1,13 @@
+uuid = "7898559f-ee3e-43b2-bf3e-b386fff97a76"
+name = "Loud and Clean"
+comment = "Hard clip with oversampling headroom; contour tames the top at the peaks"
+
+[params]
+input = 4.0
+link = false
+clip_mode = 2
+sat = 3.0
+curve = 0
+contour = 1.2
+guard = true
+quality = 1          # 0 High, 1 Pristine, 2 Extra
