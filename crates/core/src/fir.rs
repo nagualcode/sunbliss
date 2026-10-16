@@ -1,0 +1,229 @@
+//! Polyphase 2x interpolation / decimation stages.
+//!
+//! All buffers are sized at construction; `process` never allocates.
+
+#[inline]
+fn dot(a: &[f64], b: &[f64]) -> f64 {
+    // 4 independent accumulators so LLVM can vectorise and pipeline.
+    let n = a.len().min(b.len());
+    let (a, b) = (&a[..n], &b[..n]);
+    let mut s = [0.0f64; 4];
+    let chunks = n / 4;
+    for i in 0..chunks {
+        let j = 4 * i;
+        s[0] += a[j] * b[j];
+        s[1] += a[j + 1] * b[j + 1];
+        s[2] += a[j + 2] * b[j + 2];
+        s[3] += a[j + 3] * b[j + 3];
+    }
+    let mut acc = (s[0] + s[1]) + (s[2] + s[3]);
+    for j in 4 * chunks..n {
+        acc += a[j] * b[j];
+    }
+    acc
+}
+
+enum Kernel {
+    /// Reversed dense coefficients.
+    Dense(Vec<f64>),
+    /// A single non-zero tap at reversed position `pos`.
+    Single { pos: usize, gain: f64 },
+    /// Taps at even reversed positions (compacted) plus one extra tap.
+    HalfBand { even: Vec<f64>, center_pos: usize, center: f64 },
+}
+
+/// 2x interpolator: `n` input samples -> `2n` output samples.
+pub struct Up2 {
+    phases: [Kernel; 2],
+    hist: usize,
+    buf: Vec<f64>,
+    /// Group delay in output-rate samples.
+    pub delay: f64,
+}
+
+impl Up2 {
+    pub fn new(h: &[f64], max_in: usize) -> Self {
+        let n = h.len();
+        let t = n.div_ceil(2);
+        let mk = |p: usize| -> Kernel {
+            let mut c: Vec<f64> = (0..t).map(|j| h.get(2 * j + p).copied().unwrap_or(0.0) * 2.0).collect();
+            c.reverse();
+            let nz: Vec<usize> = (0..t).filter(|&i| c[i] != 0.0).collect();
+            if nz.len() == 1 {
+                Kernel::Single { pos: nz[0], gain: c[nz[0]] }
+            } else {
+                Kernel::Dense(c)
+            }
+        };
+        Up2 { phases: [mk(0), mk(1)], hist: t - 1, buf: vec![0.0; t - 1 + max_in], delay: (n - 1) as f64 / 2.0 }
+    }
+
+    pub fn reset(&mut self) {
+        self.buf.iter_mut().for_each(|v| *v = 0.0);
+    }
+
+    pub fn process(&mut self, inp: &[f64], out: &mut [f64]) {
+        let n = inp.len();
+        debug_assert!(out.len() >= 2 * n);
+        let h = self.hist;
+        self.buf[h..h + n].copy_from_slice(inp);
+        for (p, k) in self.phases.iter().enumerate() {
+            match k {
+                Kernel::Dense(c) => {
+                    let t = c.len();
+                    for i in 0..n {
+                        out[2 * i + p] = dot(c, &self.buf[i..i + t]);
+                    }
+                }
+                Kernel::Single { pos, gain } => {
+                    for i in 0..n {
+                        out[2 * i + p] = gain * self.buf[i + pos];
+                    }
+                }
+                Kernel::HalfBand { .. } => unreachable!(),
+            }
+        }
+        self.buf.copy_within(n..n + h, 0);
+    }
+}
+
+/// 2x decimator: `2n` input samples -> `n` output samples.
+pub struct Down2 {
+    kernel: Kernel,
+    hist: usize,
+    buf: Vec<f64>,
+    /// Group delay in input-rate samples.
+    pub delay: f64,
+}
+
+impl Down2 {
+    pub fn new(h: &[f64], max_in: usize) -> Self {
+        let n = h.len();
+        let mut r = h.to_vec();
+        r.reverse();
+        let nz: Vec<usize> = (0..n).filter(|&i| r[i] != 0.0).collect();
+        let odd_nz: Vec<usize> = nz.iter().copied().filter(|i| i % 2 == 1).collect();
+        let kernel = if n % 4 == 3 && odd_nz.len() == 1 {
+            // half-band: all non-zero taps at even reversed positions, plus centre
+            let even: Vec<f64> = (0..n.div_ceil(2)).map(|j| r.get(2 * j).copied().unwrap_or(0.0)).collect();
+            Kernel::HalfBand { even, center_pos: odd_nz[0], center: r[odd_nz[0]] }
+        } else {
+            Kernel::Dense(r)
+        };
+        Down2 { kernel, hist: n - 1, buf: vec![0.0; n - 1 + max_in], delay: (n - 1) as f64 / 2.0 }
+    }
+
+    pub fn reset(&mut self) {
+        self.buf.iter_mut().for_each(|v| *v = 0.0);
+    }
+
+    pub fn process(&mut self, inp: &[f64], out: &mut [f64]) {
+        let m = inp.len();
+        debug_assert!(m % 2 == 0);
+        let n = m / 2;
+        let h = self.hist;
+        self.buf[h..h + m].copy_from_slice(inp);
+        match &self.kernel {
+            Kernel::Dense(c) => {
+                let t = c.len();
+                for i in 0..n {
+                    out[i] = dot(c, &self.buf[2 * i..2 * i + t]);
+                }
+            }
+            Kernel::HalfBand { even, center_pos, center } => {
+                for i in 0..n {
+                    let b = &self.buf[2 * i..];
+                    let mut s = [0.0f64; 4];
+                    let e = even.len();
+                    let chunks = e / 4;
+                    for c in 0..chunks {
+                        let j = 4 * c;
+                        s[0] += even[j] * b[2 * j];
+                        s[1] += even[j + 1] * b[2 * j + 2];
+                        s[2] += even[j + 2] * b[2 * j + 4];
+                        s[3] += even[j + 3] * b[2 * j + 6];
+                    }
+                    let mut acc = (s[0] + s[1]) + (s[2] + s[3]);
+                    for j in 4 * chunks..e {
+                        acc += even[j] * b[2 * j];
+                    }
+                    out[i] = acc + center * b[*center_pos];
+                }
+            }
+            Kernel::Single { pos, gain } => {
+                for i in 0..n {
+                    out[i] = gain * self.buf[2 * i + pos];
+                }
+            }
+        }
+        self.buf.copy_within(m..m + h, 0);
+    }
+}
+
+/// Plain integer delay line (ring buffer).
+pub struct Delay {
+    buf: Vec<f64>,
+    pos: usize,
+    d: usize,
+}
+
+impl Delay {
+    pub fn new(max_delay: usize) -> Self {
+        Delay { buf: vec![0.0; max_delay + 1], pos: 0, d: 0 }
+    }
+    pub fn set(&mut self, d: usize) {
+        assert!(d < self.buf.len());
+        self.d = d;
+    }
+    pub fn delay(&self) -> usize {
+        self.d
+    }
+    pub fn reset(&mut self) {
+        self.buf.iter_mut().for_each(|v| *v = 0.0);
+    }
+    #[inline]
+    pub fn tick(&mut self, x: f64) -> f64 {
+        if self.d == 0 {
+            return x;
+        }
+        let len = self.buf.len();
+        self.buf[self.pos] = x;
+        let r = (self.pos + len - self.d) % len;
+        self.pos = (self.pos + 1) % len;
+        self.buf[r]
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::design::*;
+
+    #[test]
+    fn up_down_halfband_is_near_identity() {
+        let h = halfband(39, kaiser_beta(140.0));
+        let mut up = Up2::new(&h, 256);
+        let mut dn = Down2::new(&h, 512);
+        let x: Vec<f64> = (0..256).map(|i| (i as f64 * 0.05).sin() * 0.5).collect();
+        let mut u = vec![0.0; 512];
+        let mut y = vec![0.0; 256];
+        for _ in 0..4 {
+            up.process(&x, &mut u);
+            dn.process(&u, &mut y);
+        }
+        // total delay: (39-1)/2 at 2x each way = 38 samples at 2x = 19 base
+        let d = 19;
+        // skip the region that still sees the previous (discontinuous) block
+        for i in 2 * d..256 {
+            assert!((y[i] - x[i - d]).abs() < 1e-6, "{} {} {}", i, y[i], x[i - d]);
+        }
+    }
+
+    #[test]
+    fn delay_line() {
+        let mut d = Delay::new(8);
+        d.set(3);
+        let out: Vec<f64> = (1..=6).map(|i| d.tick(i as f64)).collect();
+        assert_eq!(out, vec![0.0, 0.0, 0.0, 1.0, 2.0, 3.0]);
+    }
+}

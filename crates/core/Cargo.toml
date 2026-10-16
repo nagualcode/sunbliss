@@ -1,0 +1,8 @@
+[package]
+name = "sunbliss-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Sunbliss DSP core: converter-style clipper and saturator (f64, allocation-free processing)"
+
+[dependencies]
