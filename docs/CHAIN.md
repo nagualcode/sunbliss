@@ -35,7 +35,6 @@ x ─┬─ Tone (base rate, FIR fase linear) ─ ×g_in ─ lookahead ─ ↑L 
 ```
 
 - Todo o processamento não linear roda na taxa com oversampling L.
-- O contour usa o lookahead que a cadeia de decimação já impõe (sem latência nova).
 - O limitador de saída (pico amostral com o guard desligado, true-peak com ele ligado) tem lookahead de ~1,8 ms, sempre presente, para a latência não mudar ao ligar o guard. O dry acompanha.
 - O detector do Contour roda na taxa base sobre o sinal antes do clip, com 5 ms de lookahead (o sinal é atrasado antes do oversampling).
 - O Unity vem depois do guard, então reduz o pico de verdade (comportamento da referência: "reduz a saída após todo o processamento").

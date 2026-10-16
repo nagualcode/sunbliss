@@ -19,7 +19,7 @@ Os números deste relatório vêm de `lab/` (scripts reprodutíveis) e de
 | F4 Blocos restantes | ✅ | Contour, Tone (`docs/TONE.md`), mixer/delta, unity, guard de true-peak. A/B fica no plugin (F5). |
 | F5 Plugin truce | ✅ (exceto DAWs) | CLAP/VST3/AU instalados; **auval: AU VALIDATION SUCCEEDED**; VST3 e AU produzem o mesmo áudio que o CLI (pior caso −140 dBFS, limite do f32); GUI original (`docs/fig/gui.png`); 6 presets de fábrica; A/B salvo na sessão; Clip Meter com posição. Teste em Ableton/Reaper/Logic depende do usuário. |
 | F6 Superioridade | ✅ com 2 ressalvas | ver tabela: vence em aliasing (10/12, empate no Hard 15 kHz), true-peak, transparência, recuperação, cliques e CPU; perde 1 dB no IMD do Hard |
-| F7 Teste cego | pendente | precisa de música real em `refs/music/` |
+| F7 Teste cego | kit pronto | `lab/abx.py`: pares nivelados (±0,1 dB LUFS), página ABX + preferência (`lab/out/abx/index.html`), placar com p binomial. Autoteste com a mixagem sintética OK. **Falta o usuário ouvir com música real.** |
 
 ## Decisões de modelagem (resumo)
 
