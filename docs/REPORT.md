@@ -111,7 +111,27 @@ Os números deste relatório vêm de `lab/` (scripts reprodutíveis) e de
 ## O que falta
 
 - **Validação em DAWs** (Ableton, Reaper, Logic/Pro Tools): os plugins estão instalados em `~/Library/Audio/Plug-Ins/{CLAP,VST3,Components}`. Falta abrir em cada host (o teste precisa ser feito pelo usuário). pluginval e clap-validator não estão instalados.
-- **Fase mínima:** implementada (conversão por cepstro de todos os estágios, latência = atraso de grupo em DC). A 48 kHz a latência cai de 585 para 472 amostras; o resto é Box Tone, lookahead do Alchemy e limitador. Falta calibrar contra os modos da referência: `lab/capture_gc_states.py` precisa de você na GUI dela.
+- **Fase mínima:** implementada e comparada com a referência (`docs/data/gc_oversampling_modes.json`, estados capturados na GUI dela com `lab/capture_gc_states.py`). Ver a seção "Modos de oversampling" abaixo. Falta recapturar "Extra Pristine + Minimum": nas duas tentativas saiu idêntico ao High Minimum, inclusive no aliasing.
 - **Ressalvas de superioridade:** IMD 19+20 kHz no Hard (−36,9 contra −37,9 dB) e aliasing no Hard a 15 kHz (−77,0 contra −77,8 dB). As duas diferenças são ≤ 1 dB. Uma saída seria rodar o clip a 8× já no High (custa CPU).
 - **Loudness em drive pesado:** +0,38 a +0,53 LU acima da referência (ela faz ducking). Divergência deliberada.
 - **F7:** pares nivelados e ABX. Precisa de música real em `refs/music/` (não baixamos música).
+
+## Modos de oversampling: referência × Sunbliss (48 kHz)
+
+Estados da referência capturados na GUI dela (menus REALTIME e tipo de fase) e medidos com todo o resto neutro.
+
+| Modo | Latência | Plano até | Atraso de grupo extra em 10 / 15 / 20 kHz | Aliasing Hard, tom 9/13/15 kHz +6 dB |
+|---|---|---|---|---|
+| Ref. High Linear | 764 | 20 kHz (−4,6 dB em 23,5 kHz) | 0 / 0 / 0 | −86 / −82 / −78 |
+| Ref. Pristine Linear | 769 | idem | 0 / 0 / 0 | −98 / −92 / −98 |
+| Ref. Extra Pristine Linear | 771 | idem | 0 / 0 / 0 | −98 / −91 / −97 |
+| Ref. High Minimum | 710 | 23 kHz | +0,8 / +2,4 / +6,8 | −97 / −94 / −95 |
+| Ref. Pristine Minimum | 710 | 23 kHz | idem | −101 / −95 / −96 |
+| Sunbliss High Linear | **585** | 20 kHz | 0 / 0 / 0 | −87 / −87 / −77 |
+| Sunbliss High Min Phase | **472** | 22 kHz | +1,2 / +3,8 / +14 | −83 / −83 / −78 |
+| Sunbliss Pristine Min Phase | 472 | 22 kHz | +1,3 / +3,9 / +14 | −100 / −94 / −108 |
+
+Leitura:
+- Na referência, quase toda a latência (~700 amostras) vem de outro bloco interno. A fase mínima dela economiza só ~55 amostras e muda o *formato* do transiente (sem pré-ringing).
+- A fase mínima dela é suave (passa até 23 kHz, pouca rotação). A nossa rejeita tudo a partir de fs/2 (sem aliasing na banda). Para tirar a rotação da banda audível, no modo Min Phase a borda vai a 22 kHz e a rejeição a 100 dB (Hilbert: a fase de um filtro de fase mínima cresce com a profundidade da banda de rejeição). A rotação em 20 kHz fica em 0,29 ms contra 0,14 ms dela; as duas abaixo do audível.
+- **Ressalva:** no High + Min Phase, o aliasing da referência é melhor (−97 contra −83 dB em 9 kHz). Curiosamente o modo mínimo dela tem menos aliasing que o linear dela no High, o que sugere processamento interno diferente nesse modo. Rodar o clip a 8× no High resolveria do nosso lado, ao custo de ~40% mais CPU.

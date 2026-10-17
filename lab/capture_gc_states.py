@@ -77,14 +77,13 @@ def main():
             gc.show_editor()
             state = gc.raw_state
             fp = fingerprint(state)
-            print(f"measured: latency {fp[0]} samples, pre-peak energy {fp[1]:.3f} "
-                  f"(linear ~0.004, minimum phase should be ~0), level @23.5 kHz {fp[2]} dB")
+            print(f"measured: latency {fp[0]} samples, pre-peak energy {fp[1]:.3f}, "
+                  f"level @23.5 kHz {fp[2]} dB  (linear: ~0.004 and about -4.6 dB)")
             dup = [n for n, v in seen.items() if v == fp]
             if dup:
-                print(f"!! identical to {dup[0]} - the menu change probably did not register.")
-            ans = input("keep this capture? [Y/n] ").strip().lower()
-            if ans in ("", "y", "yes", "s", "sim"):
-                break
+                print(f"!! identical to {dup[0]} - the menu change may not have registered;"
+                      f" rerun with: lab/capture_gc_states.py {name}")
+            break  # non-interactive (works under the `!` prefix)
         open(os.path.join(OUT, f"{name}.bin"), "wb").write(state)
         seen[name] = fp
         print(f"saved {name}.bin")

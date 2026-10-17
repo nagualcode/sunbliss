@@ -60,12 +60,18 @@ fn dc_delay(h: &[f64]) -> f64 {
 pub const PASS_EDGE_MAX: f64 = 0.4535; // of fs
 pub const PASS_EDGE_MIN: f64 = 0.4167; // of fs
 pub const PASS_HZ: f64 = 20_000.0;
+/// Pass-band edge (fraction of fs) used by the minimum-phase chain.
+pub const MIN_PHASE_EDGE: f64 = 0.4583;
 
 /// Pass-band edge of the converter filter, as a fraction of fs.
 pub fn pass_edge(fs: f64) -> f64 {
     (PASS_HZ / fs).clamp(PASS_EDGE_MIN, PASS_EDGE_MAX)
 }
 const ATTEN_DB: f64 = 140.0;
+/// Stop-band depth for the minimum-phase chain: the in-band phase of a
+/// minimum-phase filter grows with its stop-band depth (Hilbert pair of
+/// ln|H|), so this trades rejection for less rotation near 20 kHz.
+const ATTEN_MIN_DB: f64 = 100.0;
 
 pub struct Oversampler {
     k: usize,
@@ -83,7 +89,8 @@ impl Oversampler {
         assert!(factor.is_power_of_two());
         let k = factor.trailing_zeros() as usize;
         let adaa = k >= 1;
-        let beta = kaiser_beta(ATTEN_DB);
+        let atten = if min_phase { ATTEN_MIN_DB } else { ATTEN_DB };
+        let beta = kaiser_beta(atten);
         let mut up = Vec::new();
         let mut dn = Vec::new();
         let mut lat = 0.0;
@@ -92,9 +99,14 @@ impl Oversampler {
             let max_in = max_block << (lv - 1);
             let (hu, hd) = if lv == 1 {
                 // converter stage at rate 2 fs
-                let fp = pass_edge(fs) / 2.0;
+                // minimum phase: push the transition out of the audio band
+                // (flat to 0.458 fs = 22 kHz @ 48k) so the phase rotation of a
+                // minimum-phase filter, which piles up near its edge, stays
+                // above 20 kHz; still no aliasing (stop band from fs/2)
+                let edge = if min_phase { MIN_PHASE_EDGE.max(pass_edge(fs)) } else { pass_edge(fs) };
+                let fp = edge / 2.0;
                 let fstop = 0.25;
-                let mut n = kaiser_len(ATTEN_DB, fstop - fp);
+                let mut n = kaiser_len(atten, fstop - fp);
                 if n % 2 == 0 {
                     n += 1;
                 }
@@ -113,7 +125,7 @@ impl Oversampler {
             } else {
                 let p = 0.5 / (1u64 << lv) as f64;
                 let dw = 0.5 - 2.0 * p;
-                let mut n = kaiser_len(ATTEN_DB, dw).max(7);
+                let mut n = kaiser_len(atten, dw).max(7);
                 while n % 4 != 3 {
                     n += 1;
                 }
