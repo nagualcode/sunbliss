@@ -65,6 +65,19 @@ fn set(p: &mut Params, key: &str, v: &serde_json::Value) {
                 o => die(&format!("quality: {o}")),
             }
         }
+        "min_phase" => p.min_phase = b(),
+        "polarity_invert" => p.converter.polarity_invert = b(),
+        "dc_removal" => p.converter.dc_removal = b(),
+        "word_length" => p.converter.word_length = match f() as u8 { 0 => None, w => Some(w) },
+        "dither" => {
+            p.converter.dither = match s().as_str() {
+                "off" => None,
+                "flat" => Some(sunbliss_core::Dither::Flat),
+                _ => Some(sunbliss_core::Dither::HighPass),
+            }
+        }
+        "noise_shaping" => p.converter.noise_shaping = f() as u8,
+        "data_limit" => p.converter.data_limit = b(),
         "neutral" => {
             if b() {
                 *p = Params::neutral()

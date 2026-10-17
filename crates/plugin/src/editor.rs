@@ -13,7 +13,7 @@ use truce_egui::{EditorUi, EguiEditor};
 use crate::{SunblissParams, SunblissParamsParamId as P};
 
 const W: u32 = 960;
-const H: u32 = 400;
+const H: u32 = 468;
 
 mod col {
     use egui::Color32;
@@ -342,10 +342,12 @@ impl EditorUi<SunblissParams> for SunUi {
                 ui.label(egui::RichText::new("Oversampling").size(10.5).color(col::DIM))
                     .on_hover_text(TIP_OVERSAMPLING);
                 self.seg(ui, ctx, P::Oversampling, &["High", "Pristine", "Extra Pristine"], &[], 70.0, true);
+                ui.add_space(4.0);
+                self.seg(ui, ctx, P::OversamplingType, &["Linear", "Min Phase"], &[TIP_LINEAR, TIP_MINPHASE], 58.0, true);
                 ui.add_space(8.0);
                 ui.label(egui::RichText::new("Offline").size(10.5).color(col::DIM))
                     .on_hover_text("Oversampling usado só no render/bounce offline.");
-                self.seg(ui, ctx, P::OfflineOversampling, &["Same", "High", "Prist.", "Extra"], &[], 40.0, true);
+                self.seg(ui, ctx, P::OfflineOversampling, &["Same", "High", "Prist.", "Extra"], &[], 38.0, true);
             });
         });
 
@@ -381,7 +383,7 @@ impl EditorUi<SunblissParams> for SunUi {
         });
 
         // ---------------------------------------------------- device chain (reference signal-flow order)
-        let chain = Rect::from_min_max(full.min + vec2(10.0, 162.0), full.max - vec2(10.0, 10.0));
+        let chain = Rect::from_min_max(full.min + vec2(10.0, 162.0), full.max - vec2(10.0, 76.0));
         ui.scope_builder(egui::UiBuilder::new().max_rect(chain), |ui| {
             let ch = chain.height();
             ui.horizontal(|ui| {
@@ -452,8 +454,38 @@ impl EditorUi<SunblissParams> for SunUi {
                 });
             });
         });
+
+        // ---------------------------------------------------- converter strip (hardware features)
+        let strip = Rect::from_min_max(pos2(full.min.x + 10.0, full.max.y - 70.0), full.max - vec2(10.0, 10.0));
+        ui.painter().rect_filled(strip, CornerRadius::same(3), col::PANEL);
+        ui.scope_builder(egui::UiBuilder::new().max_rect(strip.shrink2(vec2(8.0, 6.0))), |ui| {
+            ui.label(egui::RichText::new("Converter  ·  hardware features of the original unit").size(11.0).color(col::TEXT))
+                .on_hover_text(TIP_CONVERTER);
+            ui.horizontal(|ui| {
+                ui.spacing_mut().item_spacing.x = 6.0;
+                self.toggle(ui, ctx, P::PolarityInvert, "Polarity Ø", 72.0).on_hover_text("Inverte a polaridade (como no hardware: digital, após a conversão).");
+                self.toggle(ui, ctx, P::DcRemoval, "DC Removal", 80.0).on_hover_text("Remove DC (filtro de 0,3 Hz; assenta em < 3 s, como o DC REMOVAL do hardware).");
+                ui.add_space(6.0);
+                ui.label(egui::RichText::new("Word Length").size(10.5).color(col::DIM));
+                self.seg(ui, ctx, P::WordLength, &["Float", "24", "22", "20", "18", "16"], &[], 32.0, true);
+                ui.add_space(6.0);
+                ui.label(egui::RichText::new("Dither").size(10.5).color(col::DIM)).on_hover_text(TIP_DITHER);
+                self.seg(ui, ctx, P::Dither, &["Off", "HPDF", "Flat"], &[], 40.0, true);
+                ui.add_space(6.0);
+                ui.label(egui::RichText::new("Shaping").size(10.5).color(col::DIM)).on_hover_text(TIP_NS);
+                self.seg(ui, ctx, P::NoiseShaping, &["Off", "NS1", "NS2", "NS3", "NS4"], &[], 32.0, true);
+                ui.add_space(6.0);
+                self.toggle(ui, ctx, P::DataLimit, "Data Limit", 76.0).on_hover_text("Fundo de escala limitado a 1 LSB abaixo do máximo: aparelhos seguintes nunca acusam 'over'.");
+            });
+        });
     }
 }
+
+const TIP_LINEAR: &str = "Filtros de oversampling de fase linear: sem rotação de fase, mais latência, pré-ringing simétrico.";
+const TIP_MINPHASE: &str = "Fase mínima: menos latência e sem pré-ringing; gira a fase perto dos agudos (o Delta e o paralelo mostram isso, como no Gold Clip).";
+const TIP_CONVERTER: &str = "Recursos do conversor original (manual do AD122-96 MkIII) que o Gold Clip não tem. Word Length/Dither/Shaping/Data Limit atuam por último, na saída.";
+const TIP_DITHER: &str = "HPDF: 'triangle high pass' do manual (número aleatório novo menos o anterior), a preferência da Lavry. Flat: TPDF plano. Com Dither Off o shaping é desligado, como no hardware.";
+const TIP_NS: &str = "Curvas de noise shaping traçadas das figuras do manual (vales em ~4 kHz e ~12 kHz, ruído empurrado acima de 14 kHz). NS1 é a mais suave, NS4 a mais agressiva.";
 
 // Tooltips: only on controls that behave differently from the reference.
 const TIP_GUARD: &str = "Diferente do Gold Clip: garante TRUE-PEAK abaixo do Clip Ceiling (margem 0,15 dB). \

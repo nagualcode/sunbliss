@@ -12,7 +12,7 @@
 //! (1 + 2 cos w)/3. The level-1 decimator is designed with the inverse of
 //! that roll-off built in, so the whole wet path is flat and an integer delay.
 
-use crate::design::{halfband, kaiser_beta, kaiser_len, lowpass, lowpass_shaped};
+use crate::design::{halfband, kaiser_beta, kaiser_len, lowpass, lowpass_shaped, minimum_phase};
 use crate::fir::{Down2, Up2};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -47,6 +47,16 @@ impl Quality {
     }
 }
 
+/// Group delay at DC (first moment); exactly (N-1)/2 for linear phase.
+fn dc_delay(h: &[f64]) -> f64 {
+    let s: f64 = h.iter().sum();
+    let m: f64 = h.iter().enumerate().map(|(i, v)| i as f64 * v).sum();
+    let d = m / s;
+    // snap the linear-phase case to its exact half-integer value
+    let lin = (h.len() - 1) as f64 / 2.0;
+    if (d - lin).abs() < 1e-6 { lin } else { d }
+}
+
 pub const PASS_EDGE_MAX: f64 = 0.4535; // of fs
 pub const PASS_EDGE_MIN: f64 = 0.4167; // of fs
 pub const PASS_HZ: f64 = 20_000.0;
@@ -69,7 +79,7 @@ pub struct Oversampler {
 }
 
 impl Oversampler {
-    pub fn new(fs: f64, factor: usize, max_block: usize) -> Self {
+    pub fn new(fs: f64, factor: usize, max_block: usize, min_phase: bool) -> Self {
         assert!(factor.is_power_of_two());
         let k = factor.trailing_zeros() as usize;
         let adaa = k >= 1;
@@ -110,10 +120,11 @@ impl Oversampler {
                 let hd = halfband(n, beta);
                 (hd.clone(), hd)
             };
+            let (hu, hd) = if min_phase { (minimum_phase(&hu, hu.len()), minimum_phase(&hd, hd.len())) } else { (hu, hd) };
             let w = (1usize << (k - lv)) as f64;
-            lat += (hu.len() - 1) as f64 / 2.0 * w;
-            lat_up += (hu.len() - 1) as f64 / 2.0 * w;
-            lat += (hd.len() - 1) as f64 / 2.0 * w;
+            lat += dc_delay(&hu) * w;
+            lat_up += dc_delay(&hu) * w;
+            lat += dc_delay(&hd) * w;
             up.push(Up2::new(&hu, max_in));
             dn.push(Down2::new(&hd, max_in * 2));
         }
@@ -191,7 +202,7 @@ mod tests {
     use super::*;
 
     fn roundtrip(factor: usize) {
-        let mut os = Oversampler::new(48000.0, factor, 512);
+        let mut os = Oversampler::new(48000.0, factor, 512, false);
         let lat = os.latency_top();
         let l = factor as f64;
         // the identity path at the top averages adjacent samples (ADAA identity)
@@ -236,6 +247,20 @@ mod tests {
     fn roundtrip_all_factors() {
         for f in [1, 2, 4, 8, 16] {
             roundtrip(f);
+        }
+    }
+}
+
+#[cfg(test)]
+mod minphase_latency {
+    use super::*;
+    #[test]
+    fn min_phase_has_less_latency() {
+        for f in [2, 4, 8] {
+            let a = Oversampler::new(48000.0, f, 64, false).latency_top();
+            let b = Oversampler::new(48000.0, f, 64, true).latency_top();
+            eprintln!("factor {f}: linear {a} top samples, minimum {b}");
+            assert!(b < a / 3.0);
         }
     }
 }

@@ -54,6 +54,14 @@ pub enum OversamplingP {
 }
 
 #[derive(ParamEnum)]
+pub enum OversamplingTypeP {
+    #[name = "Linear Phase"]
+    Linear,
+    #[name = "Minimum Phase"]
+    Minimum,
+}
+
+#[derive(ParamEnum)]
 pub enum OfflineOversamplingP {
     #[name = "Same as Realtime"]
     Same,
@@ -63,6 +71,49 @@ pub enum OfflineOversamplingP {
     Pristine,
     #[name = "Extra Pristine"]
     ExtraPristine,
+}
+
+// Converter section: features of the original hardware (AD122-96 MkIII
+// manual) with the manual's own option names.
+
+#[derive(ParamEnum)]
+pub enum WordLengthP {
+    #[name = "Float"]
+    Float,
+    #[name = "24 bit"]
+    W24,
+    #[name = "22 bit"]
+    W22,
+    #[name = "20 bit"]
+    W20,
+    #[name = "18 bit"]
+    W18,
+    #[name = "16 bit"]
+    W16,
+}
+
+#[derive(ParamEnum)]
+pub enum DitherP {
+    #[name = "Off"]
+    Off,
+    #[name = "HPDF"]
+    Hpdf,
+    #[name = "Flat"]
+    Flat,
+}
+
+#[derive(ParamEnum)]
+pub enum NoiseShapingP {
+    #[name = "Off"]
+    Off,
+    #[name = "NS1"]
+    Ns1,
+    #[name = "NS2"]
+    Ns2,
+    #[name = "NS3"]
+    Ns3,
+    #[name = "NS4"]
+    Ns4,
 }
 
 /// A/B comparison state, saved with the session.
@@ -135,8 +186,23 @@ pub struct SunblissParams {
 
     #[param(name = "Oversampling", default = 0)]
     pub oversampling: EnumParam<OversamplingP>,
+    #[param(name = "Oversampling Type", default = 0)]
+    pub oversampling_type: EnumParam<OversamplingTypeP>,
     #[param(name = "Offline Oversampling", default = 0)]
     pub offline_oversampling: EnumParam<OfflineOversamplingP>,
+
+    #[param(name = "Polarity Invert", default = false)]
+    pub polarity_invert: BoolParam,
+    #[param(name = "DC Removal", default = false)]
+    pub dc_removal: BoolParam,
+    #[param(name = "Word Length", default = 0)]
+    pub word_length: EnumParam<WordLengthP>,
+    #[param(name = "Dither", default = 1)]
+    pub dither: EnumParam<DitherP>,
+    #[param(name = "Noise Shaping", default = 0)]
+    pub noise_shaping: EnumParam<NoiseShapingP>,
+    #[param(name = "Data Limit", default = false)]
+    pub data_limit: BoolParam,
 
     // meters (read by the editor)
     #[meter]
@@ -201,6 +267,19 @@ impl SunblissParams {
             render_quality: match self.offline_oversampling.index() {
                 0 => None,
                 i => Some(Quality::from_index(i as usize - 1)),
+            },
+            min_phase: self.oversampling_type.index() == 1,
+            converter: sunbliss_core::ConverterSettings {
+                polarity_invert: self.polarity_invert.value(),
+                dc_removal: self.dc_removal.value(),
+                word_length: [None, Some(24), Some(22), Some(20), Some(18), Some(16)][self.word_length.index() as usize],
+                dither: match self.dither.index() {
+                    1 => Some(sunbliss_core::Dither::HighPass),
+                    2 => Some(sunbliss_core::Dither::Flat),
+                    _ => None,
+                },
+                noise_shaping: self.noise_shaping.index() as u8,
+                data_limit: self.data_limit.value(),
             },
         }
     }

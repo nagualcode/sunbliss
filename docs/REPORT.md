@@ -111,7 +111,7 @@ Os números deste relatório vêm de `lab/` (scripts reprodutíveis) e de
 ## O que falta
 
 - **Validação em DAWs** (Ableton, Reaper, Logic/Pro Tools): os plugins estão instalados em `~/Library/Audio/Plug-Ins/{CLAP,VST3,Components}`. Falta abrir em cada host (o teste precisa ser feito pelo usuário). pluginval e clap-validator não estão instalados.
-- **Fase mínima:** a referência oferece oversampling de fase mínima. Ainda não implementado (só fase linear), e o parâmetro não está exposto.
+- **Fase mínima:** implementada (conversão por cepstro de todos os estágios, latência = atraso de grupo em DC). A 48 kHz a latência cai de 585 para 472 amostras; o resto é Box Tone, lookahead do Alchemy e limitador. Falta calibrar contra os modos da referência: `lab/capture_gc_states.py` precisa de você na GUI dela.
 - **Ressalvas de superioridade:** IMD 19+20 kHz no Hard (−36,9 contra −37,9 dB) e aliasing no Hard a 15 kHz (−77,0 contra −77,8 dB). As duas diferenças são ≤ 1 dB. Uma saída seria rodar o clip a 8× já no High (custa CPU).
 - **Loudness em drive pesado:** +0,38 a +0,53 LU acima da referência (ela faz ducking). Divergência deliberada.
 - **F7:** pares nivelados e ABX. Precisa de música real em `refs/music/` (não baixamos música).

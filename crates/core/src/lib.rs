@@ -11,11 +11,13 @@ pub mod design;
 pub mod engine;
 pub mod fir;
 pub mod guard;
+pub mod lavry;
 pub mod oversampling;
 pub mod tone;
 mod tone_tables;
 
 pub use converter::ClipMode;
 pub use engine::{Curve, Engine, Meters, Params};
+pub use lavry::{ConverterSettings, Dither};
 pub use oversampling::Quality;
 pub use tone::ToneMode;

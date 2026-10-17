@@ -39,6 +39,7 @@ Nomes internos no código do núcleo e no laboratório: Clipper Classic = modelo
 | `bypass` | Bypass (`bypass`) | on/off | off | sim |
 | *(configuração oculta)* | Oversampling (`oversampling`) | High / Pristine / Extra Pristine | High | mesmos fatores |
 | *(configuração oculta)* | Offline Oversampling (`offline_oversampling`) | Same / High / Pristine / Extra Pristine | Same | sim |
+| *(configuração oculta)* Linear/Minimum Phase | Oversampling Type (`oversampling_type`) | Linear Phase / Minimum Phase | Linear | a calibrar contra a captura dos modos da referência |
 | *(medidor)* Clip Clock | Clip Clock: MAX CLIP + MIN:SEC (só leitura) | — | — | sim |
 | A/B | A/B (estado do editor) | dois snapshots | — | sim |
 
@@ -102,3 +103,29 @@ Todos os números são de 48 kHz, salvo indicação.
 - Render Quality permite usar outra qualidade só no render offline. A latência reportada acompanha a troca.
 - Latência medida da referência (High, fase linear): 764 amostras (44,1/48 kHz) e 1394 (88,2/96 kHz).
 - O caminho neutro da referência é plano até 20 kHz, com −6 dB em fs/2 (o último decimador é meia-banda centrado em Nyquist, o que deixa entrar aliasing na faixa 20–24 kHz).
+
+## Converter: recursos do hardware original que a referência não tem
+
+Fonte: manual do AD122-96 MkIII (Parte I e Apêndice I). As opções usam os nomes do manual.
+
+| Parâmetro | Valores | Padrão | O que faz |
+|---|---|---|---|
+| Polarity Invert | on/off | off | Inversão de polaridade digital, como no hardware. Crossfade passando por zero, sem clique. |
+| DC Removal | on/off | off | HPF de 1 polo em 0,3 Hz (o manual diz que assenta em < 3 s). Atua antes do clipper, então DC não desloca o clip. |
+| Word Length | Float / 24 / 22 / 20 / 18 / 16 bit | Float | Redução de palavra no último estágio. |
+| Dither | Off / HPDF / Flat | HPDF | HPDF = "triangle high pass" do manual: número uniforme novo menos o anterior. Flat = TPDF plano. Só atua com Word Length ≠ Float. |
+| Noise Shaping | Off / NS1–NS4 | Off | Realimentação de erro de 24ª ordem, fase mínima. Curvas traçadas das Figs. 11–12 do manual: vales em ~4 kHz e ~12 kHz, ruído empurrado acima de 14 kHz. NS1 é a mais suave. Desligado quando o Dither está em Off, como no hardware. |
+| Data Limit | on/off | off | Fundo de escala limitado a 1 LSB abaixo do máximo, para nenhum medidor seguinte acusar "over". |
+
+Medição (44,1 kHz, 16 bit, silêncio na entrada; dB relativos ao ruído só com HPDF):
+
+| | 1 kHz | 4 kHz | 8 kHz | 12 kHz | 16 kHz | 20 kHz | rms |
+|---|---|---|---|---|---|---|---|
+| NS1 | −2,7 | −4,6 | −2,9 | −4,0 | +2,8 | +6,4 | −93,5 dBFS |
+| NS2 | −6,3 | −9,6 | −4,7 | −6,4 | +6,8 | +11,6 | −88,5 dBFS |
+| NS3 | −7,7 | −12,1 | −6,1 | −11,4 | +10,2 | +19,8 | −81,6 dBFS |
+| NS4 | −9,6 | −20,8 | −10,5 | −10,1 | +14,2 | +29,4 | −72,6 dBFS |
+
+Os alvos são leituras de um gráfico impresso: a forma é fiel, mas não temos os coeficientes originais.
+
+Achado importante: o manual especifica THD+N de 0,0008% a −6 dBFS e 0,0012% em fundo de escala. O conversor real é praticamente transparente abaixo do clip. A distorção de baixo nível do "Classic" da referência (~0,5% a −9 dBFS) é coloração dela, não do hardware. Os modos Modern e Hard do Sunbliss (THD < −170 dB abaixo do teto) são os fiéis ao hardware nesse aspecto.

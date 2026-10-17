@@ -14,6 +14,7 @@ use crate::converter::{ClipMode, ClipSettings, ClipStage, ClipTables, Ramp};
 use crate::curves::{self, SatACoeffs, SatB, SatBCoeffs};
 use crate::fir::Delay;
 use crate::guard::{Guard, GuardMode};
+use crate::lavry::{ConverterIo, ConverterSettings};
 use crate::oversampling::{Oversampler, Quality};
 use crate::tone::{self, Tone, ToneMode};
 
@@ -58,6 +59,11 @@ pub struct Params {
     pub quality: Quality,
     /// Quality used for offline renders (None = same as `quality`).
     pub render_quality: Option<Quality>,
+    /// Minimum-phase oversampling filters (lower latency, no pre-ringing).
+    pub min_phase: bool,
+    /// Hardware converter features: polarity, DC removal, word length,
+    /// dither / noise shaping, data limiting.
+    pub converter: ConverterSettings,
 }
 
 impl Default for Params {
@@ -88,6 +94,8 @@ impl Default for Params {
             bypass: false,
             quality: Quality::High,
             render_quality: None,
+            min_phase: false,
+            converter: ConverterSettings::default(),
         }
     }
 }
@@ -137,13 +145,14 @@ struct Chain {
 }
 
 impl Chain {
-    fn new(fs: f64, factor: usize, channels: usize, max_block: usize) -> Self {
-        let os: Vec<Oversampler> = (0..channels).map(|_| Oversampler::new(fs, factor, max_block)).collect();
+    fn new(fs: f64, factor: usize, channels: usize, max_block: usize, min_phase: bool) -> Self {
+        let os: Vec<Oversampler> = (0..channels).map(|_| Oversampler::new(fs, factor, max_block, min_phase)).collect();
         let top_rate = fs * factor as f64;
         let contour: Vec<ContourStage> = (0..channels).map(|_| ContourStage::new(top_rate)).collect();
         let l = factor;
         let total = os[0].latency_top() + contour[0].delay() as f64;
-        assert!((total.fract()).abs() < 1e-9, "non-integer top latency {total}");
+        // linear phase: exact integer; minimum phase: rounded DC group delay
+        assert!(min_phase || total.fract().abs() < 1e-9, "non-integer top latency {total}");
         let total = total.round() as usize;
         let pad_n = (l - total % l) % l;
         let mut pad: Vec<Delay> = (0..channels).map(|_| Delay::new(pad_n.max(1))).collect();
@@ -187,7 +196,7 @@ pub struct Engine {
     tables: ClipTables,
     satb: SatB,
     tone: Tone,
-    chains: [Chain; 3],
+    chains: [Chain; 6],
     active: usize,
     pending: Option<usize>,
     qfade: Ramp,
@@ -197,6 +206,11 @@ pub struct Engine {
     lin_delay: Vec<Delay>,
     dry_delay: Vec<Delay>,
     guard: Guard,
+    io: ConverterIo,
+    raw_delay: Vec<Delay>,
+    raw: Vec<Vec<f64>>,
+    a_by: Vec<f64>,
+    a_qf: Vec<f64>,
     // smoothers
     s_in: Smooth,
     s_out: Smooth,
@@ -243,10 +257,14 @@ const SMOOTH_S: f64 = 0.020;
 
 impl Engine {
     pub fn new(fs: f64, channels: usize, max_block: usize) -> Self {
+        // [linear High, Pristine, Extra, minimum High, Pristine, Extra]
         let chains = [
-            Chain::new(fs, Quality::High.factor(fs), channels, max_block),
-            Chain::new(fs, Quality::Pristine.factor(fs), channels, max_block),
-            Chain::new(fs, Quality::Extra.factor(fs), channels, max_block),
+            Chain::new(fs, Quality::High.factor(fs), channels, max_block, false),
+            Chain::new(fs, Quality::Pristine.factor(fs), channels, max_block, false),
+            Chain::new(fs, Quality::Extra.factor(fs), channels, max_block, false),
+            Chain::new(fs, Quality::High.factor(fs), channels, max_block, true),
+            Chain::new(fs, Quality::Pristine.factor(fs), channels, max_block, true),
+            Chain::new(fs, Quality::Extra.factor(fs), channels, max_block, true),
         ];
         let max_lat_os = chains.iter().map(|c| c.lat).max().unwrap();
         let det0 = Detector::new(fs);
@@ -279,6 +297,11 @@ impl Engine {
             lin_delay: (0..channels).map(|_| Delay::new(max_lat_os)).collect(),
             dry_delay: (0..channels).map(|_| Delay::new(max_total)).collect(),
             guard,
+            io: ConverterIo::new(fs, channels),
+            raw_delay: (0..channels).map(|_| Delay::new(max_total)).collect(),
+            raw: vec![vec![0.0; max_block]; channels],
+            a_by: vec![0.0; max_block],
+            a_qf: vec![1.0; max_block],
             s_in: Smooth::new(1.0, fs, SMOOTH_S),
             s_out: Smooth::new(1.0, fs, SMOOTH_S),
             s_ceil: Smooth::new(1.0, fs, SMOOTH_S),
@@ -358,7 +381,8 @@ impl Engine {
 
     fn wanted_chain(&self) -> usize {
         let q = if self.offline { self.p.render_quality.unwrap_or(self.p.quality) } else { self.p.quality };
-        match q {
+        let base = if self.p.min_phase { 3 } else { 0 };
+        base + match q {
             Quality::High => 0,
             Quality::Pristine => 1,
             Quality::Extra => 2,
@@ -388,6 +412,7 @@ impl Engine {
         self.lin_delay.iter_mut().for_each(|d| d.set(lat_os));
         self.gain_align.iter_mut().for_each(|d| d.set(gd));
         self.dry_delay.iter_mut().for_each(|d| d.set(total));
+        self.raw_delay.iter_mut().for_each(|d| d.set(total));
     }
 
     pub fn set_params(&mut self, p: &Params) {
@@ -421,6 +446,7 @@ impl Engine {
             c.clip.iter_mut().for_each(|s| s.snap(&cs));
         }
         self.tone.snap(self.p.tone);
+        self.io.snap(&self.p.converter);
         self.pick_chain(true);
     }
 
@@ -430,7 +456,8 @@ impl Engine {
         }
         self.tone.reset();
         self.detectors.iter_mut().for_each(|d| d.reset());
-        for v in [&mut self.look, &mut self.gain_align, &mut self.lin_delay, &mut self.dry_delay] {
+        self.io.reset();
+        for v in [&mut self.look, &mut self.gain_align, &mut self.lin_delay, &mut self.dry_delay, &mut self.raw_delay] {
             v.iter_mut().for_each(|d| d.reset());
         }
         self.guard.reset();
@@ -521,7 +548,19 @@ impl Engine {
         let cs = self.clip_settings();
         let ch_active = self.active;
 
-        // ---- tone (base rate, all channels), then input trim; keep dry copy
+        // ---- raw copy for true bypass, then the converter input stage
+        // (polarity, DC removal) ahead of the dry tap so parallel mixing
+        // stays coherent; then tone and input trim
+        for (ch, buf) in chans.iter_mut().enumerate() {
+            let r = &mut self.raw[ch];
+            for i in 0..n {
+                r[i] = self.raw_delay[ch].tick(buf[i]);
+            }
+        }
+        let conv = self.p.converter;
+        if self.io.input_active(&conv) {
+            self.io.process_input(chans, n, &conv);
+        }
         for (ch, buf) in chans.iter_mut().enumerate() {
             let d = &mut self.dry[ch];
             for i in 0..n {
@@ -629,13 +668,27 @@ impl Engine {
                     o += de * (delta - o);
                 }
                 o *= self.a_out[i];
-                if by > 0.0 {
-                    o += by * (dry - o);
-                }
-                if qf < 1.0 {
-                    o *= qf;
-                }
                 chans[ch][i] = o;
+            }
+            self.a_by[i] = by;
+            self.a_qf[i] = qf;
+        }
+        // ---- converter output stage: word length / dither / shaping / data limit
+        if ConverterIo::output_active(&conv) {
+            self.io.process_output(chans, n, &conv);
+        }
+        // ---- true bypass (raw input) and quality-switch fade
+        for i in 0..n {
+            let (by, qf) = (self.a_by[i], self.a_qf[i]);
+            if by == 0.0 && qf == 1.0 {
+                continue;
+            }
+            for ch in 0..self.channels {
+                let mut o = chans[ch][i];
+                if by > 0.0 {
+                    o += by * (self.raw[ch][i] - o);
+                }
+                chans[ch][i] = o * qf;
             }
         }
         // quality switch completes once fully faded out

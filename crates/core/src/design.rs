@@ -162,3 +162,104 @@ mod tests {
         assert!((mag_at(&h, 0.0) - 1.0).abs() < 1e-12);
     }
 }
+
+// ------------------------------------------------------------ minimum phase
+
+/// In-place iterative radix-2 complex FFT (prepare-time only).
+pub fn fft(re: &mut [f64], im: &mut [f64], inverse: bool) {
+    let n = re.len();
+    assert!(n.is_power_of_two() && im.len() == n);
+    let mut j = 0;
+    for i in 1..n {
+        let mut bit = n >> 1;
+        while j & bit != 0 {
+            j ^= bit;
+            bit >>= 1;
+        }
+        j |= bit;
+        if i < j {
+            re.swap(i, j);
+            im.swap(i, j);
+        }
+    }
+    let sign = if inverse { 1.0 } else { -1.0 };
+    let mut len = 2;
+    while len <= n {
+        let ang = sign * 2.0 * PI / len as f64;
+        for start in (0..n).step_by(len) {
+            for k in 0..len / 2 {
+                let (wr, wi) = ((ang * k as f64).cos(), (ang * k as f64).sin());
+                let (a, b) = (start + k, start + k + len / 2);
+                let (tr, ti) = (re[b] * wr - im[b] * wi, re[b] * wi + im[b] * wr);
+                re[b] = re[a] - tr;
+                im[b] = im[a] - ti;
+                re[a] += tr;
+                im[a] += ti;
+            }
+        }
+        len <<= 1;
+    }
+    if inverse {
+        let s = 1.0 / n as f64;
+        re.iter_mut().for_each(|v| *v *= s);
+        im.iter_mut().for_each(|v| *v *= s);
+    }
+}
+
+/// Minimum-phase FIR with the magnitude of `h` (homomorphic / real-cepstrum
+/// method, 32x zero padding). Returns `len` taps.
+pub fn minimum_phase(h: &[f64], len: usize) -> Vec<f64> {
+    let n = (h.len() * 32).next_power_of_two().max(1 << 14);
+    let (mut re, mut im) = (vec![0.0; n], vec![0.0; n]);
+    re[..h.len()].copy_from_slice(h);
+    fft(&mut re, &mut im, false);
+    // log magnitude, floored well under the 140 dB stop band
+    let peak = re.iter().zip(&im).map(|(a, b)| (a * a + b * b).sqrt()).fold(0.0, f64::max);
+    let floor = peak * 1e-10;
+    for k in 0..n {
+        let m = (re[k] * re[k] + im[k] * im[k]).sqrt().max(floor);
+        re[k] = m.ln();
+        im[k] = 0.0;
+    }
+    fft(&mut re, &mut im, true); // real cepstrum
+    for k in 1..n / 2 {
+        re[k] *= 2.0;
+        im[k] *= 2.0;
+    }
+    for k in n / 2 + 1..n {
+        re[k] = 0.0;
+        im[k] = 0.0;
+    }
+    fft(&mut re, &mut im, false);
+    for k in 0..n {
+        let (a, b) = (re[k].exp(), im[k]);
+        re[k] = a * b.cos();
+        im[k] = a * b.sin();
+    }
+    fft(&mut re, &mut im, true);
+    re.truncate(len);
+    re
+}
+
+/// Centre of energy of an impulse response (samples): the low-frequency
+/// group delay to use as a latency figure for minimum-phase chains.
+pub fn energy_centroid(h: &[f64]) -> f64 {
+    let e: f64 = h.iter().map(|v| v * v).sum();
+    h.iter().enumerate().map(|(i, v)| i as f64 * v * v).sum::<f64>() / e
+}
+
+#[cfg(test)]
+mod minphase_tests {
+    use super::*;
+
+    #[test]
+    fn minimum_phase_keeps_magnitude() {
+        let h = lowpass(101, 0.2, kaiser_beta(100.0));
+        let m = minimum_phase(&h, 101);
+        for f in [0.0, 0.05, 0.1, 0.15, 0.19] {
+            let (a, b) = (mag_at(&h, f), mag_at(&m, f));
+            assert!((a - b).abs() < 1e-4, "f {f}: {a} vs {b}");
+        }
+        assert!(energy_centroid(&m) < 10.0, "centroid {}", energy_centroid(&m));
+    }
+}
