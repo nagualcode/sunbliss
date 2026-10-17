@@ -18,7 +18,7 @@ Os números deste relatório vêm de `lab/` (scripts reprodutíveis) e de
 | F3 Núcleo DSP | ✅ | `crates/core` (f64, sem alocação, testado) + `crates/cli`. Paridade abaixo. |
 | F4 Blocos restantes | ✅ | Contour, Tone (`docs/TONE.md`), mixer/delta, unity, guard de true-peak. A/B fica no plugin (F5). |
 | F5 Plugin truce | ✅ (exceto DAWs) | CLAP/VST3/AU instalados; **auval: AU VALIDATION SUCCEEDED**; VST3 e AU produzem o mesmo áudio que o CLI (pior caso −140 dBFS, limite do f32); GUI original (`docs/fig/gui.png`); 6 presets de fábrica; A/B salvo na sessão; Clip Meter com posição. Teste em Ableton/Reaper/Logic depende do usuário. |
-| F6 Superioridade | ✅ com 2 ressalvas | ver tabela: vence em aliasing (10/12, empate no Hard 15 kHz), true-peak, transparência, recuperação, cliques e CPU; perde 1 dB no IMD do Hard |
+| F6 Superioridade | ✅ com 3 ressalvas | ver tabela: vence em aliasing (11/12; perde 0,8 dB no Hard 15 kHz), true-peak, transparência, recuperação e cliques; perde 1 dB no IMD do Hard e, desde a seção Converter e a fase mínima, em CPU (3,6 % × 2,9 %, medido em 2026-10-17) |
 | F7 Teste cego | kit pronto | `lab/abx.py`: pares nivelados (±0,1 dB LUFS), página ABX + preferência (`lab/out/abx/index.html`), placar com p binomial. Autoteste com a mixagem sintética OK. **Falta o usuário ouvir com música real.** |
 
 ## Decisões de modelagem (resumo)
@@ -104,8 +104,8 @@ Os números deste relatório vêm de `lab/` (scripts reprodutíveis) e de
 | Clique na troca 'clip on->off': excesso de HF > 16 kHz em ±5 ms (dB) | -0.16 | -1.98 | ✅ |
 | Clique na troca 'tone Flat->A': excesso de HF > 16 kHz em ±5 ms (dB) | +0.00 | +0.00 | ✅ |
 | Clique na troca 'bypass on': excesso de HF > 16 kHz em ±5 ms (dB) | -0.73 | -1.90 | ✅ |
-| CPU, mesmo host (pedalboard), High, estéreo 48 kHz (% de tempo real) | 2.69 | 2.29 | ✅ |
-| CPU Pristine / Extra (nosso; a referência não expõe a troca) | — | 3.31 / 5.12 | — |
+| CPU, mesmo host (pedalboard), High, estéreo 48 kHz (% de tempo real) | 2.87 | 3.59 | ❌ |
+| CPU Pristine / Extra (nosso; a referência não expõe a troca) | — | 4.63 / 6.69 | — |
 <!-- AUTO:END -->
 
 ## O que falta
@@ -113,6 +113,7 @@ Os números deste relatório vêm de `lab/` (scripts reprodutíveis) e de
 - **Validação em DAWs** (Ableton, Reaper, Logic/Pro Tools): os plugins estão instalados em `~/Library/Audio/Plug-Ins/{CLAP,VST3,Components}`. Falta abrir em cada host (o teste precisa ser feito pelo usuário). pluginval e clap-validator não estão instalados.
 - **Fase mínima:** implementada e comparada com a referência (`docs/data/gc_oversampling_modes.json`, estados capturados na GUI dela com `lab/capture_gc_states.py`). Ver a seção "Modos de oversampling" abaixo. Falta recapturar "Extra Pristine + Minimum": nas duas tentativas saiu idêntico ao High Minimum, inclusive no aliasing.
 - **Ressalvas de superioridade:** IMD 19+20 kHz no Hard (−36,9 contra −37,9 dB) e aliasing no Hard a 15 kHz (−77,0 contra −77,8 dB). As duas diferenças são ≤ 1 dB. Uma saída seria rodar o clip a 8× já no High (custa CPU).
+- **CPU:** regressão desde a seção Converter e a cadeia de fase mínima. O High passou de 2,3 % para 3,5–3,6 % (três rodadas), acima dos 2,9 % da referência. Causa ainda não investigada.
 - **Loudness em drive pesado:** +0,38 a +0,53 LU acima da referência (ela faz ducking). Divergência deliberada.
 - **F7:** pares nivelados e ABX. Precisa de música real em `refs/music/` (não baixamos música).
 
