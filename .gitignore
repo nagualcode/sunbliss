@@ -6,7 +6,6 @@ refs/hardware/
 lab/out/
 *.wav
 !lab/fixtures/*.wav
+!refs/lavry-45-second-test-tones/*.wav
 __pycache__/
-# third-party material stays local
-refs/manual/
-refs/lavry-45-second-test-tones/
+# third-party manuals/tones are archived here (private repository, personal study)

@@ -1,0 +1,674 @@
+--- page 1
+Philadelphia, PA 
+OPERATIONS MANUAL 2025.2
+By
+GOLD CLIP PACK
+MAKE YOUR YOUR MASTERS SOUND LIKE GOLD 
+August 1st, 2025
+01
+G O L D   C L I P   P A C K                               
+RETURN TO INDEX
+
+--- page 2
+This Page 
+Left Intentionally 
+Blank
+02
+G O L D   C L I P   P A C K                               
+RETURN TO INDEX
+
+--- page 3
+01 GOLD CLIP PACK: More Than a Clipper 
+ 
+ 
+More Than a Clipper, What is Gold Clip Pack?, Three Main Functions, Technical Details 
+02  UI OVERVIEW 
+ 
+ 
+Function Names 
+ 
+03 CLIPPERS 
+ 
+ 
+Clip Type, Clip Filter, Clipper Off, Clip Ceiling 
+04 GOLD PROCESSING 
+ 
+ 
+Overview, Type, Unity Gain, How Gold Processing Works, Transfer Curve Graphs 
+05 ALCHEMY PROCESSING 
+ 
+ 
+Overview, Frequency Curve Graph, Transfer Curve Graph 
+06 BOX TONE PROCESSING 
+ 
+ 
+Overview, Types 
+07 INPUT & OUTPUT TRIM 
+ 
+ 
+Input Trim, Output Trim, Trim Link & Trim Link Offset 
+08 TRUE PARALLEL MIXER 
+ 
+ 
+Mixer, Dry Wet Link, Delta 
+ 
+09 METERING & DISPLAYS 
+ 
+ 
+Clip Clock, Input Meter, Output Meter 
+10 PRESETS & SETTINGS 
+ 
+ 
+AB testing, Saving, Favoriting 
+ 
+11 SIGNAL FLOW 
+ 
+ 
+Signal Flow Graph  
+12 KEY COMMANDS 
+ 
+ 
+Key Commands List 
+13 OVERSAMPLING 
+ 
+ 
+Oversampling Rate, Type and Anti-Overshoot Technology 
+14 COMPATIBILITY 
+ 
+ 
+Mac, PC, Sessions
+TABLE OF CONTENTS
+03
+G O L D   C L I P   P A C K                               
+
+--- page 4
+GOLD CLIP PACK is more than just a clipper. 
+Gold Clip Pack is a family of plugins designed to bring loudness, saturation, and 
+energy to your mixes and masters. It includes both a Mastering Clipper and a Track 
+Clipper, powered by the same advanced internal technology. With unique features 
+like the Gold loudness processor, Alchemy digital tape-style dynamics, Box Tone 
+shaping, a True Parallel mixer, anti-overshoot oversampling, Clip Clock, Input and 
+Output Trim Linking, and dynamic range visualization, Gold Clip Pack gives you the 
+control to shape your mixes and masters with loudness and impact. 
+It’s a simple tool, but underneath lies complexity. Yes, it’s a clipper, but it’s so much 
+more than that. Once you fully understand Gold Clip, you’ll unlock a wide palette of 
+sounds—from aggressive and dirty to clean and pristine. Over the next few weeks, I’ll 
+send you a few email tutorials and videos to help you unlock the power of Gold Clip. 
+I promise that if you take a few minutes to read or watch each one, it will vastly 
+improve the results you get from this unique tool. 
+What Is Gold Clip Pack?
+Gold Clip is a clipper, loudness saturator, mid-to-high frequency peak processor, 
+distortion device, box tone generator, clip clock, and true parallel mixer. 
+It can serve as a mastering processor, a unique dynamic effect for mixing, or a 
+creative tool for production. Gold Clip can be clean and reserved or loud, aggressive, 
+and distorted. 
+Gold Clip includes two loudness saturation algorithms, both called Gold, as well as a 
+unique mid-to-high frequency peak processor called Alchemy. Both processors are 
+integrated into the clipping algorithm to deliver a maximally smooth and loud master.
+01   |   GOLD CLIP PACK: More Than a Clipper
+RETURN TO INDEX
+04
+G O L D   C L I P   P A C K                               
+
+--- page 5
+The Three Functions of Gold Clip
+The Clipper is inspired by the overloading effects of two famous mastering 
+converters. We named them Modern and Classic. There is also a clean clipper that 
+we cooked up for you called Hard. These three clippers are like no other digital 
+clippers out there. Try pushing your mixes into them and see how smooth and natural 
+they sound. And the clipper isn't even the best part, but it is a necessary step to 
+make Gold processing possible. 
+Gold processing uses a clever loudness technique that enhances quiet sounds in 
+your mix, without altering the peaks. I like to call it compression without 
+consequence, but in reality, it is compression without attack and release. Use the 
+input trim to boost your mix up to the clipper's ceiling, add some Gold, and 
+experience the power of this incomparable dynamic effect. 
+Alchemy is a peak processor that operates in the mid to high frequencies, reducing 
+harshness and unwanted clipping effects. As the signal reaches the clip point, 
+Alchemy gently softens the mid to high frequencies. I like to think of it as digital tape 
+because it can take the ugly bite out of a mix when things get loud.  
+Technical Details 
+Gold Clip uses cutting-edge digital signal processing techniques to create a versatile, 
+high-precision clipping effect with tons of flexibility and highly optimized performance. 
+The primary clipping algorithms are modeled from a pair of well-known hardware 
+units using integrated wave-shaping in conjunction with variable oversampling, 
+resulting in a clipping sound that is clean, natural, and free of aliasing artifacts. Gold 
+Clip also includes a pair of unique loudness saturation algorithms called Gold and a 
+unique mid- and high-frequency peak shaper called Alchemy that work in conjunction 
+with clipping algorithms to provide a maximally smooth and loud master. Additionally, 
+all the signal processing algorithms achieve the best performance possible on 
+modern CPUs by utilizing cache locality and data-level parallelism. 
+01   |   GOLD CLIP PACK: More Than a Clipper
+RETURN TO INDEX
+05
+G O L D   C L I P   P A C K                               
+
+--- page 6
+RETURN TO INDEX
+06
+G O L D   C L I P   P A C K                               
+02   |   UI Overview
+1 - Box Tone High-Frequency Contour 
+2 - Modern, Classic & Hard Clipping 
+3 - Gold - Modern & Classic 
+4 - Clip Clock 
+5 - Oversampling Settings  
+6 - Input Short-Term LUFS 
+7 - Gold Processor 
+8 - Waveform Display 
+9 - Alchemy Processor
+10 - Output Trim 
+11 - Delta 
+12 - Parallel Mixer 
+13 - Mixer Dry/Wet Link 
+14 - Tool Tips 
+15 - AB 
+16 - Input / Output Trim Link 
+17 - Input Trim 
+18 - Clipper Ceiling 
+19 - True Bypass
+
+--- page 7
+There are three settings for the clipper: Modern, Classic and Hard. These clippers 
+can be described as soft, medium, and hard knee (respectively), but they are much 
+more complex than that.  
+Modern - soft knee clipper 
+Classic - medium knee clipper 
+Hard - hard knee clipper 
+LPF - Integrated clipping low pass filter (LPF) 
+Modern and Classic are tuned to match the character and dynamic response of their 
+hardware counterparts. Hard is a custom clipper that maintains the integrity of the 
+signal up until the clip point. The Clip Filter (LPF) can be used when extreme amounts 
+of clipping are necessary.
+Clip Filter 
+The LPF button applies a slight low-pass filter to the signal to create a smooth, soft 
+clipping sound. If linearity of the high frequencies is important, click this option off. If 
+more aggressive clipping is required, turn this option on.  
+Clipper Off 
+You can turn the clipper off by command clicking the clipper button. When the 
+clipper is off, the ceiling needle turns grey and input meters turn red when the signal 
+goes above 0.0dBFS. When the clipper is turned off, it is very important that the 
+signal entering Gold Clip does not exceed 0.0dBFS. If the input signal exceeds 
+0.0dBFS, the Gold and Alchemy processors will cause distortions. Turning the clipper 
+off allows you to use a limiter or clipper of your choice before Gold Clip. Or, use Gold 
+Clip without a clipper or limiter at all and carefully adjust the input trim so the signal 
+never exceeds 0.0dBFS.
+03   |   THREE CLIPPERS
+Clipper in Practice 
+All three clippers sound quite different, and I encourage you to try different modes to 
+see what works best for the song. Generally, I like to start with Classic and will switch 
+to hard if I want the integrity of the signal maintained below the clip point. If I am doing 
+extremely moderate clipping and using the gold and alchemy processing, I will choose 
+the Hard setting. If I want low frequencies to bloom more, I will choose Modern.
+RETURN TO INDEX
+07
+G O L D   C L I P   P A C K                               
+
+--- page 8
+Clip Ceiling 
+GOLD PROCESSING 
+Gold compresses the audio but does so without the artifacts associated with attack 
+and release on classical compressors. The compression is instantaneous, like the 
+compression effect from the magnetization of tape.Gold processing relies on the 
+input signal’s level relative to the clip ceiling to perform compression. To access the 
+full compression curve of Gold you must push the input signal as close to the clip 
+ceiling as possible. However, the more aggressive of clipping you do, the less clean 
+Gold processing will sound. It is suggested to push the signal as close to the clip 
+point as possible but minimize clipping when using Gold for loudness. You can turn 
+Gold processing off by command clicking the button or Gold amount knob.
+Gold in Practice 
+For mastering I start with Modern Gold processing. This setting gives a 
+maximum of 2.5 dB of gain and sounds clean and transparent. Gold Clip often 
+sounds best when it is first in chain or just before your final limiter. Classic Gold 
+Processing is much more aggressive sounding because it is applying more gain 
+over a longer knee. Classic is better suited for signals with a wider dynamic 
+range such as a drum bus, 808s or vocals, while modern is best suited for more 
+dense content like a full mix.
+RETURN TO INDEX
+08
+G O L D   C L I P   P A C K                               
+04   |   GOLD PROCESSING
+Gold is fundamentally different than a compressor because it 
+does not rely on attack and release times to perform 
+compression. Gold performs a sample-by-sample analysis of 
+the clipped signal and compresses the audio, leaving transients 
+largely untouched, but increases sustain.
+Sets the point at which the signal starts to clip. By default, it is 
+set to 0.0dBFS. However, if you are working on track-based 
+content at lower levels you can move the clip point down to the 
+peak level of the source material. Both Gold and Alchemy 
+processing work below the ceiling setting.
+
+--- page 9
+Modern 
+Modern is inspired by the soft-loudness saturation processing of the famous modern 
+mastering converter. In effect, Modern is a gentler and more forgiving form of 
+amplitude saturation. Modern applies less gain than Classic and uses a shorter knee. 
+Modern can only apply a maximum of 2.5 dB of gain to the signal, while Classic can 
+apply a total of 6 dB of gain (at the expense of more harmonic interaction). The 
+maximum setting of the original iteration of the Modern hardware device displays +6 
+dB on the front panel, but the gain applied is only +2.5 dB. 
+Classic 
+Classic is inspired by the soft-knee loudness saturation of a popular mastering 
+converter from the late 2000s. It uses a soft knee for its amplitude saturation but 
+sounds more aggressive than Modern and causes more harmonic interaction at its 
+maximum settings. The knee of Classic is fundamentally different from Modern 
+because the knee starts lower when higher levels of saturation are applied. 
+Gold Unity Gain 
+Unity Gain only affects Gold processing. Unity 
+Gain nulls the non-linear gain applied by Gold so 
+that perceived loudness is constant, but peaks 
+are reduced. 
+With Unity Gain turned on, the perceived loudness from Gold is maintained, but 
+peaks are reduced. With Unity Gain turned off, the perceived loudness from Gold is 
+increased, and peaks are left in place. For example, if Classic Gold is adding 6 dB of 
+nonlinear gain, Unity Gain reduces the output of the signal by 6 dB as well. In effect, 
+you are maintaining perceived loudness but lowering the peaks of the signal by 6 dB. 
+Unity allows you to set the Gold type and amount without being misled by the 
+changes in perceived loudness that Gold creates.
+Unity Gain in Practice 
+Turn Unity Gain on and set the amount and type of Gold processing that you want 
+on your mix. By setting Gold with Unity Gain turned on you will listen to the dynamic 
+effects of Gold and not be tricked by the loudness that it adds. After finding the best 
+sounding Gold setting for the mix, turn Unity Gain off and enjoy the increased 
+loudness that Gold provides. 
+RETURN TO INDEX
+09
+G O L D   C L I P   P A C K                               
+04   |   GOLD PROCESSING
+
+--- page 10
+How Gold Processing Works 
+Transfer Function  
+If the input is equal to the output, it is 
+considered a linear transfer. If the process 
+changes as the input signal gets louder it is 
+considered non-linear. The above graph 
+shows a linear process — input on the X axis 
+is equal to output on the Y axis.  
++6dB of Linear Gain 
+If you add 6dB of linear gain to the signal the 
+output is 6dB louder and peaks are clipped by 
+6dB. Using a clipper in this way can yield 
+creative results, but they are not always 
+transparent.  
+Gold Processing 
+Gold processing adds up to 6dB of non-linear 
+gain to the input signal. As the input signal 
+approaches the clip ceiling, the non-linear 
+gain will exponentially reduce to 0dB of gain. 
+Gold processing makes the signal louder by 
+amplifying low level material but keeps peak 
+information below the clip point perfectly 
+intact. 
+Unity Gain 
+If Gold adds 6dB of level, Unity Gain will 
+reduce the signal by 6dB after all other 
+processing. This process reduces peaks by 
+6dB but maintains perceived loudness. Gold 
+Processing with Unity Gain will increase your 
+headroom without altering the integrity of your 
+transients.  
+RETURN TO INDEX
+10
+G O L D   C L I P   P A C K                               
+04   |   GOLD PROCESSING
+
+--- page 11
+Classic Gold Processing (+6) 
+Modern Gold Processing (+2.5) 
+RETURN TO INDEX
+11
+G O L D   C L I P   P A C K                               
+04   |   GOLD PROCESSING
+
+--- page 12
+Alchemy 2 (GOLD CLIP ONLY) 
+When analog tape is overloaded, the high frequencies are reduced 
+and softened, resulting in a more enjoyable experience during peak 
+loudness. These loud bursts of energy become slightly darker, as the 
+transient sharpness of the high frequencies is absorbed into the tape. Alchemy 2 
+emulates the characteristics of analog tape in a new and novel way. As sounds 
+approach the clipping point, frequencies above 3 kHz are gradually reduced by up to 
+2dB. Unlike analog tape, Alchemy 2 preserves the digital detail of the low and low-
+mid frequencies while dynamically smoothing the upper midrange and top end at the 
+loudest moments. Alchemy combines the top end smoothness of tape & the low 
+frequency precision of digital in one processor. 
+05   |   ALCHEMY PROCESSING
+Alchemy 2 in Practice 
+You can think of Alchemy as a subtle, gain-limited de'esser or high-frequency peak 
+softener. First, set the amount of clipping you want and then adjust Alchemy to 
+taste. If you struggle to hear Alchemy, try this: solo the snare drum and bring the 
+clip ceiling down until you get about 1dB of clipping. Set Alchemy to 2dB and 
+toggle it on and off by command-clicking the knob. You'll notice a subtle tone shift 
+or warmth in each snare hit when Alchemy is active. 
+However, when a full mix is processed, the kick and bass are usually the loudest 
+instruments. So, if a kick and crash cymbal hit the clip ceiling at the same time, 
+Alchemy will quickly reduce the sizzle of the crash as the kick drum presses into 
+the clip ceiling. Additionally, if you have a limiter adding more level after Gold Clip, 
+that limiter will help give the perception of a louder kick because the volume 
+relationship between the kick and cymbal changes during the kick drum. Again, it's 
+subtle, but this unique frequency specific dynamic process is what makes Alchemy 
+2 sound like digital tape. 
+Turn up some Gold and Alchemy 2 on a mix and let me know what you think. I'm 
+now using Alchemy 2 on more masters than ever.
+RETURN TO INDEX
+12
+G O L D   C L I P   P A C K                               
+
+--- page 13
+Alchemy reduces mid- and high frequencies by a maximum of 2dB 
+The below graphs show Alchemy set to 2.0dB at varying input levels with a 8kHz 
+sine wav.
+RETURN TO INDEX
+13
+G O L D   C L I P   P A C K                               
+05   |   ALCHEMY PROCESSING
+
+--- page 14
+Box Tone (GOLD CLIP ONLY) 
+Box Tone is one of the more subtle processors in GOLD CLIP, but I often find it 
+invaluable for smoothing out the top end of digital recordings. Think of it as a hyper-
+sonic low-pass filter that helps clean up some of the digital harshness in the very 
+highest frequencies of a mix. 
+  
+While subtle, Box Tone adds a slight contour to the highs, creating a smoother, more 
+cohesive top end—especially when using the Modern setting. 
+Here’s a look at what Box Tone is doing: 
+FLAT: The True Bypass Option 
+When set to FLAT, Box Tone is completely bypassed. There’s no contour or hyper-
+sonic low-pass filtering applied—it remains true to the input signal all the way up to 
+40 kHz in a 96 kHz host sample rate session. This setting ensures a completely 
+neutral pass-through, perfect for when you want an unaltered, transparent output. 
+CLASSIC: Smooth Air-Band Contour 
+The CLASSIC setting adds a gentle air-band contour around 20 kHz, slightly 
+softening the top end in your mix. It also applies a hyper-sonic low-pass filter, 
+removing unwanted frequencies beyond our hearing range, between 20 kHz and 40 
+kHz. 
+This setting is perfect for subtly shaping the high end while keeping the extreme top 
+end clean and true to input. 
+06   |   BOX TONE PROCESSING
+RETURN TO INDEX
+14
+G O L D   C L I P   P A C K                               
+
+--- page 15
+MODERN: High-End Shaping 
+The MODERN setting introduces a more aggressive contour than CLASSIC, with 
+subtle cuts around 3 kHz and 8 kHz to reduce harshness and improve 
+smoothness. It also slightly reduces the air-band around 20 kHz by 0.3 dB, adding 
+a refined touch to the top end. 
+Like CLASSIC, it features a hyper-sonic low-pass filter to remove unwanted 
+frequencies between 20 kHz and 40 kHz, but with a more assertive tonal shaping 
+that’s ideal for modern productions requiring a tighter, smoother high-frequency 
+response. 
+Box Tone is a high-precision filter inspired by the mid- and high-frequency contours 
+of modern and classic converters. As you’d expect, converters are designed to be as 
+flat and balanced as possible, so these effects are intentionally subtle. 
+Box Tone captures this nuanced behavior, providing a gentle and refined way to 
+shape the top end of your mix while preserving its natural character.
+RETURN TO INDEX
+15
+G O L D   C L I P   P A C K                               
+Box Tone in Practice 
+Use Modern when you want to slightly contour the signal around 8kHz and above 
+and slightly low-pass the signal. Use Classic when you want to slightly low pass 
+the signal but maintain high frequencies. Use Flat when you don’t want any high 
+frequency contour or ultra-sonic filtering. 
+06   |   BOX TONE PROCESSING
+
+--- page 16
+Input Trim 
+Input trim is applied to the input signal. The input  
+meter shows the input signal + input trim.  The gain  
+knob floats over the input meter and allows for  
++/- 12dB of gain.  
+Output Trim 
+Output trim is applied to the entire plugin output after the mixer.  
+If the output exceeds 0.0dBFS then the output meter will turn red. 
+RETURN TO INDEX
+16
+G O L D   C L I P   P A C K                               
+07   |   INPUT & OUTPUT TRIM
+
+--- page 17
+Trim Link
+Trim Link allows you to maintain perceived loudness when changing input or output 
+trim. When turning the input trim up by 1dB, Gain Link will turn the output down by 
+1dB. This function is helpful when working on low-level sources that need additional 
+gain to get to the clip point. Gain Link is helpful when Gold Clip is instantiated on an 
+individual track in a mix or when you are trying to maintain perceived loudness but 
+push the mix up to the clip point. 
+Trim Link Offset 
+SHIFT and drag your mouse to change the relationship of the linked faders.   
+SHIFT + OPTION + Click to reset the offset value to 0dB. 
+Input/Output Trim Link in Practice 
+Turn Trim Link and Gold/Unity ON. Use the Clip Ceiling and/or Trims to lightly clip 
+the signal, then apply compression with Gold and Alchemy. This setup lowers the 
+peaks of the track without changing the perceived level, thus creating more 
+headroom in the master. I generally use linked I/O trims on the mix bus and the 
+ceiling control on individual tracks. If you want to offset the trim links, you can 
+drag the faders while holding down the Shift key. Shift + Option click to reset the 
+offset.
+RETURN TO INDEX
+17
+G O L D   C L I P   P A C K                               
+07   |   INPUT & OUTPUT TRIM
+
+--- page 18
+Mixer (GOLD CLIP ONLY) 
+With almost all DAWs running at 32bit float you have 1528dB of dynamic range to 
+work with. Your DAW has all the bandwidth it needs to handle parallel processing, 
+but it’s your responsibility to manage your session gain-staging and not overload your 
+mix bus or plugins. You should try to keep Gold Clip‘s output below 0.0dBFS, but it 
+can go well above that if you choose. The dry signal is not oversampled - it is a copy 
+of the plugin input before oversampling.  
+Dry / Wet Link (GOLD CLIP ONLY) 
+When Link is on, the faders operate like a traditional dry/wet fader found on most 
+plugins. When Link is off, the dry and wet faders work independently, making Gold 
+Clip a true parallel processor. When unlinked, you can make the signal twice as loud 
+by setting both the dry and wet fader to 0.0 dBFS. This will most likely clip devices 
+after Gold Clip. When unlinked, you must watch the output meter to make sure you 
+are not creating signals louder than 0.0 dBFS.  
+Delta  (GOLD CLIP ONLY)                                             
+Delta phase flips the input and oversampled output signal, showing you the 
+difference. This function can help you hear the distortion the clipper is adding, the 
+low-level gain that Gold is adding, or the peak information Alchemy is reducing. 
+However, this function is misleading because you are hearing both what is added 
+(Gold and clipping) and what is taken away (Box Tone and Alchemy). In addition, 
+when in minimum phase oversampling mode, you will hear the phase shift from the 
+minimum phase filters. This will make you think you are changing that part of the 
+signal, but you are simply hearing the phase shift of minimum phase filtering.
+RETURN TO INDEX
+18
+G O L D   C L I P   P A C K                               
+08   |   TRUE PARALLEL MIXER
+Mixer in Practice 
+1) Gold Clip has a true parallel mixer. You can keep the dry signal at 100% and blend 
+in clipping at lower levels. 
+2) Turn Delta on, and Gold, Alchemy, and Box Tone off. Then use linear phase 
+oversampling and listen to the 100% wet signal while setting clipper. This will help 
+you hear how the clipping is affecting transients. 
+3) Use clipping, Gold and Alchemy as you desire. Unlink dry and wet and blend in dry 
+transient information from the bottom-up. 
+
+--- page 19
+Clip Clock (GOLD CLIP ONLY) 
+Clip Clock is a unique feature in Gold Clip, designed to give you precise control over 
+your clipping and Gold processing. It offers two essential functions: 
+Max Clipping Amount 
+Clip Clock monitors the maximum amount of clipping in your track. If you clip by 5 
+dB and that’s more than you intended, the MAX CLIP field will clearly display it, 
+allowing you to make adjustments as needed. 
+Max Clipping Location 
+Clip Clock records the exact MIN:SEC where the maximum clipping occurred, 
+making it easy to pinpoint the location. Even if the plugin window is closed, Clip 
+Clock continues to monitor your clipping. To evaluate where your clipper is working 
+the hardest, navigate to the MIN:SEC in your song, take a listen, and decide if the 
+clipping is too much or just right. 
+You can reset MAX CLIP or MIN:SEC anytime by double-clicking on them. 
+This tool is simple yet invaluable for refining your clipping and Gold processing. 
+Remember: less clipping leads to cleaner Gold processing, as the two are inversely 
+related. That’s why Clip Clock exists—to help you fine-tune your clipping and 
+maximize the impact of Gold. 
+Clip Clock in Practice 
+Loop the section of the song that clip clock shows having the maximum clipping. 
+Set the clipper so that the clipping is inaudible or as clean as possible during that 
+section of the song. I have also used Clip Clock timing information to look at other 
+dynamic processors in the same signal chain.
+RETURN TO INDEX
+19
+G O L D   C L I P   P A C K                               
+09   |   METERING & DISPLAYS
+
+--- page 20
+Metering 
+Input Meter 
+Output Meter 
+The output meter shows the sum of the dry and wet signal. The 
+output trim affects the sum of the dry and wet signal. If the output  
+level is above 0.0 dBFS, the meter will illuminate red. 
+Tool Tips (GOLD CLIP ONLY)  
+Tool tips can be turned on and off with the "?" button. Hovering over any parameter 
+will bring up a text box describing its function and the quick keys associated with that 
+parameter. 
+The input meter shows the input signal, as well as the input trim 
+applied to the input signal. The number at the top of the meter 
+displays the maximum amount of clipping. The number at the bottom 
+of the meter provides a continuous readout of Short Term LUFS. 
+When the clipper is turned off, it is important to ensure that the input 
+signal does not exceed 0.0dBFS. If the clipper is off and the input 
+signal rises above 0.0dBFS, the meter will turn red, indicating that you 
+should decrease the input trim.
+RETURN TO INDEX
+20
+G O L D   C L I P   P A C K                               
+09   |   METERING & DISPLAYS
+
+--- page 21
+Waveform Display (GOLD CLIP ONLY) 
+The waveform display window shows Clipping, Plugin Output and Gold Processing. 
+Clipping – The grey outlined signal above the clip point consists of the input  
+signal and input trim and shows you the peaks that were removed by the clipper. 
+Plugin Output – The black waveform with Gold border shows the plugin output. 
+Gold Processing – The Gold fill that rises around black waveform shows the 
+nonlinear loudness saturation that is added by Gold processing. 
+Clipping Window Magnification – Double clicking the waveform scale on the right or 
+left side of the waveform, will change the waveform display scaling from 6dB, 4dB 
+and 2dB. 
+RETURN TO INDEX
+21
+G O L D   C L I P   P A C K                               
+09   |   METERING & DISPLAYS
+
+--- page 22
+Presets 
+Easily create and set your default mixing and mastering presets.
+  
+ - Click the disk button to save a new preset 
+ - Name the preset and hit enter 
+ - Click the trashcan to delete presets 
+ - Click the Gold Star to set the default preset.* 
+*Pro Tools has a proprietary default preset system that overrides the "star" functionality in Gold Clip and Gold 
+Clip Track. If you are a Pro Tools user we recommend using their proprietary default preset system to avoid 
+settings conflict.   
+AB 
+AB made simple. When you first open Gold Clip, both A and B states are active; they 
+are both lit up. As you make changes to the settings, they are applied to both A and 
+B. Only when you click A or B will they unlink so that you can make more detailed 
+changes to one plug-in state. Option-click A to copy to B or Option-click B to copy 
+to A. You can toggle between A and B by simply clicking A or B repeatedly. 
+Bypass 
+This is a true bypass that is internally time-aligned with the plugin delay. When 
+automating the bypass, you should use the true bypass rather than the DAW bypass 
+function. 
+AB in Practice 
+Alter Gold Clip to the settings that work best for the track and then click B to 
+unlink the A and B settings. Now try different clipper types and amounts of Gold & 
+Alchemy processing. You can click A or B repeatedly to alternate plugin settings. 
+Option-Click A or B to copy the setting to the other plugin state. 
+RETURN TO INDEX
+22
+G O L D   C L I P   P A C K                               
+08   |   PRESETS & SETTINGS
+
+--- page 23
+  
+RETURN TO INDEX
+23
+G O L D   C L I P   P A C K                               
+09   |   SIGNAL FLOW
+
+--- page 24
+RETURN TO INDEX
+24
+G O L D   C L I P   P A C K                               
+10   |   KEY COMMANDS
+1 -   Box Tone - Command click to bypass 
+2 -   Clipper - Command click to bypass 
+3 -   Gold - Command click to bypass 
+4 -   Clip Clock  - Double-click numeric values to reset 
+5 -   Gold Amount - Command click to bypass 
+6 -   Alchemy - Command click to bypass 
+7 -   Output Trim - Option-click to return to 0 
+  Shift-Click offset linked trims 
+  Shift-Option-Click to reset offset to 0 
+8 -   Mixer - Option-click fader to return to 100% wet 
+9 -   Output Peak Readout - Double-click to reset 
+10 - Input Trim - Option-click to return to 0 
+  Shift-Click offset linked trims 
+  Shift-Option-Click to reset offset to 0 
+11 - Clipping Numeric - Double-click to reset 
+12 - Schwabe Digital Logo - Click for plugin options 
+
+--- page 25
+RETURN TO INDEX
+25
+G O L D   C L I P   P A C K                               
+Oversampling Rate 
+High - 4x (44.1kHz & 48kHz), 2x (88.2kHz and 96kHz), 1x (192kHz+) 
+Pristine - 8x (44.1kHz & 48kHz), 4x (88.2kHz and 96kHz), 2x (192kHz+) 
+Extra Pristine - 16x (44.1kHz & 48kHz), 8x (88.2kHz and 96kHz), 4x (192kHz+) 
+Gold Clip allows you to select separate sample rates for real time processing and 
+offline bouncing. 
+Oversampling Type 
+Linear Phase – Uses a custom linear phase oversampling technique. This option is 
+suggestion if you are doing parallel processing within Gold Clip. 
+Minimum Phase – Uses a custom minimum phase over sampling technique. This 
+option is sometimes better for low frequency transient information that does not 
+require parallel processing. When in minimum phase mode the delta function will 
+present some of the phase rotation that is common with minimum phase 
+oversampling. Phase rotation is completely normal behavior and is common in many 
+audio processors. 
+Anti-Overshoot Technology 
+Our anti-overshoot technology ensures your audio remains below the ceiling at all 
+times, preventing any peaks from shooting above after downsampling. 
+Oversampling is a dense and often over-debated topic. We chose to make our 
+oversampling as robust as possible, while still keeping it simple. Nerd out and try all 
+the options or just leave it at its default and let it do its thing. 
+10   |   OVERSAMPLING
+
+--- page 26
+We highly encourage you to use modern computers with Gold Clip. Computers older 
+than 2018 are most likely not supported. Please test Gold Clip on your system before 
+purchasing. 
+MAC: 
+Mac OS 10.13 or higher 
+Native Silicon Support 
+Apple Intel - Intel Core 2 Duo or higher, 4GB RAM minimum 
+PC: 
+Windows 11 (recommended) 
+Windows 10 
+Intel Core 2 Duo / AMD Athlon 64 X2 or higher, 4GB RAM minimum 
+AUDIO SESSION COMPATIBILITY: 
+16bit, 24bit or 32bit 
+44.1kHz, 48kHz, 88.2kHz or 96kHz sessions (192kHz not supported) 
+VST3, AU AAX 
+        
+        
+ 
+  
+12   |   COMPATIBILITY 
+RETURN TO INDEX
+26
+G O L D   C L I P   P A C K                               
