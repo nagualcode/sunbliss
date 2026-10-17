@@ -1,12 +1,12 @@
 uuid = "edec31c8-5777-4300-92be-1c487def1d81"
 name = "Tape Bloom"
-comment = "Curve B (the manual's soft saturation) pushed hard, with tone B"
+comment = "Gold Classic (the Lavry manual's Soft Saturation) pushed hard, with Box Tone Classic"
 
 [params]
-input = 3.0
-link = true
-clip_mode = 1
-sat = 4.0
-curve = 1
-contour = 2.0
-tone = 2             # 0 Flat, 1 A, 2 B
+input_trim = 3.0
+trim_link = true
+clipper_mode = 0   # 0 Classic, 1 Modern, 2 Hard
+gold = 4.0
+gold_mode = 0   # 0 Classic, 1 Modern
+alchemy = 2.0
+box_tone = 1   # 0 Flat, 1 Classic, 2 Modern

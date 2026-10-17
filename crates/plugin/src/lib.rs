@@ -12,55 +12,57 @@ mod loudness;
 use loudness::ShortTerm;
 
 // ------------------------------------------------------------------ enums
+// Names and order follow the reference plugin so settings can be copied
+// across one to one (personal study build).
 
 #[derive(ParamEnum)]
-pub enum ClipModeP {
-    #[name = "Converter A"]
-    A,
-    #[name = "Converter B"]
-    B,
+pub enum ClipperModeP {
+    #[name = "Classic"]
+    Classic,
+    #[name = "Modern"]
+    Modern,
     #[name = "Hard"]
     Hard,
 }
 
 #[derive(ParamEnum)]
-pub enum CurveP {
-    #[name = "A"]
-    A,
-    #[name = "B"]
-    B,
+pub enum GoldModeP {
+    #[name = "Classic"]
+    Classic,
+    #[name = "Modern"]
+    Modern,
 }
 
 #[derive(ParamEnum)]
-pub enum ToneP {
+pub enum BoxToneP {
     #[name = "Flat"]
     Flat,
-    #[name = "A"]
-    A,
-    #[name = "B"]
-    B,
+    #[name = "Classic"]
+    Classic,
+    #[name = "Modern"]
+    Modern,
 }
 
 #[derive(ParamEnum)]
-pub enum QualityP {
+pub enum OversamplingP {
     #[name = "High"]
     High,
     #[name = "Pristine"]
     Pristine,
-    #[name = "Extra"]
-    Extra,
+    #[name = "Extra Pristine"]
+    ExtraPristine,
 }
 
 #[derive(ParamEnum)]
-pub enum RenderQualityP {
-    #[name = "Same"]
+pub enum OfflineOversamplingP {
+    #[name = "Same as Realtime"]
     Same,
     #[name = "High"]
     High,
     #[name = "Pristine"]
     Pristine,
-    #[name = "Extra"]
-    Extra,
+    #[name = "Extra Pristine"]
+    ExtraPristine,
 }
 
 /// A/B comparison state, saved with the session.
@@ -79,49 +81,49 @@ pub struct AbState {
 
 #[derive(Params)]
 pub struct SunblissParams {
-    #[param(name = "Input", range = "linear(-12, 12)", default = 0, unit = "dB", smooth = "none")]
-    pub input: FloatParam,
-    #[param(name = "Output", range = "linear(-12, 12)", default = 0, unit = "dB", smooth = "none")]
-    pub output: FloatParam,
-    #[param(name = "Link", default = true)]
-    pub link: BoolParam,
-    #[param(name = "Link Offset", range = "linear(-12, 12)", default = 0, unit = "dB", smooth = "none")]
-    pub link_offset: FloatParam,
+    #[param(name = "Input Trim", range = "linear(-12, 12)", default = 0, unit = "dB", smooth = "none")]
+    pub input_trim: FloatParam,
+    #[param(name = "Output Trim", range = "linear(-12, 12)", default = 0, unit = "dB", smooth = "none")]
+    pub output_trim: FloatParam,
+    #[param(name = "Trim Link", default = true)]
+    pub trim_link: BoolParam,
+    #[param(name = "Trim Link Offset", range = "linear(-12, 12)", default = 0, unit = "dB", smooth = "none")]
+    pub trim_link_offset: FloatParam,
 
-    #[param(name = "Ceiling", range = "linear(-36, 0)", default = 0, unit = "dB", smooth = "none")]
-    pub ceiling: FloatParam,
-    #[param(name = "Clip", default = true)]
-    pub clip_on: BoolParam,
-    #[param(name = "Clip Mode", default = 1)]
-    pub clip_mode: EnumParam<ClipModeP>,
+    #[param(name = "Clip Ceiling", range = "linear(-36, 0)", default = 0, unit = "dB", smooth = "none")]
+    pub clip_ceiling: FloatParam,
+    #[param(name = "Clipper", default = true)]
+    pub clipper: BoolParam,
+    #[param(name = "Clipper Mode", default = 0)]
+    pub clipper_mode: EnumParam<ClipperModeP>,
     #[param(name = "Clip Filter", default = false)]
     pub clip_filter: BoolParam,
-    #[param(name = "Overshoot Guard", short_name = "Guard", default = false)]
-    pub guard: BoolParam,
+    #[param(name = "Clip Guard", default = false)]
+    pub clip_guard: BoolParam,
 
-    #[param(name = "Saturation On", short_name = "Sat On", default = true)]
-    pub sat_on: BoolParam,
-    #[param(name = "Saturation", short_name = "Sat", range = "linear(0, 6)", default = 0, unit = "dB", smooth = "none")]
-    pub sat: FloatParam,
-    #[param(name = "Curve", default = 0)]
-    pub curve: EnumParam<CurveP>,
-    #[param(name = "Unity", default = false)]
-    pub unity: BoolParam,
+    #[param(name = "Gold On", default = true)]
+    pub gold_on: BoolParam,
+    #[param(name = "Gold", range = "linear(0, 6)", default = 0, unit = "dB", smooth = "none")]
+    pub gold: FloatParam,
+    #[param(name = "Gold Mode", default = 1)]
+    pub gold_mode: EnumParam<GoldModeP>,
+    #[param(name = "Unity Gain", default = false)]
+    pub unity_gain: BoolParam,
 
-    #[param(name = "Contour On", default = true)]
-    pub contour_on: BoolParam,
-    #[param(name = "Contour", range = "linear(0, 2)", default = 0, unit = "dB", smooth = "none")]
-    pub contour: FloatParam,
+    #[param(name = "Alchemy On", default = true)]
+    pub alchemy_on: BoolParam,
+    #[param(name = "Alchemy", range = "linear(0, 2)", default = 0, unit = "dB", smooth = "none")]
+    pub alchemy: FloatParam,
 
-    #[param(name = "Tone", default = 0)]
-    pub tone: EnumParam<ToneP>,
+    #[param(name = "Box Tone", default = 0)]
+    pub box_tone: EnumParam<BoxToneP>,
 
     #[param(name = "Wet", range = "linear(0, 1)", default = 1, unit = "%", smooth = "none")]
     pub wet: FloatParam,
     #[param(name = "Dry", range = "linear(0, 1)", default = 0, unit = "%", smooth = "none")]
     pub dry: FloatParam,
-    #[param(name = "Mix Link", default = true)]
-    pub mix_link: BoolParam,
+    #[param(name = "Dry Wet Link", default = true)]
+    pub dry_wet_link: BoolParam,
     #[param(name = "Wet Mute", default = false)]
     pub wet_mute: BoolParam,
     #[param(name = "Dry Mute", default = false)]
@@ -131,10 +133,10 @@ pub struct SunblissParams {
     #[param(name = "Bypass", default = false, flags = "automatable | bypass")]
     pub bypass: BoolParam,
 
-    #[param(name = "Quality", default = 0)]
-    pub quality: EnumParam<QualityP>,
-    #[param(name = "Render Quality", default = 0)]
-    pub render_quality: EnumParam<RenderQualityP>,
+    #[param(name = "Oversampling", default = 0)]
+    pub oversampling: EnumParam<OversamplingP>,
+    #[param(name = "Offline Oversampling", default = 0)]
+    pub offline_oversampling: EnumParam<OfflineOversamplingP>,
 
     // meters (read by the editor)
     #[meter]
@@ -148,7 +150,7 @@ pub struct SunblissParams {
     /// dB over the ceiling at the clipper input this block
     #[meter]
     pub m_clip: MeterSlot,
-    /// held maximum (dB) and its transport time (s)
+    /// Clip Clock: held maximum (dB) and its transport time (s)
     #[meter]
     pub m_clip_max: MeterSlot,
     #[meter]
@@ -162,7 +164,7 @@ pub struct SunblissParams {
 
     #[persist = "ab"]
     pub ab: RwLock<AbState>,
-    /// Bumped by the editor to reset the clip meter.
+    /// Bumped by the editor to reset the Clip Clock.
     #[persist = "clip_reset"]
     pub clip_reset: AtomicCell<u32>,
 }
@@ -172,31 +174,31 @@ use SunblissParamsParamId as P;
 impl SunblissParams {
     fn engine_params(&self) -> sunbliss_core::Params {
         sunbliss_core::Params {
-            input_db: self.input.value(),
-            output_db: self.output.value(),
-            link: self.link.value(),
-            link_offset_db: self.link_offset.value(),
-            ceiling_db: self.ceiling.value(),
-            clip_on: self.clip_on.value(),
-            clip_mode: ClipMode::from_index(self.clip_mode.index() as usize),
+            input_db: self.input_trim.value(),
+            output_db: self.output_trim.value(),
+            link: self.trim_link.value(),
+            link_offset_db: self.trim_link_offset.value(),
+            ceiling_db: self.clip_ceiling.value(),
+            clip_on: self.clipper.value(),
+            clip_mode: ClipMode::from_index(self.clipper_mode.index() as usize),
             clip_filter: self.clip_filter.value(),
-            guard: self.guard.value(),
-            sat_on: self.sat_on.value(),
-            sat: self.sat.value(),
-            curve: if self.curve.index() == 1 { Curve::B } else { Curve::A },
-            unity: self.unity.value(),
-            contour_on: self.contour_on.value(),
-            contour: self.contour.value(),
-            tone: ToneMode::from_index(self.tone.index() as usize),
+            guard: self.clip_guard.value(),
+            sat_on: self.gold_on.value(),
+            sat: self.gold.value(),
+            curve: if self.gold_mode.index() == 0 { Curve::Classic } else { Curve::Modern },
+            unity: self.unity_gain.value(),
+            contour_on: self.alchemy_on.value(),
+            contour: self.alchemy.value(),
+            tone: ToneMode::from_index(self.box_tone.index() as usize),
             wet: self.wet.value(),
             dry: self.dry.value(),
-            mix_link: self.mix_link.value(),
+            mix_link: self.dry_wet_link.value(),
             wet_mute: self.wet_mute.value(),
             dry_mute: self.dry_mute.value(),
             delta: self.delta.value(),
             bypass: self.bypass.value(),
-            quality: Quality::from_index(self.quality.index() as usize),
-            render_quality: match self.render_quality.index() {
+            quality: Quality::from_index(self.oversampling.index() as usize),
+            render_quality: match self.offline_oversampling.index() {
                 0 => None,
                 i => Some(Quality::from_index(i as usize - 1)),
             },

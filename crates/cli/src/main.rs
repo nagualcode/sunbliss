@@ -28,8 +28,8 @@ fn set(p: &mut Params, key: &str, v: &serde_json::Value) {
         "clip_on" => p.clip_on = b(),
         "clip_mode" => {
             p.clip_mode = match s().as_str() {
-                "a" | "converter a" | "converter_a" => ClipMode::ConverterA,
-                "b" | "converter b" | "converter_b" => ClipMode::ConverterB,
+                "modern" | "a" => ClipMode::Modern,
+                "classic" | "b" => ClipMode::Classic,
                 "hard" => ClipMode::Hard,
                 o => die(&format!("clip_mode: {o}")),
             }
@@ -38,15 +38,15 @@ fn set(p: &mut Params, key: &str, v: &serde_json::Value) {
         "guard" => p.guard = b(),
         "sat_on" => p.sat_on = b(),
         "sat" => p.sat = f(),
-        "curve" => p.curve = if s() == "b" { Curve::B } else { Curve::A },
+        "curve" => p.curve = if matches!(s().as_str(), "classic" | "b") { Curve::Classic } else { Curve::Modern },
         "unity" => p.unity = b(),
         "contour_on" => p.contour_on = b(),
         "contour" => p.contour = f(),
         "tone" => {
             p.tone = match s().as_str() {
                 "flat" => ToneMode::Flat,
-                "a" => ToneMode::A,
-                "b" => ToneMode::B,
+                "modern" | "a" => ToneMode::Modern,
+                "classic" | "b" => ToneMode::Classic,
                 o => die(&format!("tone: {o}")),
             }
         }

@@ -19,8 +19,10 @@ use crate::tone::{self, Tone, ToneMode};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Curve {
-    A,
-    B,
+    /// Lavry Soft Saturation (manual equation, closure b)
+    Classic,
+    /// linear to c/2, C1 quadratic knee, max +2.5 dB
+    Modern,
 }
 
 /// Plain parameter values (targets). Units as in docs/CONTROLS.md.
@@ -67,12 +69,12 @@ impl Default for Params {
             link_offset_db: 0.0,
             ceiling_db: 0.0,
             clip_on: true,
-            clip_mode: ClipMode::ConverterB,
+            clip_mode: ClipMode::Classic,
             clip_filter: false,
             guard: false,
             sat_on: true,
             sat: 0.0,
-            curve: Curve::A,
+            curve: Curve::Modern,
             unity: false,
             contour_on: true,
             contour: 0.0,
@@ -447,8 +449,8 @@ impl Engine {
         let ceil = if p.clip_on { db2lin(p.ceiling_db.clamp(-36.0, 0.0)) } else { 1.0 };
         let unity = if p.unity && sat > 0.0 {
             match p.curve {
-                Curve::B => db2lin(-sat),
-                Curve::A => db2lin(-curves::knob_to_gain_a_db(sat)),
+                Curve::Classic => db2lin(-sat),
+                Curve::Modern => db2lin(-curves::knob_to_gain_a_db(sat)),
             }
         } else {
             1.0
@@ -469,7 +471,7 @@ impl Engine {
             dmute: if p.dry_mute { 1.0 } else { 0.0 },
             delta: if p.delta { 1.0 } else { 0.0 },
             bypass: if p.bypass { 1.0 } else { 0.0 },
-            curve_b: if p.curve == Curve::B { 1.0 } else { 0.0 },
+            curve_b: if p.curve == Curve::Classic { 1.0 } else { 0.0 },
         }
     }
 

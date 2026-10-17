@@ -1,6 +1,6 @@
 uuid = "01c31b24-e62e-41bf-971b-dcb0472de5a6"
 name = "Init"
-comment = "Defaults: Converter B clipper at 0 dBFS, everything else neutral"
+comment = "Defaults: Classic clipper at 0 dBFS, everything else neutral"
 default = true
 
 [params]

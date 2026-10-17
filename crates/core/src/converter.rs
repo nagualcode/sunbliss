@@ -13,10 +13,10 @@ use crate::curves::{self, ConvB, TabCurve};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ClipMode {
-    /// Converter A ("modern" model): short knee into a 0.98 plateau.
-    ConverterA,
-    /// Converter B ("classic" model): asymmetric soft compression + overload memory.
-    ConverterB,
+    /// "Classic": asymmetric soft compression + overload memory.
+    Classic,
+    /// "Modern": short knee into a 0.98 plateau.
+    Modern,
     /// Ideal clip at 0.99 c.
     Hard,
 }
@@ -24,15 +24,17 @@ pub enum ClipMode {
 impl ClipMode {
     pub fn from_index(i: usize) -> Self {
         match i {
-            0 => ClipMode::ConverterA,
-            1 => ClipMode::ConverterB,
+            // host order, same as the reference: Classic, Modern, Hard
+            0 => ClipMode::Classic,
+            1 => ClipMode::Modern,
             _ => ClipMode::Hard,
         }
     }
     fn idx(self) -> usize {
         match self {
-            ClipMode::ConverterA => 0,
-            ClipMode::ConverterB => 1,
+            // curve-table order (internal)
+            ClipMode::Modern => 0,
+            ClipMode::Classic => 1,
             ClipMode::Hard => 2,
         }
     }

@@ -109,7 +109,7 @@ fn parallel_dry_is_sample_aligned() {
 
 #[test]
 fn transparent_below_ceiling_with_clipper_on() {
-    for mode in [ClipMode::Hard, ClipMode::ConverterA] {
+    for mode in [ClipMode::Hard, ClipMode::Modern] {
         let p = Params { clip_mode: mode, link: false, ..Default::default() };
         let mut e = engine(48000.0, p);
         let lat = e.latency();
@@ -138,7 +138,7 @@ fn robust_under_extremes_and_automation() {
         step += 1;
         // flip parameters around every block
         p.clip_mode = ClipMode::from_index((step % 3) as usize);
-        p.curve = if step % 2 == 0 { Curve::A } else { Curve::B };
+        p.curve = if step % 2 == 0 { Curve::Modern } else { Curve::Classic };
         p.sat = (step % 7) as f64;
         p.contour = (step % 3) as f64;
         p.ceiling_db = -((step % 37) as f64);
@@ -168,7 +168,7 @@ fn robust_under_extremes_and_automation() {
 #[test]
 fn process_does_not_allocate() {
     let mut e = Engine::new(48000.0, 2, 1024);
-    let mut p = Params { sat: 3.0, contour: 1.5, guard: true, tone: ToneMode::B, ..Default::default() };
+    let mut p = Params { sat: 3.0, contour: 1.5, guard: true, tone: ToneMode::Modern, ..Default::default() };
     e.set_params(&p);
     e.snap();
     let mut a = noise(1024, 9, 2.0);

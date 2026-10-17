@@ -1,46 +1,46 @@
 # Controles: mapeamento e semântica (F1)
 
-Documento **interno**. Os nomes de terceiros aparecem só aqui, para rastrear a
-paridade. No produto (Sunbliss) só existem os nomes da coluna "Sunbliss".
+Para estudo pessoal (não distribuído), os rótulos do Sunbliss **espelham os da
+referência**: mesmos nomes, mesma ordem nas opções e mesmos padrões. Assim, um
+ajuste pode ser copiado de um plugin para o outro diretamente. O nome do
+plugin continua "Sunbliss". Nos controles que funcionam diferente, a GUI mostra
+um tooltip explicando a diferença.
 
 Fonte do inventário: `docs/goldclip_params.json` (Gold Clip 1.5.0, AU, 23
 parâmetros). Medições: `lab/probe_*.py`, com dados em `docs/data/`.
 
-Convenção: **A = variante "Modern"**, **B = variante "Classic"** (vale para Clip
-Mode, Curve e Tone).
+Nomes internos no código do núcleo e no laboratório: Clipper Classic = modelo
+"B", Modern = "A" (vale também para Gold Mode e Box Tone).
 
 ## Tabela de parâmetros
 
-| Referência (param id) | Sunbliss (id) | Faixa / valores | Unid. | Curva | Padrão | Suavização |
-|---|---|---|---|---|---|---|
-| `input_gain` | Input (`input`) | −12 … +12 | dB | lin (dB) | 0 | exp 20 ms (ganho linear) |
-| `output_gain` | Output (`output`) | −12 … +12 | dB | lin (dB) | 0 | exp 20 ms |
-| `gain_link` | Link (`link`) | on/off | – | – | on | – |
-| *(só GUI na ref.)* Trim Link Offset | Link Offset (`link_offset`) | −12 … +12 | dB | lin | 0 | exp 20 ms |
-| `ceiling` | Ceiling (`ceiling`) | −36 … 0 | dBFS | lin (dB) | 0 | exp 20 ms |
-| `clipper_on_off` | Clip (`clip_on`) | on/off | – | – | on | crossfade 10 ms |
-| `clipper_mode` | Clip Mode (`clip_mode`) | Converter A / Converter B / Hard | – | – | Converter B | crossfade 10 ms |
-| `clipper_filter_on_off` | Clip Filter (`clip_filter`) | on/off | – | – | off | crossfade 10 ms |
-| `clip_guard` | Overshoot Guard (`guard`) | on/off | – | – | off | – |
-| `gold_on_off` | Saturation on (`sat_on`) | on/off | – | – | on | crossfade 10 ms |
-| `gold` | Saturation (`sat`) | 0 … 6 | dB (nominal) | lin | 0 | exp 20 ms |
-| `gold_mode` | Curve (`curve`) | A / B | – | – | A | crossfade 10 ms |
-| `unity` | Unity (`unity`) | on/off | – | – | off | exp 20 ms |
-| `alchemy_on_off` | Contour on (`contour_on`) | on/off | – | – | on | crossfade 10 ms |
-| `alchemy` | Contour (`contour`) | 0 … 2 | dB | lin | 0 | exp 20 ms |
-| `box_tone_mode` | Tone (`tone`) | Flat / A / B | – | – | Flat | crossfade 10 ms |
-| `dry_wet_link` | Mix Link (`mix_link`) | on/off | – | – | on | – |
-| `wet` | Wet (`wet`) | 0 … 100 | % | lin (amplitude) | 100 | exp 20 ms |
-| `dry` | Dry (`dry`) | 0 … 100 | % | lin (amplitude) | 0 | exp 20 ms |
-| `wet_mute` | Wet Mute (`wet_mute`) | on/off | – | – | off | rampa 10 ms |
-| `dry_mute` | Dry Mute (`dry_mute`) | on/off | – | – | off | rampa 10 ms |
-| `delta_phase` | Delta (`delta`) | on/off | – | – | off | crossfade 10 ms |
-| `bypass` | Bypass (`bypass`) | on/off | – | – | off | crossfade 10 ms, alinhado à latência |
-| *(configuração oculta na ref.)* Oversampling | Quality (`quality`) | High / Pristine / Extra | – | – | High | troca com crossfade; latência muda |
-| *(configuração oculta na ref.)* Offline rate | Render Quality (`render_quality`) | Same / High / Pristine / Extra | – | – | Same | aplicada só em render offline |
-| *(configuração oculta na ref.)* Linear/Minimum Phase | Phase (`phase`) | Linear / Minimum | – | – | Linear | – |
-| *(medidor)* Clip Clock | Clip Meter (só leitura) | máx. de clip (dB) + posição mm:ss | – | – | – | – |
-| A/B | A/B (estado do editor) | dois snapshots | – | – | – | – |
+| Referência (param id) | Sunbliss: nome no host (campo) | Valores / faixa | Padrão | Igual? |
+|---|---|---|---|---|
+| `input_gain` | Input Trim (`input_trim`) | −12 … +12 dB | 0 | sim |
+| `output_gain` | Output Trim (`output_trim`) | −12 … +12 dB | 0 | sim |
+| `gain_link` | Trim Link (`trim_link`) | on/off | on | **diferente**: também vale para automação |
+| *(só GUI)* | Trim Link Offset (`trim_link_offset`) | −12 … +12 dB | 0 | parâmetro de verdade |
+| `ceiling` | Clip Ceiling (`clip_ceiling`) | −36 … 0 dB | 0 | sim (sem o ducking) |
+| `clipper_on_off` | Clipper (`clipper`) | on/off | on | sim |
+| `clipper_mode` | Clipper Mode (`clipper_mode`) | Classic / Modern / Hard | Classic | sim (Classic sem o colapso em drive extremo) |
+| `clipper_filter_on_off` | Clip Filter (`clip_filter`) | on/off | off | sim |
+| `clip_guard` | Clip Guard (`clip_guard`) | on/off | off | **diferente**: true-peak ≤ ceiling |
+| `gold_on_off` | Gold On (`gold_on`) | on/off | on | sim |
+| `gold` | Gold (`gold`) | 0 … 6 dB | 0 | sim |
+| `gold_mode` | Gold Mode (`gold_mode`) | Classic / Modern | Modern | Classic = equação do manual da Lavry |
+| `unity` | Unity Gain (`unity_gain`) | on/off | off | sim |
+| `alchemy_on_off` | Alchemy On (`alchemy_on`) | on/off | on | sim |
+| `alchemy` | Alchemy (`alchemy`) | 0 … 2 dB | 0 | **diferente**: envelope de pico, sem AM |
+| `box_tone_mode` | Box Tone (`box_tone`) | Flat / Classic / Modern | Flat | sim (Flat bit-transparente) |
+| `wet` / `dry` | Wet / Dry | 0 … 100 % | 100 / 0 | sim |
+| `dry_wet_link` | Dry Wet Link (`dry_wet_link`) | on/off | on | sim |
+| `wet_mute` / `dry_mute` | Wet Mute / Dry Mute | on/off | off | sim |
+| `delta_phase` | Delta (`delta`) | on/off | off | **diferente**: desconta o Input Trim |
+| `bypass` | Bypass (`bypass`) | on/off | off | sim |
+| *(configuração oculta)* | Oversampling (`oversampling`) | High / Pristine / Extra Pristine | High | mesmos fatores |
+| *(configuração oculta)* | Offline Oversampling (`offline_oversampling`) | Same / High / Pristine / Extra Pristine | Same | sim |
+| *(medidor)* Clip Clock | Clip Clock: MAX CLIP + MIN:SEC (só leitura) | — | — | sim |
+| A/B | A/B (estado do editor) | dois snapshots | — | sim |
 
 Nenhum parâmetro do JSON ficou sem equivalente.
 

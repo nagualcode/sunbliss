@@ -14,16 +14,18 @@ pub const DELAY: usize = (TAPS - 1) / 2;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ToneMode {
     Flat,
-    A,
-    B,
+    /// gentle air-band roll-off, slight presence lift
+    Classic,
+    /// 3 kHz / 8 kHz dips and -0.4 dB air
+    Modern,
 }
 
 impl ToneMode {
     pub fn from_index(i: usize) -> Self {
         match i {
             0 => ToneMode::Flat,
-            1 => ToneMode::A,
-            _ => ToneMode::B,
+            1 => ToneMode::Classic,
+            _ => ToneMode::Modern,
         }
     }
     fn idx(self) -> usize {
@@ -38,11 +40,12 @@ use crate::tone_tables::*;
 /// contour below 20 kHz stays in Hz.
 fn table(mode: ToneMode, fs: f64) -> (&'static [(f64, f64)], f64) {
     match (mode, fs) {
-        (ToneMode::A, f) if f < 46_000.0 => (&T44100_A, 44_100.0),
-        (ToneMode::B, f) if f < 46_000.0 => (&T44100_B, 44_100.0),
-        (ToneMode::A, f) if f < 70_000.0 => (&T48000_A, 48_000.0),
-        (ToneMode::B, f) if f < 70_000.0 => (&T48000_B, 48_000.0),
-        (ToneMode::A, _) => (&T96000_A, 96_000.0),
+        // tables: _A = reference "Modern", _B = reference "Classic"
+        (ToneMode::Modern, f) if f < 46_000.0 => (&T44100_A, 44_100.0),
+        (ToneMode::Classic, f) if f < 46_000.0 => (&T44100_B, 44_100.0),
+        (ToneMode::Modern, f) if f < 70_000.0 => (&T48000_A, 48_000.0),
+        (ToneMode::Classic, f) if f < 70_000.0 => (&T48000_B, 48_000.0),
+        (ToneMode::Modern, _) => (&T96000_A, 96_000.0),
         _ => (&T96000_B, 96_000.0),
     }
 }
@@ -76,7 +79,7 @@ pub fn curve_db(mode: ToneMode, f: f64, fs: f64) -> f64 {
 }
 
 pub struct Tone {
-    taps: [Vec<f64>; 2], // A, B (reversed)
+    taps: [Vec<f64>; 2], // Classic, Modern (enum order after Flat; reversed)
     hist: Vec<Vec<f64>>, // per channel ring of TAPS (linear buffer with history)
     flat: Vec<Delay>,
     w: [Ramp; 3],
@@ -95,7 +98,7 @@ impl Tone {
         let mut w = [Ramp::new(1.0), Ramp::new(0.0), Ramp::new(0.0)];
         w.iter_mut().for_each(|r| r.set_len(0.010 * fs));
         Tone {
-            taps: [design(ToneMode::A), design(ToneMode::B)],
+            taps: [design(ToneMode::Classic), design(ToneMode::Modern)],
             hist: vec![vec![0.0; TAPS - 1 + max_block]; channels],
             flat,
             w,

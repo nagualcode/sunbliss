@@ -87,7 +87,7 @@ impl SunUi {
 
     // ------------------------------------------------------------ widgets
 
-    fn knob(&self, ui: &mut egui::Ui, ctx: &Ctx, id: P, label: &str, d: f32, enabled: bool, value_text: Option<String>) {
+    fn knob(&self, ui: &mut egui::Ui, ctx: &Ctx, id: P, label: &str, d: f32, enabled: bool, value_text: Option<String>) -> egui::Response {
         let id: u32 = id.into();
         let (rect, resp) = ui.allocate_exact_size(vec2(d + 14.0, d + 34.0), if enabled { Sense::click_and_drag() } else { Sense::hover() });
         let mut v = ctx.get_param(id);
@@ -137,6 +137,7 @@ impl SunUi {
         p.line_segment([c + vec2(a_to.cos(), a_to.sin()) * (r * 0.25), tip], Stroke::new(2.0_f32, if enabled { col::TEXT } else { col::DIM }));
         let txt = value_text.unwrap_or_else(|| ctx.format_param(id));
         p.text(pos2(rect.center().x, rect.bottom() - 2.0), Align2::CENTER_BOTTOM, txt, FontId::monospace(10.5), if enabled { col::TEXT } else { col::DIM });
+        resp
     }
 
     fn button(&self, ui: &mut egui::Ui, text: &str, w: f32, on: bool, accent: Color32) -> egui::Response {
@@ -148,21 +149,28 @@ impl SunUi {
         resp
     }
 
-    fn toggle(&self, ui: &mut egui::Ui, ctx: &Ctx, id: P, text: &str, w: f32) {
+    fn toggle(&self, ui: &mut egui::Ui, ctx: &Ctx, id: P, text: &str, w: f32) -> egui::Response {
         let on = self.on(ctx, id);
-        if self.button(ui, text, w, on, col::ACCENT).clicked() {
+        let r = self.button(ui, text, w, on, col::ACCENT);
+        if r.clicked() {
             self.set(ctx, id, if on { 0.0 } else { 1.0 });
         }
+        r
     }
 
-    fn seg(&self, ui: &mut egui::Ui, ctx: &Ctx, id: P, labels: &[&str], w: f32, enabled: bool) {
+    /// Segmented enum selector; `tips[k]` (if non-empty) is shown on hover.
+    fn seg(&self, ui: &mut egui::Ui, ctx: &Ctx, id: P, labels: &[&str], tips: &[&str], w: f32, enabled: bool) {
         let cur = self.idx(ctx, id);
         let n = labels.len();
         ui.horizontal(|ui| {
             ui.spacing_mut().item_spacing.x = 1.0;
             for (k, l) in labels.iter().enumerate() {
                 let accent = if enabled { col::ACCENT } else { col::DIM };
-                if self.button(ui, l, w, k == cur, accent).clicked() {
+                let mut r = self.button(ui, l, w, k == cur, accent);
+                if let Some(t) = tips.get(k).filter(|t| !t.is_empty()) {
+                    r = r.on_hover_text(*t);
+                }
+                if r.clicked() {
                     self.set(ctx, id, k as f64 / (n - 1).max(1) as f64);
                 }
             }
@@ -313,7 +321,7 @@ impl EditorUi<SunblissParams> for SunUi {
         ui.ctx().request_repaint();
         let full = ui.max_rect();
         ui.painter().rect_filled(full, CornerRadius::ZERO, col::BG);
-        let ceiling = ctx.params().ceiling.value() as f32;
+        let ceiling = ctx.params().clip_ceiling.value() as f32;
 
         // ---------------------------------------------------- header
         let header = Rect::from_min_size(full.min, vec2(full.width(), 30.0));
@@ -326,16 +334,18 @@ impl EditorUi<SunblissParams> for SunUi {
                     ui.painter().line_segment([r.center() + vec2(a.cos(), a.sin()) * 7.5, r.center() + vec2(a.cos(), a.sin()) * 9.5], Stroke::new(1.2_f32, col::ACCENT));
                 }
                 ui.label(egui::RichText::new("SUNBLISS").strong().size(13.0).color(col::TEXT));
-                ui.add_space(20.0);
+                ui.add_space(16.0);
                 self.ab_bar(ui, ctx);
-                ui.add_space(14.0);
-                self.toggle(ui, ctx, P::Bypass, "Bypass", 52.0);
-                ui.add_space(14.0);
-                ui.label(egui::RichText::new("Quality").size(10.5).color(col::DIM));
-                self.seg(ui, ctx, P::Quality, &["High", "Pristine", "Extra"], 52.0, true);
                 ui.add_space(10.0);
-                ui.label(egui::RichText::new("Render").size(10.5).color(col::DIM));
-                self.seg(ui, ctx, P::RenderQuality, &["Same", "High", "Prist.", "Extra"], 40.0, true);
+                self.toggle(ui, ctx, P::Bypass, "Bypass", 52.0);
+                ui.add_space(12.0);
+                ui.label(egui::RichText::new("Oversampling").size(10.5).color(col::DIM))
+                    .on_hover_text(TIP_OVERSAMPLING);
+                self.seg(ui, ctx, P::Oversampling, &["High", "Pristine", "Extra Pristine"], &[], 70.0, true);
+                ui.add_space(8.0);
+                ui.label(egui::RichText::new("Offline").size(10.5).color(col::DIM))
+                    .on_hover_text("Oversampling usado só no render/bounce offline.");
+                self.seg(ui, ctx, P::OfflineOversampling, &["Same", "High", "Prist.", "Extra"], &[], 40.0, true);
             });
         });
 
@@ -347,7 +357,7 @@ impl EditorUi<SunblissParams> for SunUi {
                 self.meter(ui, ctx, [P::MInL, P::MInR], disp.height(), ceiling);
                 let w = disp.width() - 2.0 * 22.0 - 16.0 - 150.0 - 8.0;
                 self.waveform(ui, ctx, w, disp.height(), ceiling);
-                // readouts
+                // Clip Clock + loudness readouts
                 let (r, resp) = ui.allocate_exact_size(vec2(150.0, disp.height()), Sense::click());
                 let p = ui.painter_at(r);
                 p.rect_filled(r, CornerRadius::same(2), col::WELL);
@@ -358,63 +368,63 @@ impl EditorUi<SunblissParams> for SunUi {
                 };
                 let cmax = ctx.get_meter(P::MClipMax);
                 line(&p, 0, "MAX CLIP", format!("{:.2} dB", cmax), if cmax > 0.0 { col::ACCENT } else { col::TEXT });
-                line(&p, 1, "AT", mmss(ctx.get_meter(P::MClipPos)), col::TEXT);
+                line(&p, 1, "MIN:SEC", mmss(ctx.get_meter(P::MClipPos)), col::TEXT);
                 line(&p, 2, "IN  LUFS-S", format!("{:.1}", ctx.get_meter(P::MLufsIn)), col::TEXT);
                 line(&p, 3, "OUT LUFS-S", format!("{:.1}", ctx.get_meter(P::MLufsOut)), col::TEXT);
                 line(&p, 4, "GUARD", format!("{:.2} dB", ctx.get_meter(P::MGuard)), col::TEXT);
                 if resp.double_clicked() {
                     ctx.params().clip_reset.fetch_add(1);
                 }
-                resp.on_hover_text("Double-click to reset the clip meter");
+                resp.on_hover_text("Clip Clock: clipping máximo e onde ocorreu. Duplo clique para zerar.\nGUARD: redução aplicada pelo limitador de saída / Clip Guard.");
                 self.meter(ui, ctx, [P::MOutL, P::MOutR], disp.height(), ceiling);
             });
         });
 
-        // ---------------------------------------------------- device chain
+        // ---------------------------------------------------- device chain (reference signal-flow order)
         let chain = Rect::from_min_max(full.min + vec2(10.0, 162.0), full.max - vec2(10.0, 10.0));
         ui.scope_builder(egui::UiBuilder::new().max_rect(chain), |ui| {
             let ch = chain.height();
             ui.horizontal(|ui| {
                 ui.spacing_mut().item_spacing.x = 6.0;
-                let linked = self.on(ctx, P::Link);
-                self.section(ui, "Input", 112.0, ch, None, |ui| {
-                    self.knob(ui, ctx, P::Input, "Trim", 44.0, true, None);
-                    self.toggle(ui, ctx, P::Link, "Link I/O", 90.0);
-                    self.knob(ui, ctx, P::LinkOffset, "Offset", 30.0, linked, None);
-                });
-                self.section(ui, "Tone", 82.0, ch, None, |ui| {
+                let linked = self.on(ctx, P::TrimLink);
+                self.section(ui, "Box Tone", 82.0, ch, None, |ui| {
                     ui.add_space(6.0);
-                    for (k, l) in ["Flat", "A", "B"].iter().enumerate() {
-                        let on = self.idx(ctx, P::Tone) == k;
+                    for (k, l) in ["Flat", "Classic", "Modern"].iter().enumerate() {
+                        let on = self.idx(ctx, P::BoxTone) == k;
                         if self.button(ui, l, 64.0, on, col::ACCENT).clicked() {
-                            self.set(ctx, P::Tone, k as f64 / 2.0);
+                            self.set(ctx, P::BoxTone, k as f64 / 2.0);
                         }
                     }
                 });
-                self.section(ui, "Clipper", 214.0, ch, Some((ctx, P::ClipOn)), |ui| {
-                    let en = self.on(ctx, P::ClipOn);
-                    self.seg(ui, ctx, P::ClipMode, &["Conv A", "Conv B", "Hard"], 64.0, en);
+                self.section(ui, "Input Trim", 104.0, ch, None, |ui| {
+                    self.knob(ui, ctx, P::InputTrim, "Input Trim", 44.0, true, None);
+                    self.toggle(ui, ctx, P::TrimLink, "Trim Link", 90.0).on_hover_text(TIP_TRIM_LINK);
+                    self.knob(ui, ctx, P::TrimLinkOffset, "Link Offset", 30.0, linked, None);
+                });
+                self.section(ui, "Clipper", 214.0, ch, Some((ctx, P::Clipper)), |ui| {
+                    let en = self.on(ctx, P::Clipper);
+                    self.seg(ui, ctx, P::ClipperMode, &["Classic", "Modern", "Hard"], &[TIP_CLASSIC, "", ""], 64.0, en);
                     ui.horizontal(|ui| {
                         ui.spacing_mut().item_spacing.x = 8.0;
-                        self.knob(ui, ctx, P::Ceiling, "Ceiling", 50.0, en, None);
+                        self.knob(ui, ctx, P::ClipCeiling, "Clip Ceiling", 50.0, en, None).on_hover_text(TIP_CEILING);
                         ui.vertical(|ui| {
                             ui.add_space(14.0);
-                            self.toggle(ui, ctx, P::ClipFilter, "Filter", 86.0);
-                            self.toggle(ui, ctx, P::Guard, "TP Guard", 86.0);
+                            self.toggle(ui, ctx, P::ClipFilter, "Clip Filter", 86.0);
+                            self.toggle(ui, ctx, P::ClipGuard, "Clip Guard", 86.0).on_hover_text(TIP_GUARD);
                         });
                     });
                 });
-                self.section(ui, "Saturation", 136.0, ch, Some((ctx, P::SatOn)), |ui| {
-                    let en = self.on(ctx, P::SatOn);
-                    self.knob(ui, ctx, P::Sat, "Amount", 56.0, en, None);
-                    self.seg(ui, ctx, P::Curve, &["A", "B"], 56.0, en);
-                    self.toggle(ui, ctx, P::Unity, "Unity", 113.0);
+                self.section(ui, "Alchemy", 92.0, ch, Some((ctx, P::AlchemyOn)), |ui| {
+                    let en = self.on(ctx, P::AlchemyOn);
+                    self.knob(ui, ctx, P::Alchemy, "Alchemy", 48.0, en, None).on_hover_text(TIP_ALCHEMY);
                 });
-                self.section(ui, "Contour", 92.0, ch, Some((ctx, P::ContourOn)), |ui| {
-                    let en = self.on(ctx, P::ContourOn);
-                    self.knob(ui, ctx, P::Contour, "Amount", 48.0, en, None);
+                self.section(ui, "Gold", 136.0, ch, Some((ctx, P::GoldOn)), |ui| {
+                    let en = self.on(ctx, P::GoldOn);
+                    self.knob(ui, ctx, P::Gold, "Gold", 56.0, en, None);
+                    self.seg(ui, ctx, P::GoldMode, &["Classic", "Modern"], &[TIP_GOLD_CLASSIC, ""], 56.0, en);
+                    self.toggle(ui, ctx, P::UnityGain, "Unity Gain", 113.0);
                 });
-                let mlink = self.on(ctx, P::MixLink);
+                let mlink = self.on(ctx, P::DryWetLink);
                 self.section(ui, "Mix", 160.0, ch, None, |ui| {
                     ui.horizontal(|ui| {
                         ui.spacing_mut().item_spacing.x = 4.0;
@@ -424,24 +434,40 @@ impl EditorUi<SunblissParams> for SunUi {
                     });
                     ui.horizontal(|ui| {
                         ui.spacing_mut().item_spacing.x = 3.0;
-                        self.toggle(ui, ctx, P::MixLink, "Link", 44.0);
+                        self.toggle(ui, ctx, P::DryWetLink, "Link", 44.0);
                         self.toggle(ui, ctx, P::WetMute, "M Wet", 44.0);
                         self.toggle(ui, ctx, P::DryMute, "M Dry", 44.0);
                     });
-                    self.toggle(ui, ctx, P::Delta, "Delta", 138.0);
+                    self.toggle(ui, ctx, P::Delta, "Delta", 138.0).on_hover_text(TIP_DELTA);
                 });
                 let rest = ui.available_width();
-                self.section(ui, "Output", rest, ch, None, |ui| {
+                self.section(ui, "Output Trim", rest, ch, None, |ui| {
                     let txt = if linked {
-                        let v = -ctx.params().input.value() + ctx.params().link_offset.value();
+                        let v = -ctx.params().input_trim.value() + ctx.params().trim_link_offset.value();
                         Some(format!("{v:+.2} dB"))
                     } else {
                         None
                     };
-                    self.knob(ui, ctx, P::Output, if linked { "Trim (linked)" } else { "Trim" }, 44.0, !linked, txt);
+                    self.knob(ui, ctx, P::OutputTrim, if linked { "Output (linked)" } else { "Output Trim" }, 44.0, !linked, txt);
                 });
             });
         });
     }
 }
 
+// Tooltips: only on controls that behave differently from the reference.
+const TIP_GUARD: &str = "Diferente do Gold Clip: garante TRUE-PEAK abaixo do Clip Ceiling (margem 0,15 dB). \
+No Gold Clip este botão quase não muda nada (−0,001 dB) e o true-peak passa até +1 dB.";
+const TIP_DELTA: &str = "Diferente: desconta o Input Trim, então você ouve só o que o processamento muda. \
+No Gold Clip o delta inclui o próprio ganho do trim.";
+const TIP_TRIM_LINK: &str = "Diferente: o link vale também para automação e host. No Gold Clip ele só funciona pela GUI.";
+const TIP_ALCHEMY: &str = "Mesma redução média de agudos do Gold Clip, mas guiada pelo envelope de pico (5 ms) em vez da \
+forma de onda amostra a amostra: sem modulação AM nos agudos quando o grave bate no teto.";
+const TIP_CLASSIC: &str = "Igual ao Classic do Gold Clip até ~+8 dB de drive (curva assimétrica, H2, platô que afunda). \
+Não reproduz o colapso dele em drive extremo (inversão de polaridade).";
+const TIP_CEILING: &str = "Sem o 'ducking' automático de até −2 dB (hold ~0,4 s) que o Gold Clip aplica após ataques \
+fortes: em drive alto o Sunbliss fica mais alto. Picos são segurados por um limitador suave, sem clamp.";
+const TIP_GOLD_CLASSIC: &str = "Equação da Soft Saturation do manual da Lavry (Apêndice III, curva exponencial C1). \
+Difere ≤ 0,2 dB da curva Classic do Gold Clip.";
+const TIP_OVERSAMPLING: &str = "Mesmos fatores do Gold Clip (4/8/16× a 44,1–48 kHz). Filtro de conversor sem aliasing \
+(rejeição a partir de fs/2); a 96 kHz plano até 40 kHz.";

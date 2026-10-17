@@ -160,12 +160,12 @@ def automation_clicks(sr=48000):
     sbb = dict(PC.BASE)
     cases = {
         "mode B->Hard": ((gcb | dict(clipper_mode="Classic"), dict(clipper_mode="Hard")),
-                         (sbb | dict(clip_mode="Converter B"), dict(clip_mode="Hard"))),
+                         (sbb | dict(clipper_mode="Classic"), dict(clipper_mode="Hard"))),
         "curve A->B (sat 6)": ((gcb | dict(gold_on_off=True, gold=6.0, gold_mode="Modern"), dict(gold_mode="Classic")),
-                               (sbb | dict(saturation_db=6.0, curve="A"), dict(curve="B"))),
-        "clip on->off": ((gcb, dict(clipper_on_off=False)), (sbb, dict(clip=False))),
+                               (sbb | dict(gold_db=6.0, gold_mode="Modern"), dict(gold_mode="Classic"))),
+        "clip on->off": ((gcb, dict(clipper_on_off=False)), (sbb, dict(clipper=False))),
         "tone Flat->A": ((gcb | dict(box_tone_mode="Flat"), dict(box_tone_mode="Modern")),
-                         (sbb | dict(tone="Flat"), dict(tone="A"))),
+                         (sbb | dict(box_tone="Flat"), dict(box_tone="Modern"))),
         "bypass on": ((gcb, dict(bypass=True)), (sbb, dict(bypass=True))),
     }
     return {k: [render_gc(*g), render_sb(*o)] for k, (g, o) in cases.items()}
@@ -182,7 +182,7 @@ def cpu(sr=48000):
     t = time.perf_counter(); gc(x, sr); res["reference_high"] = (time.perf_counter() - t) / 20.0
     sb = pedalboard.load_plugin(os.path.expanduser("~/Library/Audio/Plug-Ins/VST3/Sunbliss.vst3"))
     for q in ["High", "Pristine", "Extra"]:
-        PC.apply(sb, **{**PC.BASE, "clip_mode": "Converter B", "saturation_db": 3.0, "contour_db": 1.0, "quality": q})
+        PC.apply(sb, **{**PC.BASE, "clipper_mode": "Classic", "gold_db": 3.0, "alchemy_db": 1.0, "oversampling": {"High": "High", "Pristine": "Pristine", "Extra": "Extra Pristine"}[q]})
         sb(x[:, :48000], sr)
         t = time.perf_counter(); sb(x, sr); res[f"ours_{q.lower()}"] = (time.perf_counter() - t) / 20.0
     return res

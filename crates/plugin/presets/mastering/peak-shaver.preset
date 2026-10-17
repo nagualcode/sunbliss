@@ -3,7 +3,7 @@ name = "Peak Shaver"
 comment = "Transparent: only the loudest peaks touch the clipper"
 
 [params]
-input = 1.5
-link = true
-clip_mode = 2
-guard = true
+input_trim = 1.5
+trim_link = true
+clipper_mode = 2   # 0 Classic, 1 Modern, 2 Hard
+clip_guard = true
