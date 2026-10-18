@@ -101,7 +101,7 @@ Estrutura: y = banda baixa + k · banda alta, com k ≤ 1 vindo do nível banda 
 
 ### Oversampling
 - High 4× / Pristine 8× / Extra 16× a 44,1/48 kHz; metade disso a 88,2/96 kHz; um quarto acima disso.
-- Sunbliss: o decimador de conversor é plano até max(20 kHz; 0,4167·fs), limitado a 0,4535·fs (20 kHz a 44,1/48 kHz; 40 kHz a 96 kHz), com rejeição de 140 dB a partir de fs/2.
+- Sunbliss: o decimador de conversor é plano até max(20 kHz; 0,4167·fs), limitado a 0,4535·fs (20 kHz a 44,1/48 kHz; 40 kHz a 96 kHz), com rejeição de 100 dB a partir de fs/2 (140 dB até 2026-10-18: baixar para 100 não mudou nenhuma medida de aliasing, IMD ou transparência e economiza ~10 % de CPU).
 - Render Quality permite usar outra qualidade só no render offline. A latência reportada acompanha a troca.
 - Latência medida da referência (High, fase linear): 764 amostras (44,1/48 kHz) e 1394 (88,2/96 kHz).
 - O caminho neutro da referência é plano até 20 kHz, com −6 dB em fs/2 (o último decimador é meia-banda centrado em Nyquist, o que deixa entrar aliasing na faixa 20–24 kHz).

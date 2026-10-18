@@ -262,7 +262,7 @@ flowchart LR
 - O Alchemy divide a banda em 2965 Hz (Linkwitz-Riley de fase linear, num FIR interpolado) e
   aplica a lei de ganho da referência na taxa de oversampling, sem detector separado nem
   lookahead.
-- O decimador rejeita **tudo a partir de fs/2** (140 dB). O da referência é meia-banda e deixa
+- O decimador rejeita **tudo a partir de fs/2** (100 dB). O da referência é meia-banda e deixa
   passar aliasing na faixa de 20–24 kHz.
 - O limitador de saída tem lookahead fixo de ~1,8 ms, então a latência não muda ao ligar o
   Clip Guard. O dry é atrasado junto.

@@ -2,7 +2,7 @@
 //!
 //! Level 1 (base <-> 2x) is the "converter decimation filter": linear phase,
 //! flat to max(20 kHz, 0.4167 fs) (capped at 0.4535 fs), stopband from
-//! exactly fs/2 with 140 dB rejection, so nothing above Nyquist can alias
+//! exactly fs/2 with 100 dB rejection, so nothing above Nyquist can alias
 //! into the base band (a half-band design, as used by the reference, lets
 //! 20..24 kHz alias). At 96 kHz this keeps the band flat to 40 kHz.
 //! Levels >= 2 are short half-bands whose transition sits far above audio.
@@ -67,7 +67,9 @@ pub const MIN_PHASE_EDGE: f64 = 0.4583;
 pub fn pass_edge(fs: f64) -> f64 {
     (PASS_HZ / fs).clamp(PASS_EDGE_MIN, PASS_EDGE_MAX)
 }
-const ATTEN_DB: f64 = 140.0;
+/// 100 dB: lowering it from 140 changed no measured aliasing, IMD or
+/// transparency figure (the clip stage sets the floor) and saves ~10 % CPU.
+const ATTEN_DB: f64 = 100.0;
 /// Stop-band depth for the minimum-phase chain: the in-band phase of a
 /// minimum-phase filter grows with its stop-band depth (Hilbert pair of
 /// ln|H|), so this trades rejection for less rotation near 20 kHz.
