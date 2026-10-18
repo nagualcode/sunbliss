@@ -42,13 +42,13 @@ Os números deste relatório vêm de `lab/` (scripts reprodutíveis) e de
 | Curva estática DC, clip B (amplitude ≥ −6 dB) | ≤ 0,5 dB | máx 0.000 dB (média 0.000) | ✅ |
 | Curva estática DC, clip Hard (amplitude ≥ −6 dB) | ≤ 0,5 dB | máx 0.004 dB (média 0.003) | ✅ |
 | Seno 1 kHz −12…+8 dB, clip A: RMS de saída | ≤ 0,5 dB | máx 0.015 dB | ✅ |
-| Seno 1 kHz −12…+8 dB, clip B: RMS de saída | ≤ 0,5 dB | máx 0.089 dB | ✅ |
+| Seno 1 kHz −12…+8 dB, clip B: RMS de saída | ≤ 0,5 dB | máx 0.090 dB | ✅ |
 | Seno 1 kHz −12…+8 dB, clip Hard: RMS de saída | ≤ 0,5 dB | máx 0.025 dB | ✅ |
 | Curva de saturação A, amounts 1…6 (x > −30 dB) | ≤ 0,5 dB | máx 0.143 dB | ✅ |
 | Curva de saturação B, amounts 1…6 (x > −30 dB) | ≤ 0,5 dB | máx 0.206 dB | ✅ |
 | Unity, curva A, amount 6 (nível baixo, ganho líquido) | mesmo efeito | ref +0.030 dB, nosso +0.000 dB | ✅ |
 | Unity, curva B, amount 6 (nível baixo, ganho líquido) | mesmo efeito | ref -0.004 dB, nosso +0.000 dB | ✅ |
-| Contour 2 dB: estático 8 kHz e curva de frequência | ≤ 0,5 dB | máx 0.156 dB | ✅ |
+| Contour 2 dB: estático 8 kHz e curva de frequência | ≤ 0,5 dB | máx 0.173 dB | ✅ |
 | Resposta linear filter_A (100 Hz…20 kHz) | ≤ 0,5 dB | máx 0.035 dB | ✅ |
 | Resposta linear filter_B (100 Hz…20 kHz) | ≤ 0,5 dB | máx 0.075 dB | ✅ |
 | Resposta linear filter_Hard (100 Hz…20 kHz) | ≤ 0,5 dB | máx 0.035 dB | ✅ |
@@ -65,8 +65,8 @@ Os números deste relatório vêm de `lab/` (scripts reprodutíveis) e de
 | hard_+10 | -9.48 | -9.46 | +0.02 | -0.05 | +0.62 | +0.01 | -0.14 |
 | B_+6_satB3 | -10.45 | -10.46 | -0.01 | -0.05 | +0.56 | +0.00 | -0.14 |
 | A_+6_satA6 | -10.78 | -10.77 | +0.01 | -0.03 | +0.41 | +0.00 | -0.14 |
-| hard_+6_contour2 | -12.99 | -13.12 | -0.13 | -0.15 | +0.23 | +0.00 | -0.15 |
-| B_+8_all | -8.30 | -8.37 | -0.07 | -0.11 | +1.15 | +0.01 | -0.14 |
+| hard_+6_contour2 | -12.99 | -13.02 | -0.03 | -0.05 | +0.23 | +0.01 | -0.14 |
+| B_+8_all | -8.30 | -8.32 | -0.02 | -0.06 | +1.15 | +0.01 | -0.14 |
 
 ### Superioridade (§7.2) — mesma grade, 48 kHz, High
 
@@ -76,9 +76,9 @@ Os números deste relatório vêm de `lab/` (scripts reprodutíveis) e de
 | Aliasing+ruído, tom 9 kHz +6 dB, clip A (dB rel. fund.) | -53.7 | -87.9 | ✅ |
 | Aliasing+ruído, tom 13 kHz +6 dB, clip A (dB rel. fund.) | -47.5 | -86.0 | ✅ |
 | Aliasing+ruído, tom 15 kHz +6 dB, clip A (dB rel. fund.) | -45.9 | -77.2 | ✅ |
-| Aliasing+ruído, tom 5 kHz +6 dB, clip B (dB rel. fund.) | 20.4 | -79.5 | ✅ |
-| Aliasing+ruído, tom 9 kHz +6 dB, clip B (dB rel. fund.) | 16.8 | -84.7 | ✅ |
-| Aliasing+ruído, tom 13 kHz +6 dB, clip B (dB rel. fund.) | 12.5 | -82.4 | ✅ |
+| Aliasing+ruído, tom 5 kHz +6 dB, clip B (dB rel. fund.) | 20.4 | -79.6 | ✅ |
+| Aliasing+ruído, tom 9 kHz +6 dB, clip B (dB rel. fund.) | 16.8 | -84.8 | ✅ |
+| Aliasing+ruído, tom 13 kHz +6 dB, clip B (dB rel. fund.) | 12.5 | -82.5 | ✅ |
 | Aliasing+ruído, tom 15 kHz +6 dB, clip B (dB rel. fund.) | 17.6 | -80.7 | ✅ |
 | Aliasing+ruído, tom 5 kHz +6 dB, clip Hard (dB rel. fund.) | -43.0 | -84.7 | ✅ |
 | Aliasing+ruído, tom 9 kHz +6 dB, clip Hard (dB rel. fund.) | -86.2 | -87.5 | ✅ |
@@ -100,12 +100,12 @@ Os números deste relatório vêm de `lab/` (scripts reprodutíveis) e de
 | Recuperação pós-rajada +12 dB, clip Hard: erro do sinal de prova (dB) | 0.001 | 0.006 | ❌ |
 | Recuperação pós-rajada +12 dB, clip B: erro do sinal de prova (dB) | 0.090 | 0.094 | ❌ |
 | Clique na troca 'mode B->Hard': excesso de HF > 16 kHz em ±5 ms (dB) | +0.01 | -0.24 | ✅ |
-| Clique na troca 'curve A->B (sat 6)': excesso de HF > 16 kHz em ±5 ms (dB) | -2.63 | -2.48 | ✅ |
-| Clique na troca 'clip on->off': excesso de HF > 16 kHz em ±5 ms (dB) | -0.16 | -1.98 | ✅ |
-| Clique na troca 'tone Flat->A': excesso de HF > 16 kHz em ±5 ms (dB) | -0.00 | +0.00 | ✅ |
-| Clique na troca 'bypass on': excesso de HF > 16 kHz em ±5 ms (dB) | -0.67 | -1.90 | ✅ |
-| CPU, mesmo host (pedalboard), High, estéreo 48 kHz (% de tempo real) | 4.51 | 9.71 | ❌ |
-| CPU Pristine / Extra (nosso; a referência não expõe a troca) | — | 9.61 / 13.93 | — |
+| Clique na troca 'curve A->B (sat 6)': excesso de HF > 16 kHz em ±5 ms (dB) | -2.63 | -1.76 | ✅ |
+| Clique na troca 'clip on->off': excesso de HF > 16 kHz em ±5 ms (dB) | -0.16 | -1.88 | ✅ |
+| Clique na troca 'tone Flat->A': excesso de HF > 16 kHz em ±5 ms (dB) | -0.00 | -0.00 | ✅ |
+| Clique na troca 'bypass on': excesso de HF > 16 kHz em ±5 ms (dB) | -0.67 | -1.84 | ✅ |
+| CPU, mesmo host (pedalboard), High, estéreo 48 kHz (% de tempo real) | 2.49 | 6.04 | ❌ |
+| CPU Pristine / Extra (nosso; a referência não expõe a troca) | — | 8.96 / 15.19 | — |
 <!-- AUTO:END -->
 
 ## O que falta

@@ -1,15 +1,14 @@
 //! The complete Sunbliss processor.
 //!
 //! ```text
-//! x ─┬─ Tone ─ ×in ─┬─ detector ─ law ─ (align) ───────────────┐
-//!    │              └─ lookahead ─ ↑L ─ pad ─ Clipper ─ Contour ─ Saturation ─ ↓L ─ clamp ─┐
+//! x ─┬─ Tone ─ ×in ─ ↑L ─ pad ─ Clipper ─ Contour ─ Saturation ─ ↓L ─ clamp ─┐
 //!    │                           └─ (linear path, when nothing non-linear is active) ─────┤
 //!    │                                                                       Guard ─ ×unity ─ wet
 //!    └─ delay(latency) ─ dry ──────────────── mix / delta ─ ×out ─ bypass ─ y
 //! ```
 //! `process` never allocates; everything is sized in `new`.
 
-use crate::contour::{self, ContourStage, Detector};
+use crate::contour::{ContourStage, Law};
 use crate::converter::{ClipMode, ClipSettings, ClipStage, ClipTables, Ramp};
 use crate::curves::{self, SatACoeffs, SatB, SatBCoeffs};
 use crate::fir::Delay;
@@ -140,15 +139,13 @@ struct Chain {
     contour: Vec<ContourStage>,
     /// latency of the oversampled section, base samples
     lat: usize,
-    /// alignment of the contour gain, base samples
-    gain_delay: usize,
 }
 
 impl Chain {
     fn new(fs: f64, factor: usize, channels: usize, max_block: usize, min_phase: bool) -> Self {
         let os: Vec<Oversampler> = (0..channels).map(|_| Oversampler::new(fs, factor, max_block, min_phase)).collect();
         let top_rate = fs * factor as f64;
-        let contour: Vec<ContourStage> = (0..channels).map(|_| ContourStage::new(top_rate)).collect();
+        let contour: Vec<ContourStage> = (0..channels).map(|_| ContourStage::new(fs, top_rate)).collect();
         let l = factor;
         let total = os[0].latency_top() + contour[0].delay() as f64;
         // linear phase: exact integer; minimum phase: rounded DC group delay
@@ -158,8 +155,6 @@ impl Chain {
         let mut pad: Vec<Delay> = (0..channels).map(|_| Delay::new(pad_n.max(1))).collect();
         pad.iter_mut().for_each(|d| d.set(pad_n));
         let lat = (total + pad_n) / l;
-        let adaa_delay = if os[0].uses_adaa() { 1.0 } else { 0.0 };
-        let g = (os[0].latency_up_top() + pad_n as f64 + adaa_delay + contour[0].delay() as f64) / l as f64;
         Chain {
             l,
             os,
@@ -167,7 +162,6 @@ impl Chain {
             clip: (0..channels).map(|_| ClipStage::new(top_rate)).collect(),
             contour,
             lat,
-            gain_delay: g.round() as usize,
         }
     }
 
@@ -200,9 +194,7 @@ pub struct Engine {
     active: usize,
     pending: Option<usize>,
     qfade: Ramp,
-    detectors: Vec<Detector>,
-    look: Vec<Delay>,
-    gain_align: Vec<Delay>,
+    law: Law,
     lin_delay: Vec<Delay>,
     dry_delay: Vec<Delay>,
     guard: Guard,
@@ -239,7 +231,6 @@ pub struct Engine {
     a_sat_on: Vec<bool>,
     a_sat_a: Vec<SatACoeffs>,
     a_sat_b: Vec<SatBCoeffs>,
-    kbuf: Vec<f64>,
     dry: Vec<Vec<f64>>,
     work: Vec<Vec<f64>>,
     lin: Vec<Vec<f64>>,
@@ -267,11 +258,8 @@ impl Engine {
             Chain::new(fs, Quality::Extra.factor(fs), channels, max_block, true),
         ];
         let max_lat_os = chains.iter().map(|c| c.lat).max().unwrap();
-        let det0 = Detector::new(fs);
-        let look_n = det0.lookahead();
         let guard = Guard::new(fs, channels);
-        let max_total = tone::DELAY + look_n + max_lat_os + guard.delay();
-        let max_gd = chains.iter().map(|c| c.gain_delay).max().unwrap();
+        let max_total = tone::DELAY + max_lat_os + guard.delay();
         let ramp = |v: f64| {
             let mut r = Ramp::new(v);
             r.set_len(FADE_S * fs);
@@ -291,9 +279,7 @@ impl Engine {
             active: 0,
             pending: None,
             qfade: ramp(1.0),
-            detectors: (0..channels).map(|_| Detector::new(fs)).collect(),
-            look: (0..channels).map(|_| Delay::new(look_n)).collect(),
-            gain_align: (0..channels).map(|_| Delay::new(max_gd)).collect(),
+            law: Law::new(),
             lin_delay: (0..channels).map(|_| Delay::new(max_lat_os)).collect(),
             dry_delay: (0..channels).map(|_| Delay::new(max_total)).collect(),
             guard,
@@ -328,7 +314,6 @@ impl Engine {
             a_sat_on: vec![false; max_block],
             a_sat_a: vec![SatACoeffs::new(1.0); max_block],
             a_sat_b: vec![SatB::new().coeffs(0.0); max_block],
-            kbuf: vec![1.0; max_block],
             dry: vec![vec![0.0; max_block]; channels],
             work: vec![vec![0.0; max_block]; channels],
             lin: vec![vec![0.0; max_block]; channels],
@@ -340,7 +325,6 @@ impl Engine {
             sat_a: SatACoeffs::new(1.0),
             sat_b: SatB::new().coeffs(0.0),
         };
-        e.look.iter_mut().for_each(|d| d.set(look_n));
         e.apply_latency();
         e.set_params(&p);
         e.snap();
@@ -371,7 +355,7 @@ impl Engine {
 
     /// Total latency in base samples (report this to the host).
     pub fn latency(&self) -> usize {
-        tone::DELAY + self.look[0].delay() + self.chains[self.active].lat + self.guard.delay()
+        tone::DELAY + self.chains[self.active].lat + self.guard.delay()
     }
 
     pub fn set_offline(&mut self, offline: bool) {
@@ -407,10 +391,9 @@ impl Engine {
 
     fn apply_latency(&mut self) {
         let ch = &self.chains[self.active];
-        let (lat_os, gd) = (ch.lat, ch.gain_delay);
+        let lat_os = ch.lat;
         let total = self.latency();
         self.lin_delay.iter_mut().for_each(|d| d.set(lat_os));
-        self.gain_align.iter_mut().for_each(|d| d.set(gd));
         self.dry_delay.iter_mut().for_each(|d| d.set(total));
         self.raw_delay.iter_mut().for_each(|d| d.set(total));
     }
@@ -455,9 +438,8 @@ impl Engine {
             c.reset();
         }
         self.tone.reset();
-        self.detectors.iter_mut().for_each(|d| d.reset());
         self.io.reset();
-        for v in [&mut self.look, &mut self.gain_align, &mut self.lin_delay, &mut self.dry_delay, &mut self.raw_delay] {
+        for v in [&mut self.lin_delay, &mut self.dry_delay, &mut self.raw_delay] {
             v.iter_mut().for_each(|d| d.reset());
         }
         self.guard.reset();
@@ -575,13 +557,8 @@ impl Engine {
             let buf = &chans[ch];
             for i in 0..n {
                 let x = buf[i] * self.a_in[i];
-                // detector (normalised to ceiling, clamped to the clip level)
-                let r = x.abs() / self.a_ceil[i];
-                clip_max = clip_max.max(r);
-                let env = self.detectors[ch].tick(r.min(1.0));
-                let k = contour::law(env, self.a_contour[i]);
-                self.kbuf[i] = self.gain_align[ch].tick(k);
-                w[i] = self.look[ch].tick(x);
+                clip_max = clip_max.max(x.abs() / self.a_ceil[i]);
+                w[i] = x;
                 self.lin[ch][i] = self.lin_delay[ch].tick(w[i]);
             }
             if os_any {
@@ -593,7 +570,7 @@ impl Engine {
                     *v = chain.pad[ch].tick(*v);
                 }
                 chain.clip[ch].process(&self.tables, top, &self.a_ceil[..n], l, &cs, adaa);
-                chain.contour[ch].process(top, &self.kbuf[..n], l);
+                chain.contour[ch].process(&self.law, top, &self.a_contour[..n], &self.a_ceil[..n], l);
                 // saturation (Curve A / B crossfade), normalised to the ceiling
                 for (j, v) in top.iter_mut().enumerate() {
                     let i = j / l;

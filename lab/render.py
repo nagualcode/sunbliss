@@ -27,7 +27,7 @@ CLI = os.path.join(ROOT, "target", "release", "sunbliss-cli")
 
 DEFAULT = dict(clip=False, mode="B", filter=False, ceiling=0.0, input=0.0, output=0.0, guard=False,
                sat=0.0, curve="A", unity=False, contour=0.0, tone="Flat",
-               wet=100.0, dry=0.0, mix_link=True, delta=False, quality="high")
+               wet=100.0, dry=0.0, mix_link=True, delta=False, quality="high", min_phase=False)
 
 _GC_MODE = {"A": "Modern", "B": "Classic", "Hard": "Hard"}
 _GC_TONE = {"Flat": "Flat", "A": "Modern", "B": "Classic"}
@@ -52,6 +52,7 @@ def to_ours(s: dict) -> dict:
         sat_on=s["sat"] > 0, sat=s["sat"], curve=s["curve"].lower(), unity=s["unity"],
         contour_on=s["contour"] > 0, contour=s["contour"], tone=s["tone"].lower(),
         wet=s["wet"], dry=s["dry"], mix_link=s["mix_link"], delta=s["delta"], quality=s["quality"],
+        min_phase=s["min_phase"],
     )
 
 
