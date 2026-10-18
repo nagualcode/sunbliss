@@ -10,7 +10,7 @@ Registrado em 2026-10-16.
 | `cargo truce doctor` | OK: Xcode CLI, codesign, auval, targets x86_64+aarch64. Avisos: pluginval e clap-validator ausentes; sem SDK AAX. Faltava `truce.toml` (criado na F5). |
 | Python do laboratório | 3.11.16 em `.venv/` (pedalboard 0.9.26, numpy, scipy, soundfile, matplotlib, pyloudnorm, pymupdf, pyyaml) |
 | Referência | Gold Clip **1.5.0**, apenas **AU**: `/Library/Audio/Plug-Ins/Components/Gold Clip.component` (também há `Gold Clip Track.component`). Não há VST3 instalado. |
-| Manuais | `refs/manual/lavry-ad122-96mkiii-manual.pdf`, `refs/manual/GoldClip.pdf` (+ textos extraídos `.txt`). **O manual da MX não está na máquina.** |
+| Manuais | `refs/manual/lavry-ad122-96mkiii-manual.pdf`, `refs/manual/lavry-ad122-96mx-manual.pdf` (desde 2026-10-18), `refs/manual/GoldClip.pdf` (+ textos extraídos `.txt`). O manual da MX diz que a diferença do MX em relação ao MkIII é só o clipping analógico de entrada: o software é o mesmo ("Ver 2.1e"). |
 | Outros | `refs/lavry-45-second-test-tones/` (tons de teste da Lavry) |
 
 ## Teste de fumaça
@@ -32,6 +32,13 @@ Renderização de 1 s de seno OK.
    captura de tela do manual.
 4. **Trim Link** e **Trim Link Offset** existem só na GUI: mover `input_gain` pela
    API não move `output_gain`.
+5. **Buffer do host:** o ganho de compensação de saída da referência é decidido uma vez
+   por buffer e mantém o mínimo de dois buffers. O "ducking" dela dura 230 ms com o buffer
+   padrão do pedalboard (8192) e 5 ms com 512. Desde 2026-10-17, `lab/goldclip.py` renderiza
+   com `BUFFER = 512`, e a superioridade mede o Sunbliss com o mesmo buffer.
+6. **Licença:** o plugin é protegido por PACE/iLok. Se o `licenseDaemon` cair, o pedalboard
+   deixa de carregar o AU ("unsupported plugin format or scan failure"). Ele volta sozinho
+   ou reabrindo o iLok License Manager.
 
 ## Reprodução
 

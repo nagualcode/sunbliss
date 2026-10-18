@@ -121,7 +121,7 @@
  },
  "ours": {
   "high_linear": {
-   "latency": 585,
+   "latency": 374,
    "mag_db": [
     -0.0,
     0.0,
@@ -142,7 +142,7 @@
    }
   },
   "high_minimum": {
-   "latency": 470,
+   "latency": 259,
    "mag_db": [
     -0.0,
     0.0,
@@ -163,7 +163,7 @@
    }
   },
   "pristine_linear": {
-   "latency": 588,
+   "latency": 377,
    "mag_db": [
     -0.0,
     0.0,
@@ -184,7 +184,7 @@
    }
   },
   "pristine_minimum": {
-   "latency": 471,
+   "latency": 260,
    "mag_db": [
     -0.0,
     0.0,
@@ -205,7 +205,7 @@
    }
   },
   "extra_minimum": {
-   "latency": 471,
+   "latency": 260,
    "mag_db": [
     -0.0,
     0.0,

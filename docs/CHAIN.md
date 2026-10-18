@@ -29,12 +29,12 @@ estiver limitada a c.
 ## Sunbliss
 
 ```
-x ─┬─ Tone (base rate, FIR fase linear) ─ ×g_in ─ lookahead ─ ↑L ─┬─ [Clip Filter pré] ─ Clipper(mode, ADAA2) ─ Contour ─ Saturation ─ ↓L (decimação "conversor") ─ limitador (pico amostral | true-peak) ─ ×unity ─┐
+x ─┬─ Tone (base rate, FIR fase linear) ─ ×g_in ─ ↑L ─┬─ [Clip Filter pré] ─ Clipper(mode, ADAA2) ─ Contour ─ Saturation ─ ↓L (decimação "conversor") ─ limitador (pico amostral | true-peak) ─ ×unity ─┐
    │                                                   └─ (clip off: passa direto) ──────────────┘                                                                  │
    └─ atraso = latência total ─────────────────────────────────────────────── dry ──────────────────────────────────── mix (wet, dry, mutes, delta) ─ ×g_out ─ bypass xfade ─ y
 ```
 
 - Todo o processamento não linear roda na taxa com oversampling L.
 - O limitador de saída (pico amostral com o guard desligado, true-peak com ele ligado) tem lookahead de ~1,8 ms, sempre presente, para a latência não mudar ao ligar o guard. O dry acompanha.
-- O detector do Contour roda na taxa base sobre o sinal antes do clip, com 5 ms de lookahead (o sinal é atrasado antes do oversampling).
+- O Contour não tem detector separado nem lookahead: o ganho da banda alta vem do nível |x|/c do próprio sinal clipado, na taxa de oversampling, suavizado como média cúbica (τ 0,4 ms), como na referência (ver `docs/CONTROLS.md`).
 - O Unity vem depois do guard, então reduz o pico de verdade (comportamento da referência: "reduz a saída após todo o processamento").

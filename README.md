@@ -9,9 +9,14 @@ recriação, a partir do manual, da **Soft Saturation** e dos recursos de saída
 
 > **Aviso: uso educativo.** Este é um projeto pessoal, sem fins comerciais, sem afiliação com
 > os fabricantes citados e sem distribuição de binários. "Gold Clip" e "Lavry" são marcas dos
-> respectivos donos e aparecem aqui só como referência técnica. Nenhum código, binário ou
-> dado interno da referência foi descompilado, decifrado ou copiado: tudo foi deduzido **medindo
-> o áudio de saída** e lendo os manuais públicos.
+> respectivos donos e aparecem aqui só como referência técnica. Todos os números e curvas do
+> Sunbliss foram deduzidos **medindo o áudio de saída** da referência e lendo os manuais
+> públicos. Em 2026-10-17 houve também uma **leitura passiva do binário** da referência
+> (textos embutidos, nomes de classes C++ e tabelas de constantes em texto puro), sem
+> decifrar, depurar ou contornar a proteção (PACE) do plugin. Ela foi usada para orientar
+> hipóteses e conferir resultados. Nada dela foi copiado para o código: cada valor do Sunbliss
+> saiu de uma medição de caixa-preta que está em `lab/` (ver
+> [Leitura white-box](#leitura-white-box-do-binário)).
 
 ---
 
@@ -34,13 +39,13 @@ recriação, a partir do manual, da **Soft Saturation** e dos recursos de saída
 
 | | Referência (Gold Clip) | Sunbliss |
 |---|---|---|
-| Paridade de som (16 testes, critério ≤ 0,5 dB) | — | **16/16**, pior caso 0,27 dB |
+| Paridade de som (16 testes, critério ≤ 0,5 dB) | — | **16/16**, pior caso 0,21 dB |
 | Curva Gold Classic × gráfico do manual Lavry | ≤ 0,21 dB do Sunbliss | **rms 0,03 dB** |
 | Aliasing de tom agudo clipado (12 casos) | −86 a **+20** dB | **−77 a −89 dB** (vence 11/12) |
 | True-peak na mixagem com o guard ligado | até **+1,14 dBTP** | **≤ −0,14 dBTP** |
 | Resíduo com tudo neutro | −40,8 dBFS | **bit-transparente** |
-| Latência (High, fase linear, 48 kHz) | 764 amostras (reporta 0 ao host) | **585** (reportada corretamente) |
-| CPU, mesmo host, High, estéreo 48 kHz | **2,9 %** | 3,6 % ⚠️ ([ver ressalvas](#limitações-e-pendências)) |
+| Latência (High, fase linear, 48 kHz) | 764 amostras (reporta 0 ao host) | **374** (reportada corretamente) |
+| CPU, mesmo host, High, estéreo 48 kHz, buffer 512 | **2,7 %** | 4,3 % ⚠️ ([ver ressalvas](#limitações-e-pendências)) |
 | Formatos | AU | CLAP · VST3 · AU v2 (auval OK) |
 
 ---
@@ -49,12 +54,12 @@ recriação, a partir do manual, da **Soft Saturation** e dos recursos de saída
 
 ```mermaid
 flowchart LR
-    HW["<b>Lavry AD122-96 MkIII</b><br/>conversor A/D de hardware<br/>Soft Saturation +3/+6 dB<br/>dither HPDF, NS1–NS4"]
+    HW["<b>Lavry AD122-96 MkIII / MX</b><br/>conversor A/D de hardware<br/>Soft Saturation +3/+6 dB<br/>dither HPDF, NS1–NS4<br/>MX: clipping de entrada mais limpo"]
     GC["<b>Gold Clip 1.5.0</b><br/>plugin que se inspira no<br/>overload de conversores"]
     SB["<b>Sunbliss</b><br/>paridade medida com o Gold Clip<br/>+ equações do manual Lavry<br/>+ recursos do hardware"]
-    MAN["Manual AD122-96 MkIII<br/>(Apêndice III, Figs. 11–12)"]
+    MAN["Manuais AD122-96 MkIII e MX<br/>(Apêndice III, Figs. 11–12)"]
     HW -- "som de referência" --> GC
-    GC -- "caixa-preta: 23 parâmetros medidos" --> SB
+    GC -- "caixa-preta: 23 parâmetros medidos<br/>white-box: só pistas, conferidas por medição" --> SB
     HW --> MAN
     MAN -- "equação e curvas" --> SB
 ```
@@ -93,6 +98,10 @@ teste reprodutível em `lab/`**, e todo número deste README sai de `docs/data/*
   - **Aquecimento:** depois de um `reset()`, as primeiras ~10 mil amostras saem com a
     configuração anterior. Todo render leva 32768 amostras de silêncio na frente, que depois
     são descartadas.
+  - **Buffer do host:** parte do comportamento da referência é decidida por buffer (ver o
+    ducking abaixo). O pedalboard usa 8192 amostras por padrão, o que exagerava esse efeito
+    nas fases F1–F6. Desde 2026-10-17 os dois plugins são medidos com **buffer de 512**, como
+    num DAW típico.
 - `lab/render.py` descreve cada ajuste uma vez, num vocabulário neutro, e o traduz para os dois
   plugins. Assim, referência e Sunbliss são sempre medidos na mesma grade.
 
@@ -116,11 +125,11 @@ teste reprodutível em `lab/`**, e todo número deste README sai de `docs/data/*
 | **A ordem da cadeia é clipper → Alchemy → Gold**, e não saturação → clipper, como se supunha no início | A curva Gold normalizada pelo ceiling é idêntica a 0 e −6 dB (diferença 8e−5): ela opera sobre um sinal já limitado |
 | O **Box Tone fica antes** do Input Trim e do clipper | O harmônico em 21 kHz de um tom de 7 kHz clipado não muda com o Tone (58,17 × 58,09 dB) |
 | O **Clip Filter** é um passa-baixas de 1 polo em ~34 kHz, antes do clipper (aplicado duas vezes no modo Classic) | Harmônicos do clip iguais com e sem o filtro (Δ ≤ 0,01 dB); resposta idêntica a 48 e 96 kHz |
-| O **Clipper Classic é assimétrico** (H2 dominante já a −30 dBFS) e tem uma "memória de sobrecarga": o platô afunda com τ ≈ 72 ms | Degraus de DC (+0,5 → 0,4839; −0,5 → −0,4915) e senos graves longos |
-| Em drive extremo o Classic **diverge**: inverte a polaridade e trava em −1 | Tom agudo a +18 dB (figura abaixo). Tratado como defeito e **não** reproduzido |
-| O **Clip Guard** quase não faz nada (−0,001 dB). Quem segura o pico é um *clamp* amostral mais um **ducking** escondido de até −2 dB, com hold de ~0,4 s | Degraus de DC de 2,0 e 4,0 geram −1 e −2 dB de ganho por ~0,4 s |
+| O **Clipper Classic é um polinômio de grau 9**, assimétrico (H2 dominante já a −30 dBFS), válido até 1,32 c. Acima disso entra uma "memória de sobrecarga": a saída decai para zero com τ = 72,5 ms | 262 platôs DC: o ajuste de grau 9 deixa resíduo de 1,4e−7 (o piso do f32); graus 5 e 7 deixam 5e−2 e 3e−2. Degraus de 1,33 a 2,0 c decaem juntos, a cada 25 ms ×0,708 |
+| Em drive extremo o Classic **diverge**: a partir de ~2,5 c o decaimento começa com a polaridade invertida | DC de 3,0 → −0,83, e tom agudo a +18 dB (figura abaixo). Tratado como defeito e **não** reproduzido |
+| O **Clip Guard** quase não faz nada (−0,001 dB). Quem segura o pico é um *clamp* amostral mais um **ducking** escondido de até −2 dB, **decidido por buffer do host** | Degraus de DC de 2,0 e 4,0 geram −1 e −2 dB. A duração acompanha o buffer: 230 ms com 8192, 60 ms com 2048, 5 ms com 512, nada com 128 |
 | O **true-peak escapa** até +1,04 dB acima do ceiling | Medição com oversampling 8× |
-| O **Alchemy é instantâneo**, amostra a amostra, sem attack/release, e por isso modula os agudos com a forma de onda do grave (bandas laterais de AM) | Tom de 8 kHz + grave de 60 Hz: bandas laterais em 8 kHz ± 120 Hz |
+| O **Alchemy** divide a banda com um Linkwitz-Riley de fase linear em 2965 Hz e reduz a banda alta conforme o nível \|x\|/c, quase instantâneo: segue a forma de onda de um grave (bandas laterais de AM), mas alisa a de um agudo (média cúbica, τ 0,4 ms) | Sonda de 8 kHz sobre platôs DC (lei estática), portadoras de 1,5 Hz a 1 kHz com sonda em 15 kHz (dinâmica) |
 | A curva **Gold Modern** é linear até 0,5 c e depois uma quadrática C1 até (c, c). Daí o máximo "natural" de +2,5 dB | Ajuste com erro ≤ 0,06 dB (`docs/data/fit_modern_hermite.json`) |
 | O **Delta** do Gold Clip inclui o ganho do Input Trim, e o **Trim Link** só funciona na GUI (a automação não o enxerga) | Null tests |
 
@@ -159,6 +168,23 @@ feita na própria GUI do plugin, e esses estados opacos são reaplicados antes d
 | F5 Plugin | CLAP/VST3/AU com [truce](https://crates.io/crates/truce), GUI, presets, A/B, medidores |
 | F6 Superioridade | Suíte que mede onde o Sunbliss melhora a referência |
 | F7 Teste cego | Kit ABX com pares nivelados em loudness (`lab/abx.py`), aguardando audição com música real |
+| F8 White-box | Leitura passiva do binário da referência, lab com buffer de 512, Classic polinomial, Alchemy com a dinâmica da referência (seção abaixo) |
+
+### Leitura white-box do binário
+
+Em 2026-10-17 o binário do Gold Clip 1.5.0 foi lido **sem execução e sem decifrar nada**: o
+código principal é protegido por PACE (Fusion/Eden), e isso foi respeitado. Só foram
+inspecionados textos embutidos, nomes de classes C++ (RTTI) e tabelas de constantes em texto
+puro. O que apareceu, e como cada pista foi usada:
+
+| Pista no binário | O que mudou no projeto |
+|---|---|
+| Feito em JUCE 7 + chowdsp_utils. Os processadores se chamam `BoxToneProcessor`, `ClipperProcessor`, `MXProcessor` (Alchemy, parâmetros `mx_amount`/`mx_on_off`), `SoftSaturationProcessor` (Gold), `DryWetProcessor` | Confirma a cadeia deduzida na F1. O nome "MX" liga o Alchemy ao **AD122-96 MX**, cujo manual (agora em `refs/manual/`) diz que o MX só muda o clipping analógico de entrada, com o mesmo software do MkIII |
+| Clipper com `PolynomialWaveshaper<9>` e `<15>`, `HardClipper` e `chowdsp::ADAAWaveshaper` (ADAA de 2ª ordem por tabela) | Hipótese "o Classic é um polinômio". **Testada por caixa-preta**: 262 platôs DC dão resíduo de 1,4e−7 com grau 9 (`lab/fit_classic.py`). O Classic do Sunbliss usa esse ajuste próprio. Os coeficientes embutidos serviram só para conferir: diferença ≤ 2,7e−4 |
+| Uma cópia modificada da classe de oversampling do JUCE, `OversamplingWithCeiling`, com o código-fonte embutido em texto. Depois da decimação ela mede o pico amostral do **buffer**, aplica ganho `ceiling/pico` em rampa e mantém o mínimo de dois buffers | O "ducking com hold de 0,4 s" era o buffer de 8192 do pedalboard. **Confirmado por caixa-preta** (230 / 60 / 5 / 0 ms com 8192 / 2048 / 512 / 128) e o lab passou a usar buffer de 512 |
+| Oversampling: meia-banda FIR equiripple (Linear) e meia-banda **IIR polifásica allpass** (Minimum), com as especificações do JUCE | Explica o plano até 20 kHz e o aliasing de 20–24 kHz. Estudado para o nosso modo Min Phase (ver pendências) |
+| `LinearPhaseCrossover` com protótipo SVF passa-baixas no `MXProcessor` | Hipótese "o Alchemy divide a banda com um filtro de 2ª ordem de fase linear". **Medido**: a banda baixa é 1/(1+(f/2965 Hz)⁴), com erro de 0,0024 |
+| `chowdsp::LinearPhaseEQ<PeakingFilter>` no Box Tone | Confirma "EQ linear de fase linear". Nosso FIR já fica a ≤ 0,006 dB, então não foi reparametrizado |
 
 ---
 
@@ -233,6 +259,9 @@ flowchart LR
 - Todo o processamento não linear roda na taxa com oversampling.
 - O clipper usa **ADAA de 2ª ordem** (anti-aliasing por antiderivada) sobre curvas tabeladas.
   Num tom de 9 kHz clipado a 4×, dá −82 dB de aliasing, contra −64 dB do ADAA de 1ª ordem.
+- O Alchemy divide a banda em 2965 Hz (Linkwitz-Riley de fase linear, num FIR interpolado) e
+  aplica a lei de ganho da referência na taxa de oversampling, sem detector separado nem
+  lookahead.
 - O decimador rejeita **tudo a partir de fs/2** (140 dB). O da referência é meia-banda e deixa
   passar aliasing na faixa de 20–24 kHz.
 - O limitador de saída tem lookahead fixo de ~1,8 ms, então a latência não muda ao ligar o
@@ -293,19 +322,19 @@ A troca de opção faz crossfade de 10 ms. Medições em [`docs/TONE.md`](docs/T
 | Controle | O que faz |
 |---|---|
 | **Liga/desliga** (quadrado laranja) | Ativa o clipper. Desligado, o Gold ignora o ceiling e trabalha em relação a 0 dBFS, como na referência. |
-| **Classic** ≠ | O modelo de conversor "à moda antiga": compressão suave e **assimétrica** desde níveis baixos (2º harmônico, som mais quente), e o platô **afunda** quando a sobrecarga se prolonga (τ ≈ 72 ms), o que dá corpo aos graves. *Diferença:* não reproduz o colapso da referência em drive extremo (inversão de polaridade). |
+| **Classic** ≠ | O modelo de conversor "à moda antiga": compressão suave e **assimétrica** desde níveis baixos (2º harmônico, som mais quente), seguindo o polinômio de grau 9 medido na referência. Acima de 1,32 do teto, o platô **afunda** enquanto a sobrecarga dura (τ = 72,5 ms), o que dá corpo aos graves. *Diferença:* não reproduz a inversão de polaridade da referência em drive extremo (a partir de ~2,5× o teto). |
 | **Modern** | Linear até ~90 % do teto, com um joelho curto até 0,98 do ceiling. Limpo abaixo do teto e um pouco mais macio que o Hard. |
 | **Hard** | Linear até o teto e corte reto. O mais transparente até o ponto de clip e o mais "duro" depois dele. |
-| **Clip Ceiling** (−36…0 dB) ≠ | O teto do clipper. O Alchemy e o Gold usam esse mesmo teto como referência. *Diferença:* o Sunbliss não faz o "ducking" escondido de até −2 dB que a referência aplica depois de ataques fortes. Por isso, em drive alto, sai até ~0,5 LU mais alto, sem bombeamento. |
+| **Clip Ceiling** (−36…0 dB) ≠ | O teto do clipper. O Alchemy e o Gold usam esse mesmo teto como referência. *Diferença:* o Sunbliss não faz o "ducking" escondido de até −2 dB que a referência aplica depois de ataques fortes. Lá ele é decidido por buffer do host e dura dois buffers (~5 ms com 512, ~0,2 s com 8192). Aqui o pico é segurado por um limitador suave que não depende do buffer. |
 | **Clip Filter** | Passa-baixas suave (1 polo, ~34 kHz) antes do clipper. Arredonda transientes ultrassônicos e deixa o clip um pouco menos áspero. No modo Classic o efeito é dobrado (−2,6 dB em 20 kHz). |
 | **Clip Guard** ≠ | Garante que o **true-peak** (o pico real depois da conversão D/A) fique 0,15 dB abaixo do ceiling. *Diferença:* na referência este botão quase não muda nada e o true-peak passa até +1 dB do teto. Com o guard desligado, o Sunbliss segura os picos *amostrais* no teto. |
 
-### Alchemy ≠
+### Alchemy
 
 | Controle | O que faz |
 |---|---|
 | **Liga/desliga** | Ativa o Alchemy. |
-| **Alchemy** (0…2 dB) | Suaviza os agudos **só quando o sinal chega perto do teto**: um shelf de agudos dinâmico (−1,9 dB acima de ~4 kHz com 2 dB, num sinal a −0,5 dB do teto). Doma a aspereza que o clip cria nos picos sem escurecer o resto da música. *Diferença:* a referência aplica isso amostra a amostra, o que modula os pratos com a forma de onda do bumbo. O Sunbliss segue o envelope de pico (lookahead de 5 ms), com a mesma redução média e sem as bandas laterais de AM. |
+| **Alchemy** (0…2 dB) | Suaviza os agudos **só quando o sinal chega perto do teto**: a banda acima de ~3 kHz (crossover de 2965 Hz) desce até −4 dB com 2 dB de amount. Doma a aspereza que o clip cria nos picos sem escurecer o resto da música. Como na referência, o ganho segue a forma de onda dos graves: um bumbo que bate no teto "respira" nos pratos (bandas laterais de AM). Em sinais agudos ele é alisado (τ 0,4 ms), então não distorce o próprio agudo. A lei, o crossover e a dinâmica foram medidos na referência e batem em até 0,07 dB. |
 
 ### Gold
 
@@ -371,29 +400,35 @@ brutos estão em [`docs/data/parity.json`](docs/data/parity.json) e
 
 | Teste | Critério | Resultado |
 |---|---|---|
-| Curva estática DC, Clipper Modern / Classic / Hard | ≤ 0,5 dB | máx 0,27 / 0,21 / 0,27 dB |
-| Seno 1 kHz −12…+8 dB, RMS de saída (Modern / Classic / Hard) | ≤ 0,5 dB | máx 0,015 / 0,105 / 0,022 dB |
+| Curva estática DC, Clipper Modern / Classic / Hard | ≤ 0,5 dB | máx 0,022 / **0,000** / 0,004 dB |
+| Seno 1 kHz −12…+8 dB, RMS de saída (Modern / Classic / Hard) | ≤ 0,5 dB | máx 0,015 / 0,090 / 0,025 dB |
 | Curvas Gold Modern / Classic, amounts 1…6 | ≤ 0,5 dB | máx 0,14 / 0,21 dB |
 | Unity Gain (Modern / Classic, amount 6) | mesmo efeito | ref +0,03 / −0,004 dB, nosso 0,000 dB |
-| Alchemy 2 dB: curva estática a 8 kHz e curva de frequência | ≤ 0,5 dB | máx 0,16 dB |
-| Clip Filter (Modern / Classic / Hard), 100 Hz…20 kHz | ≤ 0,5 dB | máx 0,035 / 0,077 / 0,035 dB |
+| Alchemy 2 dB: curva estática a 8 kHz e curva de frequência | ≤ 0,5 dB | máx 0,17 dB |
+| Alchemy: lei estática (8 amounts × 30 níveis) e forma em frequência | — | máx 0,005 / 0,03 dB |
+| Alchemy: dinâmica, portadoras de 1,5 Hz a 1 kHz (ganho médio / bandas laterais em 2f) | — | máx 0,07 dB / ~1 dB (1,9 no pior caso) |
+| Clip Filter (Modern / Classic / Hard), 100 Hz…20 kHz | ≤ 0,5 dB | máx 0,035 / 0,075 / 0,035 dB |
 | Box Tone Modern / Classic, 100 Hz…20 kHz | ≤ 0,5 dB | máx 0,006 / 0,004 dB |
 
-Loudness na mixagem sintética, com os mesmos ajustes nos dois plugins:
+As curvas DC são medidas com platôs de bordas suaves (2 ms). Uma borda dura faz o caminho
+limitado em banda "tocar", e esse overshoot (com o limitador reagindo a ele) não faz parte da
+curva estática. Antes disso, o erro estático era de 0,21 a 0,27 dB.
+
+Loudness na mixagem sintética, com os mesmos ajustes nos dois plugins (buffer de 512):
 
 | Ajuste | LUFS ref | LUFS nosso | Δ | True-peak ref | True-peak nosso (guard on) |
 |---|---|---|---|---|---|
-| Classic +6 | −13,09 | −13,08 | +0,01 | +1,14 | −0,15 |
-| Modern +6 | −13,01 | −12,95 | +0,06 | +0,26 | −0,14 |
-| Hard +6 | −13,14 | −12,96 | +0,18 | +0,34 | −0,14 |
-| Hard +10 | −9,99 | −9,46 | +0,53 | +0,62 | −0,14 |
-| Classic +6, Gold Classic 3 | −10,76 | −10,46 | +0,30 | +0,56 | −0,14 |
-| Modern +6, Gold Modern 6 | −11,00 | −10,77 | +0,24 | +0,35 | −0,14 |
-| Hard +6, Alchemy 2 | −13,07 | −13,12 | −0,06 | +0,23 | −0,15 |
-| Classic +8, tudo ligado | −8,75 | −8,37 | +0,38 | +1,15 | −0,14 |
+| Classic +6 | −13,03 | −13,08 | −0,05 | +1,14 | −0,15 |
+| Modern +6 | −12,90 | −12,95 | −0,05 | +0,26 | −0,14 |
+| Hard +6 | −12,96 | −12,96 | −0,01 | +0,34 | −0,14 |
+| Hard +10 | −9,48 | −9,46 | +0,02 | +0,62 | −0,14 |
+| Classic +6, Gold Classic 3 | −10,45 | −10,46 | −0,01 | +0,56 | −0,14 |
+| Modern +6, Gold Modern 6 | −10,78 | −10,77 | +0,01 | +0,41 | −0,14 |
+| Hard +6, Alchemy 2 | −12,99 | −13,02 | −0,03 | +0,23 | −0,14 |
+| Classic +8, tudo ligado | −8,30 | −8,32 | −0,02 | +1,15 | −0,14 |
 
-O Δ positivo em drive alto é deliberado: a referência abaixa o volume com o ducking escondido, e
-o Sunbliss não.
+Com buffer de 512 o ducking da referência dura ~5 ms, e o loudness dos dois fica a ±0,05 LU.
+A diferença de até +0,53 LU publicada antes vinha do buffer de 8192 do pedalboard.
 
 ### Onde o Sunbliss melhora a referência
 
@@ -414,32 +449,46 @@ em tons agudos.
 | True-peak na mixagem, Classic +3 / +6 / +10 (guard on) | +0,21 / +1,14 / +0,74 dBTP | −0,15 / −0,15 / −0,14 dBTP |
 | Resíduo abaixo do teto (−6 dB), Modern e Hard | −94,5 dB | **−108,5 dB** |
 | Tudo neutro: resíduo de pico | −40,8 dBFS | **bit-exato** |
-| Recuperação depois de rajada de +12 dB (Hard / Classic) | erro de 2,04 / 0,80 dB | **0,006 / 0,094 dB** |
+| Recuperação depois de rajada de +12 dB (Hard / Classic), buffer 512 | erro de 0,001 / 0,090 dB | 0,006 / 0,094 dB (empate; com buffer de 8192 a referência erra 2,04 / 0,80 dB) |
 | Clique ao trocar de modo, curva, clip, tone ou bypass (HF > 16 kHz em ±5 ms) | +0,01 … −2,6 dB | 0,00 … −2,5 dB (nenhum excesso de HF nos 5 casos) |
 
 ### Modos de oversampling (48 kHz)
 
+Dados de `lab/os_modes.py` (`docs/data/os_modes.json`), buffer de 512:
+
 | Modo | Latência (amostras) | Plano até | Aliasing Hard 9 / 13 / 15 kHz |
 |---|---|---|---|
-| Ref. High Linear | 764 | 20 kHz | −86 / −82 / −78 dB |
-| Ref. High Minimum | 710 | 23 kHz | −97 / −94 / −95 dB |
-| Ref. Pristine Linear | 769 | 20 kHz | −98 / −92 / −98 dB |
-| **Sunbliss High Linear** | **585** | 20 kHz | −87 / −87 / −77 dB |
-| **Sunbliss High Min Phase** | **472** | 22 kHz | −83 / −83 / −78 dB |
-| **Sunbliss Pristine Min Phase** | 472 | 22 kHz | −100 / −94 / −108 dB |
+| Ref. High Linear | 764 | 20 kHz | −86 / −78 / −78 dB |
+| Ref. High Minimum | 711 | 23 kHz | −97 / −81 / −95 dB |
+| Ref. Pristine Linear | 769 | 20 kHz | −98 / −81 / −98 dB |
+| **Sunbliss High Linear** | **374** | 20 kHz | −88 / −87 / −77 dB |
+| **Sunbliss High Min Phase** | **259** | 22 kHz | −83 / −83 / −78 dB |
+| **Sunbliss Pristine Linear** | 377 | 20 kHz | −91 / −94 / −91 dB |
+| **Sunbliss Pristine Min Phase** | 260 | 22 kHz | −100 / −94 / −108 dB |
 
 ---
 
 ## Limitações e pendências
 
-- **CPU (regressão):** antes da seção Converter e da cadeia de fase mínima, o Sunbliss gastava
-  2,3 % contra 2,7 % da referência. Na medição atual (17/10/2026, três rodadas) gasta **3,5 %
-  contra 2,9 %**. Pristine e Extra: 4,5 % e 6,3 %. Ainda não investigamos a causa.
+- **CPU:** com buffer de 512 e Classic + Gold 3 + Alchemy 1, o Sunbliss gasta **4,3 % contra
+  2,7 %** da referência (Pristine 5,5 %, Extra 8,1 %). O benchmark do CLI, sem a sobrecarga do
+  host, dá 1,8 % (High) e 5,2 % (Extra). O Alchemy custa ~0,3 %: o FIR do crossover pula o
+  cálculo quando está desligado, e a raiz cúbica da suavização é um passo de Newton. O resto
+  da diferença ainda não foi investigado.
 - **High + Min Phase:** a referência tem menos aliasing nesse modo (−97 contra −83 dB a 9 kHz).
-  Rodar o clipper a 8× no High resolveria, ao custo de ~40 % mais CPU.
+  Os componentes que sobram em nós são aliases discretos (harmônicos 19 a 23 de um tom de
+  9 kHz dobrando na taxa de 192 kHz, já atenuados pelo ADAA2). Não vêm do decimador
+  (aumentar a precisão da transformação para fase mínima não muda nada) nem do limitador
+  (desligá-lo também não). No modo linear, nós e a referência empatamos (−87,5 contra −86,2 dB).
+  O modo mínimo dela é meia-banda IIR polifásica, segundo o binário. Por que isso reduz os
+  aliases da etapa de clip ainda é uma pergunta em aberto. −83 dB é inaudível.
 - **Clipper Hard:** IMD 19+20 kHz e aliasing a 15 kHz ficam até 1 dB atrás da referência.
-- **Divergências deliberadas:** não reproduzimos o ducking do ceiling, o colapso do Classic em
-  drive extremo nem a modulação amostra a amostra do Alchemy.
+- **Divergências deliberadas:** não reproduzimos o ducking por buffer do ceiling nem a
+  inversão de polaridade do Classic em drive extremo. O decaimento τ72 acima de 1,32 c e a
+  modulação do Alchemy pela forma de onda são reproduzidos como na referência, porque um
+  estágio analógico perto do clip também se comporta assim.
+- **Polinômios não identificados:** o binário tem mais quatro polinômios de grau 15 que não
+  correspondem a nenhum modo medido (Modern e Hard não são polinômios).
 - **Validação em DAWs** (Ableton, Reaper, Logic) e **teste cego com música real** (F7) ainda
   dependem de audição humana. O kit está pronto em `lab/abx.py`.
 - O estado **Extra Pristine + Minimum** da referência não pôde ser recapturado: as duas
@@ -484,7 +533,7 @@ target/release/sunbliss-cli in.wav out.wav --set clip_mode=hard --set input=6   
 crates/core/     núcleo DSP em f64 (sem alocação no áudio)
   converter.rs     clipper Classic/Modern/Hard com ADAA2 e memória de sobrecarga
   curves.rs        curvas do clipper e das saturações (Gold Classic = equação da Lavry)
-  contour.rs       Alchemy
+  contour.rs       Alchemy (lei medida, crossover Linkwitz-Riley, suavização de 0,4 ms)
   tone.rs          Box Tone (FIR de fase linear)
   oversampling.rs  oversampling linear e de fase mínima
   guard.rs         limitador de saída / true-peak
