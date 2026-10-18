@@ -18,7 +18,7 @@ Os números deste relatório vêm de `lab/` (scripts reprodutíveis) e de
 | F3 Núcleo DSP | ✅ | `crates/core` (f64, sem alocação, testado) + `crates/cli`. Paridade abaixo. |
 | F4 Blocos restantes | ✅ | Contour, Tone (`docs/TONE.md`), mixer/delta, unity, guard de true-peak. A/B fica no plugin (F5). |
 | F5 Plugin truce | ✅ (exceto DAWs) | CLAP/VST3/AU instalados; **auval: AU VALIDATION SUCCEEDED**; VST3 e AU produzem o mesmo áudio que o CLI (pior caso −140 dBFS, limite do f32); GUI original (`docs/fig/gui.png`); 6 presets de fábrica; A/B salvo na sessão; Clip Meter com posição. Teste em Ableton/Reaper/Logic depende do usuário. |
-| F6 Superioridade | ✅ com ressalvas | ver tabela: vence em aliasing (11/12; perde 0,8 dB no Hard 15 kHz), true-peak, transparência e cliques; perde 1 dB no IMD do Hard e em CPU (4,3 % × 2,7 %, buffer de 512, 2026-10-18). Com buffer de 512 a "recuperação pós-rajada" deixou de ser vitória: a vantagem medida antes era o ducking da referência esticado pelo buffer de 8192. |
+| F6 Superioridade | ✅ com ressalvas | ver tabela: vence em aliasing (11/12; perde 0,8 dB no Hard 15 kHz), true-peak, transparência, cliques e CPU (68 contra 113 Mciclos por s de áudio, medidos pelo contador de ciclos do processo); perde 1 dB no IMD do Hard. Com buffer de 512 a "recuperação pós-rajada" deixou de ser vitória: a vantagem medida antes era o ducking da referência esticado pelo buffer de 8192. |
 | F8 White-box | ✅ | Leitura passiva do binário (sem decifrar a proteção) usada só como fonte de hipóteses. Cada hipótese foi confirmada por caixa-preta: ducking por buffer (lab com buffer de 512), Classic = polinômio de grau 9 (`lab/fit_classic.py`), Alchemy = crossover LR 2965 Hz + lei tabelada + média cúbica com τ 0,4 ms (`lab/probe_alchemy_inst.py`, `lab/probe_alchemy_mod.py`). Ver README, seção "Leitura white-box". |
 | F7 Teste cego | kit pronto | `lab/abx.py`: pares nivelados (±0,1 dB LUFS), página ABX + preferência (`lab/out/abx/index.html`), placar com p binomial. Autoteste com a mixagem sintética OK. **Falta o usuário ouvir com música real.** |
 
@@ -31,9 +31,9 @@ Os números deste relatório vêm de `lab/` (scripts reprodutíveis) e de
 - **Converter B:** polinômio de grau 9 sem termo constante, ajustado a 262 platôs DC com bordas suaves em |u| ≤ 1,31 c (resíduo 1,4e−7, o piso do f32 da E/S). A curva tem H2 dominante desde −30 dBFS, como na referência. A "memória de sobrecarga" começa em 1,32 c, a borda do polinômio, com τ = 72,5 ms, ambos medidos. **Não** reproduzimos a inversão de polaridade da referência em drive extremo (≳ 2,5 c).
 - **Decimador de conversor:** fase linear, plano até max(20 kHz; 0,4167·fs) (≤ 0,4535·fs), **stopband a partir de fs/2** (100 dB; era 140, sem diferença medida), sem aliasing na banda. A referência usa meia-banda e aceita aliasing entre 20 e 24 kHz. O projeto integra a resposta só até o corte (Simpson), o que tira o ripple de quadratura (~3e−5) que aparecia com grade uniforme.
 - **Limitador de saída / Overshoot Guard:** estimador de true-peak 4× com refinamento parabólico, mínimo móvel com hold e média (sem cliques), linkado entre canais. Com o guard desligado, ele substitui o clamp amostral, mantendo picos amostrais ≤ ceiling. Com o guard ligado, mantém TP ≤ ceiling − 0,15 dB. O clamp duro depois do decimador foi abandonado: num tom agudo clipado, a fundamental limitada em banda chega a 4/π do platô, e o clamp gerava aliasing de −23 dB.
-- **CPU:** produto escalar vetorizado (8 acumuladores, FMA), linhas de atraso sem divisão inteira, ring duplicado no guard, coeficientes de saturação recalculados só quando mudam. No Alchemy, o histórico do FIR é guardado por fase (produto escalar contíguo), o filtro é pulado quando o Alchemy está desligado, e a raiz cúbica é um passo de Newton a partir da anterior. Benchmark do CLI (estéreo, 48 kHz, Classic + Gold 3 + Alchemy 1): High 1,8 %, Extra 5,2 %.
+- **CPU:** produto escalar vetorizado (8 acumuladores, FMA), linhas de atraso sem divisão inteira, ring duplicado no guard, coeficientes de saturação recalculados só quando mudam. No Alchemy, o histórico do FIR é guardado por fase (produto escalar contíguo), o filtro é pulado quando o Alchemy está desligado, e a raiz cúbica é um passo de Newton a partir da anterior. Desde 2026-10-18: rejeição do decimador de 100 dB (era 140), kernels simétricos dobrados, decimação meia-banda contígua, FIR do Alchemy com 1,2 ms. CLI, em ciclos (Classic + Gold 3 + Alchemy 1): High ~70, Extra ~195 Mciclos por s de áudio.
 - **Anti-overshoot da referência:** ela faz um "ducking" de até −2 dB depois de bordas íngremes acima do teto. Pelo código embutido no binário (classe `OversamplingWithCeiling`), o ganho é decidido uma vez por buffer do host, a partir do pico amostral depois da decimação, e mantém o mínimo de dois buffers. Medido: 230 / 60 / 5 / 0 ms com buffers de 8192 / 2048 / 512 / 128. Não replicamos, porque depender do buffer do host não é um comportamento de conversor. Com buffer de 512 o loudness dos dois fica a ±0,05 LU.
-- **Alchemy:** crossover 1/(1+(f/2965)⁴) de fase linear (FIR interpolado), lei k(nível, amount) tabelada a partir de platôs DC com uma sonda de 8 kHz, e suavização k = LPF(k³)^(1/3) com τ 0,4 ms, identificada com portadoras de 1,5 Hz a 1 kHz. Ganho médio em até 0,07 dB e bandas laterais em ~1 dB da referência. Sem detector separado e sem lookahead: a latência no High linear caiu de 585 para 374 amostras.
+- **Alchemy:** crossover 1/(1+(f/2965)⁴) de fase linear (FIR interpolado), lei k(nível, amount) tabelada a partir de platôs DC com uma sonda de 8 kHz, e suavização k = LPF(k³)^(1/3) com τ 0,4 ms, identificada com portadoras de 1,5 Hz a 1 kHz. Ganho médio em até 0,07 dB e bandas laterais em ~1 dB da referência. Sem detector separado e sem lookahead: a latência no High linear caiu de 585 para 374 amostras (328 depois do decimador de 100 dB).
 
 <!-- AUTO:BEGIN -->
 ### Paridade (§7.1) — Sunbliss × referência, 48 kHz, qualidade High
@@ -63,51 +63,52 @@ Os números deste relatório vêm de `lab/` (scripts reprodutíveis) e de
 |---|---|---|---|---|---|---|---|
 | clipB_+6 | -13.03 | -13.08 | -0.05 | -0.07 | +1.14 | -0.00 | -0.15 |
 | clipA_+6 | -12.90 | -12.95 | -0.05 | -0.08 | +0.26 | +0.00 | -0.14 |
-| hard_+6 | -12.96 | -12.96 | -0.01 | -0.04 | +0.34 | +0.01 | -0.14 |
-| hard_+10 | -9.48 | -9.46 | +0.02 | -0.05 | +0.62 | +0.01 | -0.14 |
+| hard_+6 | -12.96 | -12.96 | -0.01 | -0.04 | +0.34 | +0.00 | -0.14 |
+| hard_+10 | -9.48 | -9.46 | +0.02 | -0.04 | +0.62 | +0.01 | -0.14 |
 | B_+6_satB3 | -10.45 | -10.46 | -0.01 | -0.05 | +0.56 | +0.00 | -0.14 |
 | A_+6_satA6 | -10.78 | -10.77 | +0.01 | -0.03 | +0.41 | +0.00 | -0.14 |
-| hard_+6_contour2 | -12.99 | -13.02 | -0.03 | -0.05 | +0.23 | +0.01 | -0.14 |
-| B_+8_all | -8.30 | -8.32 | -0.02 | -0.06 | +1.15 | +0.01 | -0.14 |
+| hard_+6_contour2 | -12.99 | -13.03 | -0.04 | -0.05 | +0.23 | +0.01 | -0.14 |
+| B_+8_all | -8.30 | -8.32 | -0.02 | -0.05 | +1.15 | +0.01 | -0.14 |
 
 ### Superioridade (§7.2) — mesma grade, 48 kHz, High
 
 | Métrica | Referência | Sunbliss | Vence? |
 |---|---|---|---|
 | Aliasing+ruído, tom 5 kHz +6 dB, clip A (dB rel. fund.) | -42.1 | -88.7 | ✅ |
-| Aliasing+ruído, tom 9 kHz +6 dB, clip A (dB rel. fund.) | -53.7 | -87.9 | ✅ |
-| Aliasing+ruído, tom 13 kHz +6 dB, clip A (dB rel. fund.) | -47.5 | -86.0 | ✅ |
+| Aliasing+ruído, tom 9 kHz +6 dB, clip A (dB rel. fund.) | -53.7 | -88.1 | ✅ |
+| Aliasing+ruído, tom 13 kHz +6 dB, clip A (dB rel. fund.) | -47.5 | -85.9 | ✅ |
 | Aliasing+ruído, tom 15 kHz +6 dB, clip A (dB rel. fund.) | -45.9 | -77.2 | ✅ |
 | Aliasing+ruído, tom 5 kHz +6 dB, clip B (dB rel. fund.) | 20.4 | -79.6 | ✅ |
-| Aliasing+ruído, tom 9 kHz +6 dB, clip B (dB rel. fund.) | 16.8 | -84.8 | ✅ |
-| Aliasing+ruído, tom 13 kHz +6 dB, clip B (dB rel. fund.) | 12.5 | -82.5 | ✅ |
+| Aliasing+ruído, tom 9 kHz +6 dB, clip B (dB rel. fund.) | 16.8 | -84.9 | ✅ |
+| Aliasing+ruído, tom 13 kHz +6 dB, clip B (dB rel. fund.) | 12.5 | -82.4 | ✅ |
 | Aliasing+ruído, tom 15 kHz +6 dB, clip B (dB rel. fund.) | 17.6 | -80.7 | ✅ |
 | Aliasing+ruído, tom 5 kHz +6 dB, clip Hard (dB rel. fund.) | -43.0 | -84.7 | ✅ |
-| Aliasing+ruído, tom 9 kHz +6 dB, clip Hard (dB rel. fund.) | -86.2 | -87.5 | ✅ |
-| Aliasing+ruído, tom 13 kHz +6 dB, clip Hard (dB rel. fund.) | -78.1 | -86.6 | ✅ |
+| Aliasing+ruído, tom 9 kHz +6 dB, clip Hard (dB rel. fund.) | -86.2 | -87.7 | ✅ |
+| Aliasing+ruído, tom 13 kHz +6 dB, clip Hard (dB rel. fund.) | -78.1 | -86.5 | ✅ |
 | Aliasing+ruído, tom 15 kHz +6 dB, clip Hard (dB rel. fund.) | -77.8 | -77.0 | ❌ |
 | Produtos < 18 kHz, 19+20 kHz +3 dB, clip A (dB) | -34.4 | -36.8 | ✅ |
 | Produtos < 18 kHz, 19+20 kHz +3 dB, clip B (dB) | -34.5 | -37.1 | ✅ |
 | Produtos < 18 kHz, 19+20 kHz +3 dB, clip Hard (dB) | -37.9 | -36.9 | ❌ |
-| True-peak na mixagem, B_+3 (dBTP; nosso com guard) | +0.21 | -0.15 | ✅ |
+| True-peak na mixagem, B_+3 (dBTP; nosso com guard) | +0.21 | -0.10 | ✅ |
 |   loudness no mesmo ajuste (LUFS) | -15.92 | -15.97 | ✅ |
 | True-peak na mixagem, B_+6 (dBTP; nosso com guard) | +1.14 | -0.15 | ✅ |
 |   loudness no mesmo ajuste (LUFS) | -13.03 | -13.11 | ✅ |
 | True-peak na mixagem, B_+10 (dBTP; nosso com guard) | +0.74 | -0.14 | ✅ |
 |   loudness no mesmo ajuste (LUFS) | -9.68 | -9.62 | ✅ |
-| Resíduo abaixo do teto (−6 dB), clip A, banda 20 kHz (dB rms) | -94.5 | -108.5 | ✅ |
-| Resíduo abaixo do teto (−6 dB), clip Hard, banda 20 kHz (dB rms) | -94.5 | -108.5 | ✅ |
+| Resíduo abaixo do teto (−6 dB), clip A, banda 20 kHz (dB rms) | -94.5 | -107.9 | ✅ |
+| Resíduo abaixo do teto (−6 dB), clip Hard, banda 20 kHz (dB rms) | -94.5 | -107.9 | ✅ |
 | Resíduo abaixo do teto (−6 dB), clip B, banda 20 kHz (dB rms) | -70.8 | -70.7 | ✅ |
 | Tudo neutro: resíduo de pico (dBFS) | -40.8 | -400.0 | ✅ |
 | Recuperação pós-rajada +12 dB, clip Hard: erro do sinal de prova (dB) | 0.001 | 0.006 | ❌ |
 | Recuperação pós-rajada +12 dB, clip B: erro do sinal de prova (dB) | 0.090 | 0.094 | ❌ |
-| Clique na troca 'mode B->Hard': excesso de HF > 16 kHz em ±5 ms (dB) | +0.01 | -0.21 | ✅ |
-| Clique na troca 'curve A->B (sat 6)': excesso de HF > 16 kHz em ±5 ms (dB) | -2.63 | -2.08 | ✅ |
-| Clique na troca 'clip on->off': excesso de HF > 16 kHz em ±5 ms (dB) | -0.16 | -1.87 | ✅ |
+| Clique na troca 'mode B->Hard': excesso de HF > 16 kHz em ±5 ms (dB) | +0.01 | -0.18 | ✅ |
+| Clique na troca 'curve A->B (sat 6)': excesso de HF > 16 kHz em ±5 ms (dB) | -2.63 | -2.40 | ✅ |
+| Clique na troca 'clip on->off': excesso de HF > 16 kHz em ±5 ms (dB) | -0.16 | -2.03 | ✅ |
 | Clique na troca 'tone Flat->A': excesso de HF > 16 kHz em ±5 ms (dB) | -0.00 | -0.00 | ✅ |
-| Clique na troca 'bypass on': excesso de HF > 16 kHz em ±5 ms (dB) | -0.67 | -1.84 | ✅ |
-| CPU, mesmo host (pedalboard), High, estéreo 48 kHz (% de tempo real) | 2.70 | 4.29 | ❌ |
-| CPU Pristine / Extra (nosso; a referência não expõe a troca) | — | 5.51 / 8.06 | — |
+| Clique na troca 'bypass on': excesso de HF > 16 kHz em ±5 ms (dB) | -0.67 | -1.99 | ✅ |
+| CPU, mesmo host (pedalboard, buffer 512), High, estéreo 48 kHz: Mciclos por s de áudio | 113 | 68 | ✅ |
+|   ≈ % de um núcleo a 4 GHz | 2.83 | 1.70 | — |
+| CPU Pristine / Extra, Mciclos por s (nosso; a referência não expõe a troca) | — | 110 / 195 | — |
 <!-- AUTO:END -->
 
 ## O que falta
@@ -116,7 +117,7 @@ Os números deste relatório vêm de `lab/` (scripts reprodutíveis) e de
 - **Fase mínima:** falta recapturar "Extra Pristine + Minimum": nas duas tentativas saiu idêntico ao High Minimum, inclusive no aliasing.
 - **High + Min Phase:** a referência tem menos aliasing (−97 contra −83 dB a 9 kHz). Os nossos componentes são aliases discretos da etapa de clip (harmônicos 19 a 23 de 9 kHz dobrando a 192 kHz). Não vêm do decimador (mais precisão na transformação para fase mínima não muda nada) nem do limitador (desligá-lo não muda nada). Segundo o binário, o modo mínimo dela usa meia-banda IIR polifásica. Por que isso reduz os aliases da etapa de clip ainda está em aberto.
 - **Ressalvas de superioridade:** IMD 19+20 kHz no Hard (−36,9 contra −37,9 dB) e aliasing no Hard a 15 kHz (−77,0 contra −77,8 dB). As duas diferenças são ≤ 1 dB.
-- **CPU:** 4,3 % contra 2,7 % no host (buffer de 512). A sobrecarga por chamada de bloco e o resto da diferença ainda não foram investigados.
+- **CPU:** resolvido. A medição antiga (tempo de relógio de um render de 20 s) chegou a apontar 4,3 % contra 2,7 %. Medindo ciclos do laço de render (`lab/cpu_probe.py`), o Sunbliss gasta 68 Mciclos por s de áudio e a referência 113. Maior custo restante: Alchemy, ~12 Mciclos/s sobre um caminho de clip de ~58.
 - **Polinômios não identificados:** o binário tem mais quatro polinômios de grau 15 que não correspondem a nenhum modo medido.
 - **F7:** pares nivelados e ABX. Precisa de música real em `refs/music/` (não baixamos música).
 
@@ -133,10 +134,10 @@ Dados atualizados (buffer de 512, código de 2026-10-18) em `docs/data/os_modes.
 | Ref. Extra Pristine Linear | 771 | idem | 0 / 0 / 0 | −98 / −81 / −97 |
 | Ref. High Minimum | 711 | 23 kHz | +0,8 / +2,4 / +6,8 | −97 / −81 / −95 |
 | Ref. Pristine Minimum | 711 | 23 kHz | idem | −101 / −75 / −96 |
-| Sunbliss High Linear | **374** | 20 kHz | 0 / 0 / 0 | −88 / −87 / −77 |
-| Sunbliss Pristine Linear | 377 | 20 kHz | 0 / 0 / 0 | −91 / −94 / −91 |
-| Sunbliss High Min Phase | **259** | 22 kHz | +1,2 / +3,8 / +14 | −83 / −83 / −78 |
-| Sunbliss Pristine Min Phase | 260 | 22 kHz | +1,3 / +3,9 / +14 | −100 / −94 / −108 |
+| Sunbliss High Linear | **328** | 20 kHz | 0 / 0 / 0 | −88 / −87 / −77 |
+| Sunbliss Pristine Linear | 330 | 20 kHz | 0 / 0 / 0 | −91 / −94 / −91 |
+| Sunbliss High Min Phase | **250** | 22 kHz | +1,2 / +3,8 / +14 | −83 / −83 / −78 |
+| Sunbliss Pristine Min Phase | 251 | 22 kHz | +1,3 / +3,9 / +14 | −100 / −94 / −108 |
 
 Leitura:
 - Na referência, quase toda a latência (~700 amostras) vem do lookahead do ganho de compensação por buffer (`OversamplingWithCeiling`, segundo o binário). A fase mínima dela economiza só ~55 amostras e muda o *formato* do transiente (sem pré-ringing).

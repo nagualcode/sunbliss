@@ -80,8 +80,15 @@ def sup_md(s):
             row(f"Clique na troca '{k}': excesso de HF > 16 kHz em ±5 ms (dB)", r, o, o <= max(r, 0.5), "{:+.2f}")
     if "cpu" in s:
         c = s["cpu"]
-        row("CPU, mesmo host (pedalboard), High, estéreo 48 kHz (% de tempo real)", 100 * c["reference_high"], 100 * c["ours_high"], c["ours_high"] < c["reference_high"], "{:.2f}")
-        L.append(f"| CPU Pristine / Extra (nosso; a referência não expõe a troca) | — | {100*c['ours_pristine']:.2f} / {100*c['ours_extra']:.2f} | — |")
+        if "unit" in c:  # cycles per second of audio (lab/cpu_probe.py)
+            mc = lambda v: v / 1e6
+            row("CPU, mesmo host (pedalboard, buffer 512), High, estéreo 48 kHz: Mciclos por s de áudio", mc(c["reference_high"]), mc(c["ours_high"]), c["ours_high"] < c["reference_high"], "{:.0f}")
+            pc = lambda v: 100 * v / 4e9
+            L.append(f"|   ≈ % de um núcleo a 4 GHz | {pc(c['reference_high']):.2f} | {pc(c['ours_high']):.2f} | — |")
+            L.append(f"| CPU Pristine / Extra, Mciclos por s (nosso; a referência não expõe a troca) | — | {mc(c['ours_pristine']):.0f} / {mc(c['ours_extra']):.0f} | — |")
+        else:
+            row("CPU, mesmo host (pedalboard), High, estéreo 48 kHz (% de tempo real)", 100 * c["reference_high"], 100 * c["ours_high"], c["ours_high"] < c["reference_high"], "{:.2f}")
+            L.append(f"| CPU Pristine / Extra (nosso; a referência não expõe a troca) | — | {100*c['ours_pristine']:.2f} / {100*c['ours_extra']:.2f} | — |")
     return "\n".join(L)
 
 

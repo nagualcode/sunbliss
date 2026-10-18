@@ -44,8 +44,8 @@ recriação, a partir do manual, da **Soft Saturation** e dos recursos de saída
 | Aliasing de tom agudo clipado (12 casos) | −86 a **+20** dB | **−77 a −89 dB** (vence 11/12) |
 | True-peak na mixagem com o guard ligado | até **+1,14 dBTP** | **≤ −0,14 dBTP** |
 | Resíduo com tudo neutro | −40,8 dBFS | **bit-transparente** |
-| Latência (High, fase linear, 48 kHz) | 764 amostras (reporta 0 ao host) | **374** (reportada corretamente) |
-| CPU, mesmo host, High, estéreo 48 kHz, buffer 512 | **2,7 %** | 4,3 % ⚠️ ([ver ressalvas](#limitações-e-pendências)) |
+| Latência (High, fase linear, 48 kHz) | 764 amostras (reporta 0 ao host) | **328** (reportada corretamente) |
+| CPU, mesmo host, High, estéreo 48 kHz, buffer 512 (Mciclos por s de áudio) | 113 | **68** (−40 %) |
 | Formatos | AU | CLAP · VST3 · AU v2 (auval OK) |
 
 ---
@@ -283,7 +283,7 @@ um tooltip explicando a diferença (marcados com **≠** abaixo).
 | **A / B** | Duas memórias de ajuste. Clique alterna entre elas; Alt-clique copia o ajuste atual para a outra. Ficam salvas na sessão do DAW. |
 | **Bypass** | Desliga o processamento com crossfade (sem clique). A saída fica alinhada à latência, então ligar e desligar não desloca o áudio. |
 | **Oversampling: High / Pristine / Extra Pristine** | Quanto o sinal é ampliado em taxa antes das não linearidades: 4×, 8× e 16× a 44,1/48 kHz (metade disso a 88,2/96 kHz). Mais oversampling = menos aliasing e mais CPU. |
-| **Linear / Min Phase** | Tipo dos filtros de oversampling. *Linear*: sem rotação de fase, mais latência, com pré-ringing simétrico. *Min Phase*: menos latência (472 contra 585 amostras), sem pré-ringing, com uma leve rotação de fase perto dos agudos. |
+| **Linear / Min Phase** | Tipo dos filtros de oversampling. *Linear*: sem rotação de fase, mais latência, com pré-ringing simétrico. *Min Phase*: menos latência (250 contra 328 amostras), sem pré-ringing, com uma leve rotação de fase perto dos agudos. |
 | **Offline: Same / High / Prist. / Extra** | Usa outra qualidade só no render/bounce offline (por exemplo, High ao mixar e Extra no export). *Same* = a mesma do tempo real. |
 
 ### Medidores
@@ -461,20 +461,25 @@ Dados de `lab/os_modes.py` (`docs/data/os_modes.json`), buffer de 512:
 | Ref. High Linear | 764 | 20 kHz | −86 / −78 / −78 dB |
 | Ref. High Minimum | 711 | 23 kHz | −97 / −81 / −95 dB |
 | Ref. Pristine Linear | 769 | 20 kHz | −98 / −81 / −98 dB |
-| **Sunbliss High Linear** | **374** | 20 kHz | −88 / −87 / −77 dB |
-| **Sunbliss High Min Phase** | **259** | 22 kHz | −83 / −83 / −78 dB |
-| **Sunbliss Pristine Linear** | 377 | 20 kHz | −91 / −94 / −91 dB |
-| **Sunbliss Pristine Min Phase** | 260 | 22 kHz | −100 / −94 / −108 dB |
+| **Sunbliss High Linear** | **328** | 20 kHz | −88 / −87 / −77 dB |
+| **Sunbliss High Min Phase** | **250** | 22 kHz | −83 / −83 / −78 dB |
+| **Sunbliss Pristine Linear** | 330 | 20 kHz | −91 / −94 / −91 dB |
+| **Sunbliss Pristine Min Phase** | 251 | 22 kHz | −100 / −94 / −108 dB |
 
 ---
 
 ## Limitações e pendências
 
-- **CPU:** com buffer de 512 e Classic + Gold 3 + Alchemy 1, o Sunbliss gasta **4,3 % contra
-  2,7 %** da referência (Pristine 5,5 %, Extra 8,1 %). O benchmark do CLI, sem a sobrecarga do
-  host, dá 1,8 % (High) e 5,2 % (Extra). O Alchemy custa ~0,3 %: o FIR do crossover pula o
-  cálculo quando está desligado, e a raiz cúbica da suavização é um passo de Newton. O resto
-  da diferença ainda não foi investigado.
+- **CPU:** o lab mede **ciclos de CPU** do laço de render, lidos dos contadores do próprio
+  processo (`lab/cpu_probe.py`). Com buffer de 512, Classic + Gold 3 + Alchemy 1, a
+  referência gasta **113 Mciclos por segundo de áudio** (oscila de 102 a 125: o contador
+  inclui a thread de segurança do PACE), e o Sunbliss **68** (Pristine 110, Extra 195). A
+  medição antiga por tempo de relógio, com um único render de 20 s, dava "4,3 % contra 2,7 %".
+  Ela oscilava dezenas de por cento com a frequência do processador e com o tipo de núcleo, e
+  o resultado se inverteu ao medir ciclos. Otimizações de 2026-10-18: rejeição do decimador
+  de 140 para 100 dB (sem diferença medida de aliasing, IMD ou transparência), filtros
+  simétricos dobrados, decimação meia-banda contígua e o FIR do crossover do Alchemy com
+  1,2 ms.
 - **High + Min Phase:** a referência tem menos aliasing nesse modo (−97 contra −83 dB a 9 kHz).
   Os componentes que sobram em nós são aliases discretos (harmônicos 19 a 23 de um tom de
   9 kHz dobrando na taxa de 192 kHz, já atenuados pelo ADAA2). Não vêm do decimador

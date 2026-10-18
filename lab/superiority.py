@@ -171,20 +171,25 @@ def automation_clicks(sr=48000):
     return {k: [render_gc(*g), render_sb(*o)] for k, (g, o) in cases.items()}
 
 
-def cpu(sr=48000):
-    """Seconds of CPU per second of stereo audio, same host (pedalboard)."""
-    import plugin_check as PC
-    x = mix(sr, 20.0).astype(np.float32)
+def cpu(sr=48000, secs=100.0, reps=3):
+    """CPU cycles per second of stereo audio, same host (pedalboard, buffer
+    512): lab/cpu_probe.py reads the process's own cycle counter around the
+    render loop (median of `reps` runs). Wall-clock timings of single renders
+    swung by tens of percent with clock frequency and core type, and the
+    reference's licence check made whole-process counts noisy."""
+    import subprocess
+
+    def run(which, q):
+        out = subprocess.run([sys.executable, "cpu_probe.py", which, q, str(secs)],
+                             capture_output=True, text=True, check=True).stdout
+        return float(out.split()[-1]) / secs
+
     res = {}
-    gc = G.plugin()
-    G.set_params(clipper_on_off=True, clipper_mode="Classic", gold_on_off=True, gold=3.0, alchemy_on_off=True, alchemy=1.0)
-    gc(x[:, :48000], sr)
-    t = time.perf_counter(); gc(x, sr); res["reference_high"] = (time.perf_counter() - t) / 20.0
-    sb = G._Fixed(pedalboard.load_plugin(os.path.expanduser("~/Library/Audio/Plug-Ins/VST3/Sunbliss.vst3")))
-    for q in ["High", "Pristine", "Extra"]:
-        PC.apply(sb, **{**PC.BASE, "clipper_mode": "Classic", "gold_db": 3.0, "alchemy_db": 1.0, "oversampling": {"High": "High", "Pristine": "Pristine", "Extra": "Extra Pristine"}[q]})
-        sb(x[:, :48000], sr)
-        t = time.perf_counter(); sb(x, sr); res[f"ours_{q.lower()}"] = (time.perf_counter() - t) / 20.0
+    for which, qs in (("ref", ["high"]), ("ours", ["high", "pristine", "extra"])):
+        for q in qs:
+            runs = sorted(run(which, q) for _ in range(reps))
+            res[f"{'reference' if which == 'ref' else 'ours'}_{q}"] = runs[len(runs) // 2]
+    res["unit"] = "cycles per second of audio"
     return res
 
 

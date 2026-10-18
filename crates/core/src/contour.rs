@@ -10,7 +10,7 @@
 //! The low-pass is an interpolated FIR: a short FIR designed at the base
 //! rate and run with its taps M = top/base samples apart, times two
 //! length-M boxcars that null its images at multiples of the base rate.
-//! About 1.6 ms of taps per base sample instead of per top sample; the
+//! About 1.2 ms of taps per base sample instead of per top sample; the
 //! history is kept per phase (n mod M) so each output is one contiguous
 //! dot product (the taps are symmetric, so no reversal is needed).
 //!
@@ -32,7 +32,7 @@ use crate::fir::{dot, Delay};
 /// Crossover of the band split (Hz).
 pub const SPLIT_HZ: f64 = 2965.0;
 /// Span of the base-rate FIR (s).
-const SPAN_S: f64 = 0.0016;
+const SPAN_S: f64 = 0.0012;
 /// Gain smoothing time constant (s).
 pub const SMOOTH_TAU_S: f64 = 0.0004;
 
@@ -185,7 +185,7 @@ impl ContourStage {
                 b * b
             }
         };
-        // rectangular window: the response has decayed to ~1e-5 at the span edges,
+        // rectangular window: the response has decayed to ~1e-4 at the span edges,
         // and any taper would bend the narrow main lobe
         let g = freq_sampled(n, 0.0, |f| 1.0 / (1.0 + (f / fc).powi(4)) / boxes2(f));
         let mut delay = Delay::new((n - 1) * m / 2 + m);
