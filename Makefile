@@ -9,7 +9,7 @@ test:
 	cargo test --release
 
 install: build
-	cargo truce install --clap --vst3 --au2 -p sunbliss
+	cargo truce install --au2 -p sunbliss
 
 validate:
 	auval -v aufx Snbl JSon | tail -3
@@ -25,7 +25,7 @@ report:
 	cd lab && ../$(PY) report.py > /dev/null
 
 check: install
-	cd lab && ../$(PY) plugin_check.py vst3 && ../$(PY) plugin_check.py au
+	cd lab && ../$(PY) plugin_check.py au
 
 lab: parity superiority report
 

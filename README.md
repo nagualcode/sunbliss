@@ -7,8 +7,9 @@ recriação, a partir do manual, da **Soft Saturation** e dos recursos de saída
 
 ![Interface do Sunbliss](docs/fig/gui.png)
 
-> **Aviso: uso educativo.** Este é um projeto pessoal, sem fins comerciais, sem afiliação com
-> os fabricantes citados e sem distribuição de binários. "Gold Clip" e "Lavry" são marcas dos
+> **Aviso: uso educativo.** Este é um projeto pessoal, sem fins comerciais e sem afiliação com
+> os fabricantes citados. Os binários do próprio Sunbliss são publicados nos
+> [releases](https://github.com/nagualcode/sunbliss/releases), gratuitos e sem garantia. "Gold Clip" e "Lavry" são marcas dos
 > respectivos donos e aparecem aqui só como referência técnica. Todos os números e curvas do
 > Sunbliss foram deduzidos **medindo o áudio de saída** da referência e lendo os manuais
 > públicos. Em 2026-10-17 houve também uma **leitura passiva do binário** da referência
@@ -30,7 +31,7 @@ recriação, a partir do manual, da **Soft Saturation** e dos recursos de saída
 6. [Guia dos controles](#guia-dos-controles)
 7. [Métricas](#métricas)
 8. [Limitações e pendências](#limitações-e-pendências)
-9. [Compilar, instalar e reproduzir](#compilar-instalar-e-reproduzir)
+9. [Instalar (binário pronto)](#instalar-binário-pronto) · [Compilar e reproduzir](#compilar-instalar-e-reproduzir)
 10. [Estrutura do repositório](#estrutura-do-repositório)
 
 ---
@@ -501,6 +502,28 @@ Dados de `lab/os_modes.py` (`docs/data/os_modes.json`), buffer de 512:
 
 ---
 
+## Instalar (binário pronto)
+
+O release [v0.2.0](https://github.com/nagualcode/sunbliss/releases/tag/v0.2.0) traz o plugin
+compilado para **macOS em Apple Silicon (arm64)**, um zip por formato:
+
+| Arquivo | Formato | Pasta de destino |
+|---|---|---|
+| `Sunbliss-au-v0.2.0-macos-arm64.zip` | Audio Unit (Logic, Live, Reaper…) | `~/Library/Audio/Plug-Ins/Components` |
+| `Sunbliss-vst3-v0.2.0-macos-arm64.zip` | VST3 | `~/Library/Audio/Plug-Ins/VST3` |
+| `Sunbliss-clap-v0.2.0-macos-arm64.zip` | CLAP | `~/Library/Audio/Plug-Ins/CLAP` |
+
+```sh
+# exemplo com o AU
+unzip Sunbliss-au-v0.2.0-macos-arm64.zip -d ~/Library/Audio/Plug-Ins/Components
+# o binário é assinado só ad-hoc (sem Developer ID nem notarização):
+xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/Components/Sunbliss.component
+auval -v aufx Snbl JSon   # deve terminar em "AU VALIDATION SUCCEEDED"
+```
+
+Reabra o DAW para ele reconhecer o plugin. `SHA256SUMS.txt` no release tem os hashes dos
+zips. Macs Intel: compile a partir do código (abaixo).
+
 ## Compilar, instalar e reproduzir
 
 Requisitos: Rust ≥ 1.92, `cargo-truce` 6.3, macOS (para AU/auval) e Python 3.11 para o
@@ -509,7 +532,7 @@ laboratório.
 ```sh
 make build        # cargo build --release (plugin + CLI)
 make test         # testes do núcleo DSP
-make install      # instala CLAP, VST3 e AU v2 em ~/Library/Audio/Plug-Ins
+make install      # instala o AU v2 em ~/Library/Audio/Plug-Ins/Components (o lab usa o AU)
 make validate     # auval -v aufx Snbl JSon
 make bench        # CPU do CLI por qualidade
 ```

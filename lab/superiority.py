@@ -142,7 +142,7 @@ def automation_clicks(sr=48000):
         go(p2 | {k: v for k, v in p1.items() if k not in p2}); b = gc(x.astype(np.float32), sr, reset=False)
         return hf(sw) - max(hf(a), hf(b))
 
-    sb = G._Fixed(pedalboard.load_plugin(os.path.expanduser("~/Library/Audio/Plug-Ins/VST3/Sunbliss.vst3")))
+    sb = G._Fixed(pedalboard.load_plugin(os.path.expanduser(PC.PATHS["au"])))
 
     def render_sb(p1, p2):
         def go(p):
