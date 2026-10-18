@@ -24,13 +24,73 @@ pub(crate) fn dot(a: &[f64], b: &[f64]) -> f64 {
     s
 }
 
+/// Dot product with a symmetric kernel c (c[k] == c[t-1-k]), given as its
+/// first half `half` (and the centre tap `mid` when t is odd): the window is
+/// folded first, so a t-tap linear-phase FIR costs ~t/2 multiplies.
+#[inline]
+pub(crate) fn dot_sym(half: &[f64], mid: f64, w: &[f64]) -> f64 {
+    let h = half.len();
+    let t = w.len();
+    let (front, back) = (&w[..h], &w[t - h..]);
+    let mut acc = [0.0f64; 8];
+    let cf = front.chunks_exact(8);
+    let cb = back.rchunks_exact(8);
+    let ch = half.chunks_exact(8);
+    let (rf, rb, rh) = (cf.remainder(), cb.remainder(), ch.remainder());
+    for ((x, y), c) in cf.zip(cb).zip(ch) {
+        for k in 0..8 {
+            acc[k] = c[k].mul_add(x[k] + y[7 - k], acc[k]);
+        }
+    }
+    let mut s = ((acc[0] + acc[1]) + (acc[2] + acc[3])) + ((acc[4] + acc[5]) + (acc[6] + acc[7]));
+    // remainders: rf is the tail of the front half, rb the head of the back half
+    let r = rh.len();
+    for k in 0..r {
+        s = rh[k].mul_add(rf[k] + rb[r - 1 - k], s);
+    }
+    if t % 2 == 1 {
+        s = mid.mul_add(w[h], s);
+    }
+    s
+}
+
+/// A dense kernel, folded when it is symmetric (linear phase).
+struct Taps {
+    full: Vec<f64>,
+    /// Some((first half, centre)) when symmetric
+    sym: Option<(Vec<f64>, f64)>,
+}
+
+impl Taps {
+    fn new(c: Vec<f64>) -> Self {
+        let t = c.len();
+        let peak = c.iter().fold(0.0f64, |m, v| m.max(v.abs()));
+        let symmetric = t >= 16 && (0..t / 2).all(|k| (c[k] - c[t - 1 - k]).abs() <= 1e-12 * peak);
+        let sym = symmetric.then(|| {
+            let half = (0..t / 2).map(|k| 0.5 * (c[k] + c[t - 1 - k])).collect();
+            (half, if t % 2 == 1 { c[t / 2] } else { 0.0 })
+        });
+        Taps { full: c, sym }
+    }
+    fn len(&self) -> usize {
+        self.full.len()
+    }
+    #[inline]
+    fn dot(&self, w: &[f64]) -> f64 {
+        match &self.sym {
+            Some((half, mid)) => dot_sym(half, *mid, w),
+            None => dot(&self.full, w),
+        }
+    }
+}
+
 enum Kernel {
     /// Reversed dense coefficients.
-    Dense(Vec<f64>),
+    Dense(Taps),
     /// A single non-zero tap at reversed position `pos`.
     Single { pos: usize, gain: f64 },
     /// Taps at even reversed positions (compacted) plus one extra tap.
-    HalfBand { even: Vec<f64>, center_pos: usize, center: f64 },
+    HalfBand { even: Taps, center_pos: usize, center: f64 },
 }
 
 /// 2x interpolator: `n` input samples -> `2n` output samples.
@@ -53,7 +113,7 @@ impl Up2 {
             if nz.len() == 1 {
                 Kernel::Single { pos: nz[0], gain: c[nz[0]] }
             } else {
-                Kernel::Dense(c)
+                Kernel::Dense(Taps::new(c))
             }
         };
         Up2 { phases: [mk(0), mk(1)], hist: t - 1, buf: vec![0.0; t - 1 + max_in], delay: (n - 1) as f64 / 2.0 }
@@ -73,7 +133,7 @@ impl Up2 {
                 Kernel::Dense(c) => {
                     let t = c.len();
                     for i in 0..n {
-                        out[2 * i + p] = dot(c, &self.buf[i..i + t]);
+                        out[2 * i + p] = c.dot(&self.buf[i..i + t]);
                     }
                 }
                 Kernel::Single { pos, gain } => {
@@ -93,6 +153,8 @@ pub struct Down2 {
     kernel: Kernel,
     hist: usize,
     buf: Vec<f64>,
+    /// half-band only: the even-position samples of `buf`, contiguous
+    ev: Vec<f64>,
     /// Group delay in input-rate samples.
     pub delay: f64,
 }
@@ -107,11 +169,12 @@ impl Down2 {
         let kernel = if n % 4 == 3 && odd_nz.len() == 1 {
             // half-band: all non-zero taps at even reversed positions, plus centre
             let even: Vec<f64> = (0..n.div_ceil(2)).map(|j| r.get(2 * j).copied().unwrap_or(0.0)).collect();
-            Kernel::HalfBand { even, center_pos: odd_nz[0], center: r[odd_nz[0]] }
+            Kernel::HalfBand { even: Taps::new(even), center_pos: odd_nz[0], center: r[odd_nz[0]] }
         } else {
-            Kernel::Dense(r)
+            Kernel::Dense(Taps::new(r))
         };
-        Down2 { kernel, hist: n - 1, buf: vec![0.0; n - 1 + max_in], delay: (n - 1) as f64 / 2.0 }
+        let ev = if matches!(kernel, Kernel::HalfBand { .. }) { vec![0.0; (n - 1 + max_in).div_ceil(2)] } else { Vec::new() };
+        Down2 { kernel, hist: n - 1, buf: vec![0.0; n - 1 + max_in], ev, delay: (n - 1) as f64 / 2.0 }
     }
 
     pub fn reset(&mut self) {
@@ -128,27 +191,18 @@ impl Down2 {
             Kernel::Dense(c) => {
                 let t = c.len();
                 for i in 0..n {
-                    out[i] = dot(c, &self.buf[2 * i..2 * i + t]);
+                    out[i] = c.dot(&self.buf[2 * i..2 * i + t]);
                 }
             }
             Kernel::HalfBand { even, center_pos, center } => {
+                // de-interleave once per block so each output is a contiguous dot
+                let ne = (h + m).div_ceil(2);
+                for (k, v) in self.ev[..ne].iter_mut().enumerate() {
+                    *v = self.buf[2 * k];
+                }
+                let e = even.len();
                 for i in 0..n {
-                    let b = &self.buf[2 * i..];
-                    let mut s = [0.0f64; 4];
-                    let e = even.len();
-                    let chunks = e / 4;
-                    for c in 0..chunks {
-                        let j = 4 * c;
-                        s[0] += even[j] * b[2 * j];
-                        s[1] += even[j + 1] * b[2 * j + 2];
-                        s[2] += even[j + 2] * b[2 * j + 4];
-                        s[3] += even[j + 3] * b[2 * j + 6];
-                    }
-                    let mut acc = (s[0] + s[1]) + (s[2] + s[3]);
-                    for j in 4 * chunks..e {
-                        acc += even[j] * b[2 * j];
-                    }
-                    out[i] = acc + center * b[*center_pos];
+                    out[i] = even.dot(&self.ev[i..i + e]) + center * self.buf[2 * i + center_pos];
                 }
             }
             Kernel::Single { pos, gain } => {
