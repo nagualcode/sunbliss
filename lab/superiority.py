@@ -142,7 +142,7 @@ def automation_clicks(sr=48000):
         go(p2 | {k: v for k, v in p1.items() if k not in p2}); b = gc(x.astype(np.float32), sr, reset=False)
         return hf(sw) - max(hf(a), hf(b))
 
-    sb = pedalboard.load_plugin(os.path.expanduser("~/Library/Audio/Plug-Ins/VST3/Sunbliss.vst3"))
+    sb = G._Fixed(pedalboard.load_plugin(os.path.expanduser("~/Library/Audio/Plug-Ins/VST3/Sunbliss.vst3")))
 
     def render_sb(p1, p2):
         def go(p):
@@ -180,7 +180,7 @@ def cpu(sr=48000):
     G.set_params(clipper_on_off=True, clipper_mode="Classic", gold_on_off=True, gold=3.0, alchemy_on_off=True, alchemy=1.0)
     gc(x[:, :48000], sr)
     t = time.perf_counter(); gc(x, sr); res["reference_high"] = (time.perf_counter() - t) / 20.0
-    sb = pedalboard.load_plugin(os.path.expanduser("~/Library/Audio/Plug-Ins/VST3/Sunbliss.vst3"))
+    sb = G._Fixed(pedalboard.load_plugin(os.path.expanduser("~/Library/Audio/Plug-Ins/VST3/Sunbliss.vst3")))
     for q in ["High", "Pristine", "Extra"]:
         PC.apply(sb, **{**PC.BASE, "clipper_mode": "Classic", "gold_db": 3.0, "alchemy_db": 1.0, "oversampling": {"High": "High", "Pristine": "Pristine", "Extra": "Extra Pristine"}[q]})
         sb(x[:, :48000], sr)

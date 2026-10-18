@@ -40,10 +40,10 @@ Os números deste relatório vêm de `lab/` (scripts reprodutíveis) e de
 |---|---|---|---|
 | Curva estática DC, clip A (amplitude ≥ −6 dB) | ≤ 0,5 dB | máx 0.274 dB (média 0.107) | ✅ |
 | Curva estática DC, clip B (amplitude ≥ −6 dB) | ≤ 0,5 dB | máx 0.209 dB (média 0.056) | ✅ |
-| Curva estática DC, clip Hard (amplitude ≥ −6 dB) | ≤ 0,5 dB | máx 0.267 dB (média 0.070) | ✅ |
+| Curva estática DC, clip Hard (amplitude ≥ −6 dB) | ≤ 0,5 dB | máx 0.271 dB (média 0.108) | ✅ |
 | Seno 1 kHz −12…+8 dB, clip A: RMS de saída | ≤ 0,5 dB | máx 0.015 dB | ✅ |
 | Seno 1 kHz −12…+8 dB, clip B: RMS de saída | ≤ 0,5 dB | máx 0.105 dB | ✅ |
-| Seno 1 kHz −12…+8 dB, clip Hard: RMS de saída | ≤ 0,5 dB | máx 0.022 dB | ✅ |
+| Seno 1 kHz −12…+8 dB, clip Hard: RMS de saída | ≤ 0,5 dB | máx 0.025 dB | ✅ |
 | Curva de saturação A, amounts 1…6 (x > −30 dB) | ≤ 0,5 dB | máx 0.143 dB | ✅ |
 | Curva de saturação B, amounts 1…6 (x > −30 dB) | ≤ 0,5 dB | máx 0.206 dB | ✅ |
 | Unity, curva A, amount 6 (nível baixo, ganho líquido) | mesmo efeito | ref +0.030 dB, nosso +0.000 dB | ✅ |
@@ -59,14 +59,14 @@ Os números deste relatório vêm de `lab/` (scripts reprodutíveis) e de
 
 | Ajuste | Ref LUFS | Nosso LUFS | Δ LU | Δ LU (guard on) | TP ref | TP nosso | TP nosso+guard |
 |---|---|---|---|---|---|---|---|
-| clipB_+6 | -13.09 | -13.08 | +0.01 | -0.01 | +1.14 | -0.00 | -0.15 |
-| clipA_+6 | -13.01 | -12.95 | +0.06 | +0.03 | +0.26 | +0.00 | -0.14 |
-| hard_+6 | -13.14 | -12.96 | +0.18 | +0.14 | +0.34 | +0.01 | -0.14 |
-| hard_+10 | -9.99 | -9.46 | +0.53 | +0.47 | +0.62 | +0.01 | -0.14 |
-| B_+6_satB3 | -10.76 | -10.46 | +0.30 | +0.26 | +0.56 | +0.00 | -0.14 |
-| A_+6_satA6 | -11.00 | -10.77 | +0.24 | +0.19 | +0.35 | +0.00 | -0.14 |
-| hard_+6_contour2 | -13.07 | -13.12 | -0.06 | -0.07 | +0.23 | +0.00 | -0.15 |
-| B_+8_all | -8.75 | -8.37 | +0.38 | +0.35 | +1.15 | +0.01 | -0.14 |
+| clipB_+6 | -13.03 | -13.08 | -0.05 | -0.07 | +1.14 | -0.00 | -0.15 |
+| clipA_+6 | -12.90 | -12.95 | -0.05 | -0.08 | +0.26 | +0.00 | -0.14 |
+| hard_+6 | -12.96 | -12.96 | -0.01 | -0.04 | +0.34 | +0.01 | -0.14 |
+| hard_+10 | -9.48 | -9.46 | +0.02 | -0.05 | +0.62 | +0.01 | -0.14 |
+| B_+6_satB3 | -10.45 | -10.46 | -0.01 | -0.05 | +0.56 | +0.00 | -0.14 |
+| A_+6_satA6 | -10.78 | -10.77 | +0.01 | -0.03 | +0.41 | +0.00 | -0.14 |
+| hard_+6_contour2 | -12.99 | -13.12 | -0.13 | -0.15 | +0.23 | +0.00 | -0.15 |
+| B_+8_all | -8.30 | -8.37 | -0.07 | -0.11 | +1.15 | +0.01 | -0.14 |
 
 ### Superioridade (§7.2) — mesma grade, 48 kHz, High
 
@@ -81,31 +81,31 @@ Os números deste relatório vêm de `lab/` (scripts reprodutíveis) e de
 | Aliasing+ruído, tom 13 kHz +6 dB, clip B (dB rel. fund.) | 12.5 | -83.6 | ✅ |
 | Aliasing+ruído, tom 15 kHz +6 dB, clip B (dB rel. fund.) | 17.6 | -79.7 | ✅ |
 | Aliasing+ruído, tom 5 kHz +6 dB, clip Hard (dB rel. fund.) | -43.0 | -84.7 | ✅ |
-| Aliasing+ruído, tom 9 kHz +6 dB, clip Hard (dB rel. fund.) | -85.8 | -87.5 | ✅ |
-| Aliasing+ruído, tom 13 kHz +6 dB, clip Hard (dB rel. fund.) | -81.6 | -86.6 | ✅ |
+| Aliasing+ruído, tom 9 kHz +6 dB, clip Hard (dB rel. fund.) | -86.2 | -87.5 | ✅ |
+| Aliasing+ruído, tom 13 kHz +6 dB, clip Hard (dB rel. fund.) | -78.1 | -86.6 | ✅ |
 | Aliasing+ruído, tom 15 kHz +6 dB, clip Hard (dB rel. fund.) | -77.8 | -77.0 | ❌ |
 | Produtos < 18 kHz, 19+20 kHz +3 dB, clip A (dB) | -34.4 | -36.8 | ✅ |
 | Produtos < 18 kHz, 19+20 kHz +3 dB, clip B (dB) | -34.5 | -37.3 | ✅ |
 | Produtos < 18 kHz, 19+20 kHz +3 dB, clip Hard (dB) | -37.9 | -36.9 | ❌ |
 | True-peak na mixagem, B_+3 (dBTP; nosso com guard) | +0.21 | -0.15 | ✅ |
-|   loudness no mesmo ajuste (LUFS) | -15.95 | -15.97 | ✅ |
+|   loudness no mesmo ajuste (LUFS) | -15.92 | -15.97 | ✅ |
 | True-peak na mixagem, B_+6 (dBTP; nosso com guard) | +1.14 | -0.15 | ✅ |
-|   loudness no mesmo ajuste (LUFS) | -13.09 | -13.10 | ✅ |
+|   loudness no mesmo ajuste (LUFS) | -13.03 | -13.10 | ✅ |
 | True-peak na mixagem, B_+10 (dBTP; nosso com guard) | +0.74 | -0.14 | ✅ |
-|   loudness no mesmo ajuste (LUFS) | -10.51 | -9.62 | ✅ |
+|   loudness no mesmo ajuste (LUFS) | -9.68 | -9.62 | ✅ |
 | Resíduo abaixo do teto (−6 dB), clip A, banda 20 kHz (dB rms) | -94.5 | -108.5 | ✅ |
 | Resíduo abaixo do teto (−6 dB), clip Hard, banda 20 kHz (dB rms) | -94.5 | -108.5 | ✅ |
 | Resíduo abaixo do teto (−6 dB), clip B, banda 20 kHz (dB rms) | -70.8 | -70.7 | ✅ |
 | Tudo neutro: resíduo de pico (dBFS) | -40.8 | -400.0 | ✅ |
-| Recuperação pós-rajada +12 dB, clip Hard: erro do sinal de prova (dB) | 2.037 | 0.006 | ✅ |
-| Recuperação pós-rajada +12 dB, clip B: erro do sinal de prova (dB) | 0.796 | 0.094 | ✅ |
+| Recuperação pós-rajada +12 dB, clip Hard: erro do sinal de prova (dB) | 0.001 | 0.006 | ❌ |
+| Recuperação pós-rajada +12 dB, clip B: erro do sinal de prova (dB) | 0.090 | 0.094 | ❌ |
 | Clique na troca 'mode B->Hard': excesso de HF > 16 kHz em ±5 ms (dB) | +0.01 | -0.24 | ✅ |
 | Clique na troca 'curve A->B (sat 6)': excesso de HF > 16 kHz em ±5 ms (dB) | -2.63 | -2.48 | ✅ |
 | Clique na troca 'clip on->off': excesso de HF > 16 kHz em ±5 ms (dB) | -0.16 | -1.98 | ✅ |
-| Clique na troca 'tone Flat->A': excesso de HF > 16 kHz em ±5 ms (dB) | +0.00 | +0.00 | ✅ |
-| Clique na troca 'bypass on': excesso de HF > 16 kHz em ±5 ms (dB) | -0.73 | -1.90 | ✅ |
-| CPU, mesmo host (pedalboard), High, estéreo 48 kHz (% de tempo real) | 2.87 | 3.59 | ❌ |
-| CPU Pristine / Extra (nosso; a referência não expõe a troca) | — | 4.63 / 6.69 | — |
+| Clique na troca 'tone Flat->A': excesso de HF > 16 kHz em ±5 ms (dB) | -0.00 | +0.00 | ✅ |
+| Clique na troca 'bypass on': excesso de HF > 16 kHz em ±5 ms (dB) | -0.67 | -1.90 | ✅ |
+| CPU, mesmo host (pedalboard), High, estéreo 48 kHz (% de tempo real) | 3.23 | 4.71 | ❌ |
+| CPU Pristine / Extra (nosso; a referência não expõe a troca) | — | 6.13 / 8.86 | — |
 <!-- AUTO:END -->
 
 ## O que falta

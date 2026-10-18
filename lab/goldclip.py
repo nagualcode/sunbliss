@@ -4,6 +4,11 @@ The AU reports 0 latency to pedalboard, so we strip the measured latency
 ourselves. After `reset()` the first ~10k samples at 48 kHz come out of a
 stale configuration (measured: IR peak 0.762 instead of 0.979), so every
 render is preceded by `WARMUP` samples of silence that are discarded.
+
+Every render uses a host buffer of `BUFFER` samples. The reference's hidden
+output gain ("OversamplingWithCeiling" makeup) decides once per block and
+holds for two blocks, so its ducking scales with the buffer: pedalboard's
+default (8192) holds ~230 ms where a DAW at 512 holds ~5 ms.
 """
 from __future__ import annotations
 
@@ -26,12 +31,30 @@ NEUTRAL = dict(
 _plugin = None
 _latency: dict[int, int] = {}
 WARMUP = 32768
+BUFFER = 512
+
+
+class _Fixed:
+    """Plugin proxy that renders with the lab's host buffer size."""
+
+    def __init__(self, p):
+        object.__setattr__(self, "_p", p)
+
+    def __call__(self, x, sr, **kw):
+        kw.setdefault("buffer_size", BUFFER)
+        return self._p(x, sr, **kw)
+
+    def __getattr__(self, k):
+        return getattr(self._p, k)
+
+    def __setattr__(self, k, v):
+        setattr(self._p, k, v)
 
 
 def plugin():
     global _plugin
     if _plugin is None:
-        _plugin = pedalboard.load_plugin(GC_PATH)
+        _plugin = _Fixed(pedalboard.load_plugin(GC_PATH))
     return _plugin
 
 

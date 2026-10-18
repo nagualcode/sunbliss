@@ -1,0 +1,1278 @@
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Model AD122-96 MX 
+ 
+Master Analog to Digital 
+Converter 
+          
+ 
+     
+ 
+ 
+ 
+ 
+Operations Manual 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Lavry Engineering, Inc. 
+P.O. Box 4602 
+Rolling Bay, WA 98061 
+(360)881-0540 
+ 
+http://www.lavryengineering.com 
+email: techsupport@lavryengineering.com 
+ 
+ 
+Revision 1.2 
+ 
+September 28 2018 
+AD122-96 MX 
+ 
+        Operations Manual 
+ 
+ 
+ 
+ 
+ 
+MX  PREFACE 
+ 
+The MX is our 5th generation gold series analog to digital converter.  
+ 
+The MX provides the same 127dB dynamic range (without A weighing) as the MkIII model, and 
+consistently clean performance over the entire audio frequency range. High quality clocking 
+circuitry provides extremely low jitter with both internal clocking and external lock. Precise 
+matching of the two channels throughout the dynamic range preserves subtle details in the stereo 
+image without degrading spatial location or detail of the lowest level signals. 
+ 
+The MX is a redesign of the MKIII, with the additional feature of increased ability to handle 
+clipping of the audio signal without apparent loss of signal quality. In the quest to achieve the 
+elevated levels common in pop music; Mastering engineers as well as Mix engineers can utilize 
+clipping as a means of dynamic range control without the down-side of attack and release times 
+associated with compressors and limiters. Although the MkIII model already had a reputation for 
+“clean clipping,” the MX model extends the useful range of clipping to even higher levels. 
+ 
+The MX model retains the Lavry exclusive Soft Saturation modes which increase the level below 
+the saturation threshold by a selectable 3 or 6db. Audio signals above the threshold are processed 
+by an emulation of analog tape saturation without artifacts associated with attack and release 
+times. In combination with the improved handling of clipping level signals, the AD122-96MX 
+offers more options for hotter recording levels than other converters. 
+ 
+Because the difference between the MkIII and MX models did not require changes to the 
+converter’s software, the MX model will display “Ver 2.1e” ©2000 dB tech, AD122-96MkII” in 
+the initialization screen of the LCD display. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+AD122-96 MX 
+ 
+Operations Manual 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+This page 
+left blank. 
+intentionally. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+AD122-96 MX 
+ 
+        Operations Manual 
+ 
+ 
+ 
+1 
+ 
+LIMITED WARRANTY 
+ 
+Subject to the conditions set forth below, for one year after the original purchase date of the 
+product, Lavry Engineering will repair the product free of charge in the United States in the event 
+of a defect in materials or workmanship.  
+ 
+Lavry Engineering may exchange new or rebuilt parts for defective parts.  Please call the factory 
+for an RMA number prior to shipment.  No product will be accepted for warranty service without 
+a pre-issued RMA number.  
+ 
+This warranty is extended only to an original purchaser of the product from Lavry Engineering, 
+or an authorized reseller of Lavry Engineering. Products that are purchased from unauthorized 
+resellers do not have any warranty coverage. A valid purchase receipt or other valid proof of 
+purchase will be required before warranty service is provided.  This warranty only covers failures 
+due to defects in materials or workmanship and does not cover damages which occur in shipment 
+or failures resulting from accident, misuse, line power surges, mishandling, maintenance, 
+alterations and modifications of the product, or service by an unauthorized service center or 
+personnel. Lavry Engineering reserves the right to deny warranty service to products that have 
+been used in rental, service bureau, or similar businesses. 
+ 
+This limited warranty gives you specific legal rights.  You may have others which vary from 
+state/jurisdiction to state/jurisdiction. 
+ 
+LIMITS AND EXCLUSIONS 
+LAVRY ENGINEERING DOES NOT, BY VIRTUE OF THIS AGREEMENT, OR BY ANY 
+COURSE OF PERFORMANCE, COURSE OF DEALING, OR USAGE OF TRADE, MAKE 
+ANY OTHER WARRANTIES, EXPRESS OR IMPLIED, INCLUDING, WITHOUT 
+LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS FOR A 
+PARTICULAR PURPOSE, TITLE OR NONINFRINGEMENT, AND ALL SUCH 
+WARRANTIES ARE HEREBY EXPRESSLY DISCLAIMED. LAVRY ENGINEERING 
+EXPRESSLY DISCLAIMS ANY IMPLIED INDEMNITIES. LAVRY ENGINEERING 
+SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, CONSEQUENTIAL, 
+PUNITIVE, SPECIAL OR EXEMPLARY LOSSES OR DAMAGES, INCLUDING, 
+WITHOUT LIMITATION, DAMAGES TO RECORDINGS, TAPES OR DISKS, DAMAGES 
+FOR LOSS OF BUSINESS PROFITS, BUSINESS INTERRUPTION, LOSS OF BUSINESS 
+INFORMATION, LOSS OF GOODWILL, COVER, OR OTHER PECUNIARY LOSS, 
+ARISING OUT OF OR RELATING TO THE USE OF THE PRODUCT, OR ARISING FROM 
+BREACH OF WARRANTY OR CONTRACT, NEGLIGENCE, OR ANY OTHER LEGAL 
+THEORY, EVEN IF LAVRY ENGINEERING HAS BEEN ADVISED OF THE POSSIBILITY 
+OF SUCH LOSSES OR DAMAGES.  ANY DAMAGES THAT LAVRY ENGINEERING IS 
+REQUIRED TO PAY FOR ANY PURPOSE WHATSOEVER SHALL NOT EXCEED THE 
+ORIGINAL COST PAID TO LAVRY ENGINEERING FOR THE APPLICABLE PRODUCT. 
+BECAUSE SOME STATES/JURISDICTIONS DO NOT ALLOW THE EXCLUSION OR 
+LIMITATION OF LIABILITY FOR CONSEQUENTIAL OR INCIDENTAL DAMAGES, THE 
+FOREGOING LIMITATION MAY NOT APPLY TO YOU. 
+ 
+Copyright © 2005 by Lavry Engineering, Inc. All rights reserved. 
+Lavry Engineering ® is a registered trademark of Lavry Engineering, Inc. 
+Acoustic Bit Correction™ is a registered Trademark of Lavry Engineering, Inc. 
+email: 
+techsupport@lavryengineering.com 
+Internet: 
+http://lavryengineering.com/ 
+AD122-96 MX 
+ 
+Operations Manual 
+ 
+2 
+Table of Contents  
+ 
+ 
+Limited Warranty .................................................................................   1 
+PART I 
+Introduction .......................................................................................... 3 
+Operating Instructions .......................................................................... 4 
+Main Screen .......................................................................................... 5 
+Word Length and Acoustic Bit Correction .......................................... 6 
+Test Tone Screen .................................................................................. 6 
+Audio Control Screen ........................................................................... 7 
+Default Parameters Screen ................................................................... 7 
+Bar Graph & Display Screen ................................................................ 8 
+Warm-up and Calibration ..................................................................    9 
+Factory Defaults ................................................................................... 9 
+Software Version ...............................................................................    9 
+Hardware Interconnections................................................................  10 
+Maintenance .......................................................................................  10 
+Part II 
+Specifications ....................................................................................  11 
+Appendix I 
+αβC αcoustic βit Correction™ .....................................................  12 
+Noise-Shaping Curves .......................................................................  15 
+Appendix II 
+AD122-96 MX Input Considerations ................................................  16 
+Appendix III 
+AD122-96 MX Soft Saturation .........................................................  18 
+Appendix IV 
+Viewing Noise Floor on AD122-96 MX Display .............................  20 
+AD122-96 MX 
+ 
+Operations Manual 
+ 
+ 
+ 
+3
+PART I:  Introduction 
+The Model AD122-96 MX Master Analog to Digital Converter receives analog input signals at the left 
+and right analog input channels. The converter can receive balanced or unbalanced analog input signals. 
+Individual left and right analog gain adjustment can be made via the front panel adjustment pots. Fine 
+tuning of reference levels can be achieved by setting the front panel bar graph display (LED's) to “Fine” 
+mode (reference meter bridge). The digital output is available at the AES/EBU output. The AES/EBU 
+XLR output is compatible with coaxial SPDIF using a simple adapter or adapter cable. 
+ 
+Front panel selection enables setting word length between 16 and 24 bits (NI is a 20 bit setting as per 
+AES/EBU specifications). Redithering is available for output wordlengths of less than 24 bit using the 
+available αcoustic βit Correction™ feature. Redithering to smaller words retains much of the acoustic 
+information in the full word width output. 
+ 
+The converter can operate with internal or external clock synchronization. Available internal crystal 
+frequencies are 44.1 kHz, 48 kHz, 88.2 kHz, or 96 kHz.  For external synchronization, a signal is applied 
+to either the SYNC/WC XLR input or the Word Clock BNC input. The input types are digital audio 
+(AES/EBU) or word clock signals.  The desired frequency lock range settings are 44.1 kHz narrow lock 
+range, 48 kHz narrow lock range, 40-50 kHz wide lock range, 88.2 kHz narrow lock range, 96 kHz narrow 
+lock range, 88/44 kHz, or 96/48 kHz (conversion rate 2X sync rate).   
+ 
+Vernier Transfer Function Correction™: 
+The exceptional performance of Lavry Engineering’s AD122-96 MX is due to design innovations in both 
+analog and digital sections. The performance of the low-noise high-linearity converter is optimized by a set 
+of proprietary algorithms utilizing a "digital vernier" technique which provides superior resolution and 
+correction for changes in circuit parameters, including component drift due to temperature and aging. 
+ 
+Please note that because the difference between the MkIII and MX models did not require changes to 
+the converter’s software, the MX model will display “Ver 2.1e” ©2000 dB tech, AD122-96MkII” in 
+the initialization screen of the LCD display. 
+   
+Additional features: 
+Improved handling of input clipping: The MX model increases the maximum level that can be utilized 
+with clipping as a form of dynamic range control, without audible degradation. 
+ 
+Test Tones: a fully programmable digital test tone generator for calibration. 
+ 
+Polarity Inversion: changes polarity of digitized audio signal. 
+ 
+Soft Saturation:  emulates analog tape saturation for higher recording levels. 
+ 
+User-Defined Power-Up Default Setting 
+ 
+Stereophonic Bar Graph Display:  features wide dynamic range; the bar graph can be extended by 30, 60 or 
+90dB for viewing the noise floor.  The bar graph can also act as a reference meter bridge for precise input 
+level calibration. 
+ 
+Clip Indication:  when meter Peak Hold is enabled, the full scale “MAX” light can be set to hold until reset 
+by the user. 
+ 
+ 
+AD122-96 MX 
+ 
+Operations Manual 
+ 
+ 
+4
+ 
+Operating Instructions 
+ 
+Operation of the Model AD122-96 MX Master Analog to Digital Converter requires the use of five 
+push button switches located on the front panel. The liquid crystal display is organized for a quick and 
+intuitive operator interface. The unit features six screen displays. 
+ 
+Push Button Switches: 
+ 
+ENTER 
+Introduces and moves the cursor through screen positions that can be edited by the 
+operator. 
+ 
+CURSOR Push buttons allow the user to choose a screen and to select the cursor position. The 
+UP/DOWN cursor buttons are also utilized when changing digits of a selected entry. 
+ 
+GO 
+Initiates changes in Clock Source/Frequency selection, Test Tone, and Preset store. 
+ 
+EXIT 
+Removes the cursor and allows selection of other screens with the UP/DOWN buttons.  
+Pressing EXIT again will cause the unit to go to the main screen. 
+ 
+To Scroll Through Screens: 
+ 
+If the screen cursor is present, you need to remove it by pressing EXIT. When the screen cursor is not 
+present, the UP/DOWN buttons serve to move from screen to screen. 
+ 
+To Edit Screens: 
+ 
+Press ENTER to introduce the screen cursor at the first editable location. Each additional pressing of 
+ENTER will move the cursor to the next editable location. The settings at an editable location may be 
+changed by the use of the UP/DOWN buttons. 
+ 
+Holding the UP or DOWN buttons will automatically advance the settings. This feature is particularly 
+useful for increasing or decreasing numbers (such as test tone frequency and amplitude or word 
+length). 
+ 
+Most operations react to a change of settings immediately without having to press GO.  There are three 
+settings requiring the use of the GO button:  
+ 
+ 
+•  Starting the test tone generator.  
+ 
+ 
+•  Storing the user power-up default settings.  
+ 
+ 
+•  Changing Sample Frequency Source. 
+ 
+ 
+ 
+ 
+AD122-96 MX 
+ 
+Operations Manual 
+ 
+ 
+ 
+5
+Main Screen 
+The main screen is used for selecting the A to D clock source and output word length parameters. 
+ 
+The top line controls the A to D clock source: 
+ 
+44.1kHz  INTERNAL  CRYSTAL 
+24 BITS WL  ABC:OFF      NSOFF 
+ 
+When setting for internal clock operation, choose sample rate and internal crystal mode: 
+  
+                   
+44.1kHz  INTERNAL CRYSTAL  
+ 
+48kHz  
+INTERNAL CRYSTAL 
+ 
+88.2kHz  INTERNAL CRYSTAL 
+ 
+96kHz 
+INTERNAL CRYSTAL 
+ 
+When setting for external synchronization, the selections include: 
+ 
+ 
+•  Sync. input connector: SYNC/WC INPUT XLR connector or the WORD CLOCK INPUT BNC 
+connector.  
+•  Digital audio or Word Clock: the XLR connector can accommodate both AES/EBU digital audio 
+data and Word Clock. The BNC connector is for Word Clock only, as part of the IO-96 
+interface.  
+•  Lock range: narrow lock range utilizing VCXO (internal voltage controlled crystal oscillators or 
+wide lock range (internal low jitter VCO).  
+ 
+Possible choices for the SYNC/WC INPUT XLR connector are: 
+ 
+ 
+XLR AES LOCK 44.1 
+ 
+ 
+Phase synchronous 
+  
+XLR AES LOCK 48.0 
+ 
+ 
+Phase synchronous 
+ 
+XLR AES WIDE LOCK  
+Phase synchronous 
+ 
+XLR AES LOCK 88.2 
+ 
+ 
+Phase synchronous 
+  
+XLR AES LOCK 96.0 
+ 
+ 
+Phase synchronous 
+ 
+XLR AES LOCK 88/44 
+ 
+ 
+Phase synchronous to 44.1 
+  
+XLR AES LOCK 96/48 
+ 
+ 
+Phase synchronous to 48 
+ 
+ 
+Possible choices for the WORD CLOCK INPUT BNC connector are: 
+ 
+ 
+BNC LOCK 44.1 
+ 
+ 
+ 
+Phase synchronous 
+ 
+BNC LOCK 48.0 
+ 
+ 
+ 
+Phase synchronous 
+ 
+BNC WIDE LOCK   
+ 
+ 
+Phase synchronous 
+ 
+BNC LOCK 88.2 
+ 
+Phase synchronous 
+ 
+BNC LOCK 96.0 
+ 
+Phase synchronous 
+ 
+BNC LOCK 88/44 
+ 
+Phase synchronous to 44.1 
+  
+BNC LOCK 96/48 
+Phase synchronous to 48 
+ 
+The 88/44 and 96/48 settings are provide to synchronize high sample rate AD conversion (88.2 or 96 
+kHz) to half-speed external sync sources (44.1 or 48 kHz). 
+ 
+AD122-96 MX 
+ 
+Operations Manual 
+ 
+ 
+6
+ 
+Word Length and αcoustic βit Correction™ 
+The bottom line controls word length and αcoustic βit Correction™ parameters: 
+ 
+44.1kHz  INTERNAL CRYSTAL 
+20 BIT WL ABC: HPDF 
+NS2 
+ 
+Setting Word Length: 
+The selection of word length (16 to 24 bits) sets the digital output word length. The NI setting (word 
+length not indicated) is a 20 bits default setting as per AES/EBU specifications.  The Model AD122-96 
+MX utilizes 22 bits for data (bits 23 and 24 contain little sonic information). We recommend a default 
+word length setting of 22-24 bits. The front panel "20+" lamp indicates when the output contains 20 or 
+more bits. 
+ 
+αcoustic βit Correction™ is designed for applications requiring the use of fewer bits. Simple 
+truncation of lower order bits introduces sonic side effects (distortions and modulation of the noise 
+floor by the signal). The αcoustic βit Correction™ feature provides a selection of dither and noise 
+shaping algorithms. Dither overcomes distortions and noise modulation, but it also raises the noise 
+floor. The noise shaping algorithms provide an effective means of retaining higher bit content in a 
+lower bit format (it shifts the noise energy away from hearing sensitive frequency regions to less 
+sensitive ones). See Appendix I for a complete discussion of αcoustic βit Correction™. 
+ 
+Dither choices are:  
+ 
+OFF 
+ 
+ 
+no dither 
+ 
+HPDF 
+ 
+ 
+high pass probability density function    
+ 
+FLAT 
+ 
+ 
+recommended for data compression applications 
+ 
+Noise shaping choices are:  
+ 
+NSOFF 
+no noise shaping   
+ 
+NS1, NS2, NS3 or NS4 
+user selectable noise shaping curves 
+ 
+Test Tone Screen    
+To generate a test tone, scroll to the test tone screen and set the frequency, amplitude and destination 
+(left, right or both). The frequency range is from 1Hz to 20kHz in 1 Hz steps. Amplitude range is 0dB 
+(full scale) to -99dB in 1 dB steps, with an OFF setting for "digital black." To change the frequency or 
+amplitude by large increments, hold down the UP or DOWN cursor buttons. For small increments, 
+press the UP or DOWN cursor buttons repeatedly. 
+ 
+Press GO to start the tone (amplitude, frequency and destination settings may be changed during tone 
+generation). To stop the tone, press EXIT twice (returning to the main screen). 
+ 
+Note that the internal tone generation consists of 24 bits of resolution. The word length at the output is 
+subject to truncation and dither settings.  
+ 
+ 
+ 
+AD122-96 MX 
+ 
+Operations Manual 
+ 
+ 
+ 
+7
+Audio Control Screen 
+     
+ SOFT SATURATION  OFF 
+0 
+DC REMOVAL: ON    +POLARITY 
+ 
+The user may activate the soft saturation feature by altering the setting after SOFT SATURATION on 
+the top line from “OFF” to “+3dB” or “+6dB”. Soft Saturation settings are not stored in RAM preset.  
+ 
+When activated, the audio signal is amplified by the dB amount displayed (3dB or 6dB boost), and 
+signal peaks are compressed gently to avoid digital clipping. The feature emulates magnetic tape 
+saturation. It is still possible to clip the signal if enough signal level is applied to the analog inputs. 
+ 
+DC offset removal:   
+The Model AD122-96 MX converts signals down to DC (0Hz). The total DC offset (due to DC offset 
+within the audio signal and the offset of the converter itself) can be removed. 
+  
+DC REMOVAL should be activated prior to processing of audio, to allow for some settling time (less 
+then 3 seconds) and to avoid a "click" sound. The algorithm continues to monitor and correct for slow 
+varying offset variations. 
+ 
+PLEASE NOTE:  Removing the offset is necessary for normal operation when recording audio 
+signals, so the lower line should always display DC REMOVAL ON during audio recording. 
+ 
+Polarity: 
++POLARITY corresponds to analog input signal connection with "pin 2 non-inverting". 
+- POLARITY corresponds to analog input signal connection with "pin 3 non-inverting". 
+ 
+Note that polarity reversal works for both balanced and unbalanced analog input signals. The analog 
+inputs (XLR connectors) are physically wired for pin 2 non-inverting polarity. In the AD122-
+96MXpolarity reversal is done digitally (after the conversion). 
+ 
+Data limiting settings:  
+The symbol 0 in the right corner of the top line, “SOFT SATURATION  OFF     0” indicates that 
+full-scale values are unchanged. The symbol 1 indicates that full-scale values are limited to 1 least-
+significant bit less than full scale. In this mode downstream devices will not show digital “overs.”  The 
+MAX lamp indicates full-scale in either mode. This bit is stored in RAM preset. Default is “0.”  
+Default Parameters Screen 
+ 
+The Model AD122-96 MX recalls its power-up default settings from a nonvolatile memory (RAM). 
+To change the default settings scroll to the RAM PRESET screen: 
+ 
+     STORE RAM PRESET: 
+     (PRESS GO/EXIT) 
+ 
+Then press the GO button. The new default settings storage is done and the display changes to: 
+ 
+     STORE RAM PRESET: 
+     DONE... 
+AD122-96 MX 
+ 
+Operations Manual 
+ 
+ 
+8
+Bar-Graph & Display Screen 
+    FINE: OFF 20    METER: -00   0 
+    PEAK/HOLD OFF DISPLAY:3 
+ 
+Bar-Graph settings: 
+FINE: OFF sets the bar graph display (LED's) for normal audio monitoring. Setting to FINE: ON 20 
+activates the reference meter bridge function, for fine-tuning of signal level to -20dB reference point. 
+The reference point can be set to a level between -10dB and -20dB by changing the “20” to the desired 
+reference level. The incoming signal is displayed in 0.2dB increments around the reference point. Fine-
+tuning of signal levels may be done via an external volume control or by tuning the GAIN adjustment 
+pots located on the front panel (the adjustment requires a small screwdriver). 
+ 
+The normal setting, “METER:-00” is used for showing peak and peak-hold levels ranging from 0 to -
+55dB (from full scale). The display may be extended to indicate lower level activity such as noise and 
+DC offset. 
+ 
+ Meter Setting 
+Display range 
+Read Bar-Graph  
+ METER:-00   
+   0dB to   -55dB 
+Read Bar Graph panel indicator  
+ METER:-30  
+-30dB to   -85dB 
+Add -30dB to panel indicator  
+ METER:-60 
+-60dB to -115dB 
+Add -60dB to panel indicator  
+ METER:-90 
+-90dB to -145dB 
+Add -90dB to panel indicator 
+ 
+While this feature is useful for determining noise floor of the incoming signal, a few comments are in 
+order:  
+ 
+1. The Bar Graph displays a sum of AC signal "riding" on a DC offset.  Monitoring low-level signals 
+(such as noise floor) requires prior setting of DC removal at the audio control screen DC 
+REMOVAL ON.  
+ 
+2. Viewing the noise floor takes some getting used to. The display shows a true picture of peak and 
+peak-hold information; the blinking of LED's is due to low level quantizations. Peak readings are at 
+about 11dB higher than the rms noise for flat noise spectrum.    
+ 
+3. Measuring the converter noise floor is best done with specialized equipment (such as Lavry 
+Engineering’s Model LE3000S). To verify the proper converter noise floor via extended metering you 
+must activate the DC removal (DC REMOVAL ON) and connect a low value resistor (0-1k Ohm) 
+between pins 2 and 3 of the analog input XLR connector. Floating high impedance analog inputs are 
+susceptible to noise pickup. 
+ 
+Peak/Hold indication: 
+When set to ON, the peak level is held until a front panel switch is depressed. In addition, the “MAX” 
+LED will turn on and stay on when output data hits the full-scale value. The appropriate 0dB bar-graph 
+lamp (left or right) will start blinking. The “MAX” and corresponding lamps may be reset by pressing 
+any of the front panel switches. When PEAK/HOLD is OFF, the MAX lamp will flicker when a single 
+full-scale sample is encountered. 
+ 
+Display contrast: The LCD display may be adjusted from 0 to 7. 
+ 
+The “0” in the upper right corner of the screen is no longer used for setting a parameter in the MX 
+model. It can be changed to a “1,” but it should normally be set to “0” as the default setting. 
+AD122-96 MX 
+ 
+Operations Manual 
+ 
+ 
+ 
+9
+Warm-up and Calibration  
+The recommended warm up time is 15 minutes. The AD122-96MX feature self-calibration for 
+consistent long-term accuracy. A complete calibration cycle (about 5 seconds in duration) is activated 
+at power on. A calibration cycle may be initiated by pressing both the EXIT and GO buttons 
+simultaneously. 
+ 
+The final stage of calibration occurs when audio signals in the range of -25 dB on the AD’s meters are 
+fed to the analog inputs. This signal can be music program that is consistent in level and varies just 
+above and below -25, or a tone at -25 dB. 
+ 
+ This final calibration needs to occur: 
+1.) After the unit is powered “On” and the initial calibration cycle is finished. 
+2.) Any time the clock frequency or clock source of the AD122-96MX is changed. 
+3.) If the AD122-96MX has been “idle” with the power “on” but no signal has been fed to its 
+inputs for more than one hour. 
+ 
+To see the operation of the final calibration after changing the clock source, with no signal present at 
+the analog inputs, switch on a tone at -25 dBFS feeding the analog inputs. For a few seconds after the 
+tone is switched “on,” the level displayed on the meters will change slightly until finally settling on  
+“-25 dB.” 
+ 
+Factory Defaults 
+ 
+The AD122-96MX can be reset to the factory defaults by holding down the EXIT button while turning 
+“On” the AC power. Continue to hold down the EXIT button until the unit finishes initializing and the 
+main screen appears: 
+ 
+44.1kHz  INTERNAL  CRYSTAL 
+24 BITS WL  ABC:OFF      NSOFF 
+ 
+The factory settings will not be stored unless you go to the Default Parameters screen and store them in 
+the RAM Preset. 
+ 
+In some instances, when the AD122-96MX is not operating in a consistent manner, resetting to the 
+factory presets may restore stable operation. It is advisable to go through the menus and write down 
+your settings before resetting to the factory presets. After resetting, you can go back and change the 
+settings to the ones you wrote down, and store them in the RAM presets. 
+ 
+Please Note: Soft Saturation settings are NOT stored in the RAM presets. 
+ 
+Software Version 
+The current software version is displayed for a brief time in the LCD display, immediately after power 
+is applied. The current version is displayed as “Ver 2.1e” in the upper line of the LCD display. 
+AD122-96 MX 
+ 
+Operations Manual 
+ 
+ 
+10
+Hardware Interconnections 
+ 
+Analog inputs are applied to the XLR connectors marked as LEFT ANALOG INPUT and RIGHT 
+ANALOG INPUT. The input signals can be balanced or unbalanced. The converter power line signal 
+rejection is very high (120dB common mode rejection) but use of high quality shielded audio cables is 
+recommended. See the SPECIFICATIONS section on page 11 for absolute maximum input levels. 
+ 
+The XLR pin polarity with +POLARITY setting in the Audio Control Screen is: 
+Pin 2 non-inverting and Pin 3 inverting. 
+ 
+The digital output AES/EBU connector (XLR) is transformer coupled, allowing connection to both 
+AES/EBU XLR and SPDIF/RCA inputs. A simple XLR to RCA adapter or adapter cable can be used 
+to feed the vast majority of coaxial SPDIF inputs. Transformer adapters are not recommended. 
+ 
+SYNC\WC INPUT (XLR connector) is used for external synchronization to AES Sync source. Do not 
+connect external sync to both the SYNC IN XLR and BNC Word Clock input at the same time. 
+ 
+The four BNC connectors provide channel one and channel two data, word clock out, and word clock 
+in.  They can be used for synchronizing additional converters to each other or an external TTL word 
+clock. The Word Clock Input is NOT internally terminated. 
+ 
+Regarding Termination: 
+For simple systems where there is only one device feeding the AD122-96MX’s Word Clock Input with 
+a short BNC cable, termination is probably not necessary. If you encounter problems getting the 
+AD122-96MX to lock properly, or there are other devices in the “chain;” termination may be 
+necessary. 
+ 
+If the AD122-96MX is the only unit being fed the Word Clock signal, connect the cable using a BNC 
+"T" adapter plugged into the “Word Clock Input.” On the other side of the “T”, place a 75 Ohm BNC 
+terminator connector. If the Word Clock is chained to other devices using “T” connectors, be sure that 
+there is a 75 Ohm terminator on the “T” of the LAST device in the chain and that none of the other 
+devices have INTERNAL TERMINATION. Alternately, if there is only ONE device with internal 
+termination, it can be wired at the “end of the chain” in place of the terminator. The important point is 
+that there is only ONE termination and it is located at the end of the chain. 
+ 
+The same approach may be used to chain the Word Clock output of the AD122-96MX. In this case, 
+there is no “T” on the AD122-96MX Word Clock Output. As described above, the “T” adapters should 
+be placed on the Word Clock input of the devices the AD122-96MX is feeding, with the termination 
+ONLY at the very end of the chain. 
+ 
+Maintenance 
+The Model AD122-96 MX is an auto calibrating converter requiring no periodic adjustments. The unit 
+generates a significant amount of heat (25 watts maximum). The temperature rise is no cause for 
+concern, but allowing for some airflow is always a benefit from a long-term reliability standpoint. It is 
+especially important not to block the openings in the top cover of the unit. 
+      
+The front panel is gold plated (24 karat gold). Use a soft cloth (and plain water, if necessary) to clean 
+fingerprints. 
+ 
+AD122-96 MX 
+ 
+Operations Manual 
+ 
+ 
+ 
+11
+ 
+Part II:  Specifications 
+ 
+Analog Inputs:  
+The analog signal can be amplified by 0-12dB utilizing the front panel screw adjust trim pots. Full-
+scale signal with 0dB gain is 24dBu, (full-scale signal with 12dB gain is 12dBu).  
+ 
+Input impedance over 0-100 kHz:  greater than 20k ohm (pin 2 to pin 3). 
+ 
+Absolute Maximum Input Level: +24dBu Balanced, +18dBu Unbalanced regardless of Gain setting. 
+ 
+Noise Floor at 44.1-48KHz sampling:  
+ 
+ 
+-130dB ±1dB from full scale A weighted 
+ 
+ 
+-126dB ±0.5dB from full scale unweighted  
+Noise Floor at 96KHz sampling:   
+ 
+ 
+-127dB ±1dB from full scale A weighted 
+ 
+ 
+-123dB ±1dB from full scale unweighted.  
+ 
+Notes:  
+1. Measuring noise floor with unconnected (opened) inputs may yield erroneous results. 
+Unconnected high impedance inputs may pick up unwanted signals.    
+ 
+2. Care must be exercised when measuring the noise floor. The signal applied to the converter 
+must be lower then the noise floor. Ordinary relays and switches may leak too much signal, and it 
+may be necessary to move a test tone signal to frequency above Nyquist (approx. 30KHz). 
+ 
+Output Bits: 16 to 24 bits, user selectable. 
+ 
+Total Harmonic Distortion and Noise:  
+(Specified for 22-24 Bits output, balanced inputs) 
+ 
+0.00005% for signals lower than -40dBF  
+0.0004% for signals lower than -20dBF  
+0.0008% for signals lower than -6dBF  
+   
+Channel Separation:  
+Greater than 120dB (0-20KHz)  
+ 
+Sync. Inputs (connect to only one input at any time):  
+XLR connector:  
+AES/EBU levels into 110 Ohms for digital audio 
+ 
+BNC connector:  
+TTL level word clock 
+ 
+A.C. Power:  
+90-264 VAC @ 47-63Hz , Fuses 0.75A Fast 250V  Fuse Size 5mm x 20mm (or 0.25inch x 1.25 inch) 
+The power supply automatically adjusts to AC inputs in the range of 90 to 264 volts at line frequencies 
+between 47 and 63 Hz. It is not necessary to change any settings. The voltage selector in the power 
+input module on the back panel is wired to work properly in either position. Thus, either the “115V” or 
+“230V” legend can be visible and the unit will work properly with any input in the rated operating 
+range (the legend is visible through a small “window” and is white lettering on a red background).  
+AD122-96 MX 
+ 
+Appendix I 
+ 
+ 
+12
+Appendix I: αβC αcoustic βit Correction™ 
+ 
+High quality digital audio sound often incorporates long words (many bits). Both high-resolution A/D 
+converters (22 bits or more) and signal processing equipment (digital mixers, equalizers, reverb and 
+more) generate longer words than those supported by standards (such as the 16-bit CD format). A 
+straightforward word length reduction severely deteriorates the musical fine detail of low level signals 
+by introducing distortions and a noise floor that is modulated by the signal. 
+Proper dithering serves to eliminate the distortions and noise modulation effects. The desirability of 
+such improvement is unquestionable but is coupled with increasing noise floor. Noise shaping is based 
+on shifting the noise from high sensitivity frequency regions to less sensitive ones. That process is 
+based on psychoacoustic research. A "stand alone" noise shaper does not improve distortions and noise 
+modulation problems. Lavry Engineering’s αcoustic βit Correction™ incorporates both concepts to 
+reduce distortion and noise modulation and shape the noise psychoacoustically. 
+Customer feedback and further studies taught us two interesting facts: 
+a. Various data compression schemes require the dither to have flat frequency response 
+characteristics.  
+b. Recording engineers’ preference of dither type (high pass or flat) and noise shaping curves 
+often depends on characteristics of the music involved. 
+The Model AD122-96 MX offers High Pass or Flat Dither type and four noise-shaping curves. 
+Model AD122-96 MX allows the user to use dither with or without noise shaping. Operating noise 
+shapers without dither is undesirable so the unit automatically shuts the noise shaper off when dither is 
+off. Using dither (with or without noise shaping) requires user discretion. Ideal data transfer and 
+processing should retain long word length. A single word length reduction (and therefore dithering and 
+noise shaping) should take place last.  
+Figure 1 shows a -100  dB  1 kHz 24 bit tone truncated to 16 bits.  The distortion is severe.  Figure 2 
+shows the same tone with high-pass dither only.  The distortion is gone, and the tone’s level appears at 
+a true -100  dB.  Figure three shows the same tone with αcoustic βit Correction™ applied.  Notice 
+what the addition of noise shaping to the dither does to the noise floor in the ear’s most sensitive mid-
+range area (approx. 2kHz to 8 kHz). 
+ 
+         Fig. 1- truncation only                Fig. 2 - high-pass dither           Fig. 3 - Acoustic BitCorrection 
+                                                                                                               High Pass- NS2 
+ 
+A number of mathematical and psychoacoustic researchers introduced two concepts for sonic 
+improvement: dithering and noise shaping. Credit is due to L. Fielder of Dolby Labs for providing the 
+basis for various noise shaping curves. The reasons for triangle PDF (probability density function) 
+AD122-96 MX 
+ 
+Appendix I 
+ 
+ 
+ 
+13
+dither have been explained by S. P. Lipshitz and J. Vanderkooy of the University of Waterloo. 
+Additional publications by M. Gerzon, P. G. Craven, J. R. Stuart and J. R. Wilson  (all from the United 
+Kingdom) and J. Goodwin (from the U.S.A.) shed light on this complex subject. 
+Dithered noise shaping technology has been incorporated into a handful of hardware devices. While all 
+are based on the same concepts, some perform better than others. After simulating and listening to all 
+available public domain algorithms, Lavry Engineering came to some conclusions in forming a basis 
+for αcoustic βit Correction™. The principal conclusions are:  
+a. The practice of greatly amplifying low level signals to determine triangular flat PDF (probability 
+density function) dither reveals the effectiveness of distortion and noise modulation elimination. This 
+practice yields misleading results when testing unflattened dithers and/or noise shapers. It conflicts 
+directly with L. Fielder’s findings showing completely different threshold delectability curves for quiet 
+and loud levels. Noise shaping listening tests must be done at "reasonable" volume levels.  
+b. Given the above requirement, our listening tests concluded a strong preference for "triangle high 
+pass" dither (this dither is produced by simultaneously adding a new random number and subtracting 
+the previous value). Such dither is frequency-shaped to carry more high frequency energy (the energy 
+content at low frequencies is minimal).  
+ 
+c. Listening tests revealed a preference for smoothly varying noise-shaping curves. Peaks and notches 
+seem to irritate the listener (admittedly while turning the volume up). In addition, despite the 
+temptation to optimize the noise shaping curve to the average listener’s hearing threshold, given a 
+significant variation from listener to listener requires reasonable compromises in tailoring such a curve. 
+In other words, smooth the curve. 
+The improvements offered by dither and noise shaping vary with source material and final word length. 
+An A/B/X test at 16-bit level, requires a quiet environment and low level (loudness) audio. The listener 
+must resist the temptation to turn the volume up to unreasonable levels. The practice of truncating to 
+short word length (8-12 bits) should be avoided. The ideal noise-shaping curve may be irritating at 
+loud levels.  
+Lavry Engineering’s listening tests were based on test tones and repeating loops of quiet passages of 
+various material (mostly classical music) with flat amplifier response. Listening to test tones was 
+straightforward: we used the Model AD122-96 MX test tone generator mode switching the αcoustic 
+βit Correction™ on and off. The frequency and amplitude programmability was very useful.  
+ 
+ 
+Fig. 4 - αcoustic βit Correction™ Fig. 5 - ABC  HP-NS2 
+ Fig. 6 -  dither only 
+16 (top), 18, 20, and 22 bits 
+16 (top), 18, 20, and 22 bit 
+16 (top), 18, 20, and 22 bits  
+no input signal          
+-120 dB 1 kHz sine tone 
+-120 dB 1 kHz sine tone 
+ 
+αcoustic βit Correction™may be used with words of lengths wider than 16 bits.  Figure 4 shows the 
+noise floor of αcoustic βit Correction™ (High Pass, NS2) without a signal at 16, 18, 20, and 22 bit 
+wordlengths. Note the curved noise-floor with lowest level in the ear’s most sensitive mid-range 
+region.  
+AD122-96 MX 
+ 
+Appendix I 
+ 
+ 
+14
+Figure 5 shows αcoustic βit Correction™ (High Pass, NS2) applied to a 24 bit input, reducing to 16, 
+18, 20, and 22 bit output widths.  Notice that there is no noise modulation present.  
+Figure 6 shows the effect of high-pass triangular dither only. The more coherent data in the dithered 
+bits, the better the dithering process works. Note that dithering from 24 bits to 22 bits has a lower noise 
+floor but more visible distortion components than dithering to a shorter word length, due to fewer bits 
+in the portion of the word being truncated. 
+ 
+ 
+           Fig. 7- 16 bit input signal   -100 dB 
+ Fig. 8- 16 bit input signal  -100 dB 
+             truncation by previous processing  
+additional processing and truncation 
+Should dither be applied to input signals of 16 bit word length?  Figure 7 shows a -100 dB tone of 16 
+bit word width with no dither or noise shaping. Note the presence of all of the odd harmonics, created 
+when the truncation process turned the tone into a 1 lsb square wave. Figure 8 shows the result of 
+applying additional processing to this signal, and truncating the result, thereby creating additional 
+distortion components.  
+           Fig. 9- 
+16 bit input signal   -100 dB 
+ Fig. 10- 16 bit input signal  -100 dB 
+high pass dither applied 
+ Acoustic Bit Correction applied 
+Figure 9 shows the original 16 bit input signal processed with high-pass dither only. Notice that the 
+additional distortion is gone. Figure 10 shows αcoustic βit Correction™ (dither and noise-shaping) 
+applied to the same signal with an increase in the effective noise floor.  αcoustic βit Correction™ 
+cannot remove truncation distortion in an incoming 16 bit signal, but it can avoid additional truncation 
+distortion if additional processing, such as sample rate conversion, has been applied. 
+AD122-96 MX 
+ 
+Appendix I 
+ 
+ 
+ 
+15
+Noise-Shaping Curves 
+ 
+ 
+ 
+            Fig. 11- 1kHz input signal   -100 dB  
+     Flat dither, with multiple noise-shapers shown 
+ 
+ 
+Figure 11 compares Flat dither 
+with NS2, NS3, and NS4 noise-
+shaping curves. Note the 
+increasing aggressiveness of the 
+curves, with the pronounced dip 
+at 4kHz and in the 12kHz region.  
+These correspond to the most 
+sensitive areas of the ear to 
+noise.   
+ 
+Quantization noise is shifted 
+from these areas to high 
+frequencies, where the ear is 
+less sensitive. 
+Noise-shaping curves should be 
+selected based upon listening 
+tests of specific material to be 
+dithered. 
+ 
+ 
+ 
+            Fig. 12- 1kHz input signal   -100 dB  
+   HPDF dither, with multiple noise-shapers shown 
+ 
+Figure 12 compares High Pass 
+dither with NS2, NS3, and NS4 
+noise-shaping curves.  High 
+Pass dither gives more noise 
+shaping in the high-frequency 
+band, while slightly lowering low 
+frequency quantization. 
+ 
+Note: in Figures 11 and 12, NS1 
+curve has been omitted for 
+clarity. It lies below NS2. 
+ 
+ 
+AD122-96 MX 
+ 
+Appendix II 
+ 
+ 
+16
+Appendix II: AD122-96 MX Input Considerations 
+ 
+Achieving 20 or more bits of resolution places a heavy demand on the linearity and noise of analog 
+signals prior to the A/D conversion.  
+ 
+Linearity: Linearity problems (typically associated with larger signals) should be avoided to prevent 
+overall signal distortions. Proper circuit design places non-linear devices inside a negative feedback 
+path, thus allowing the transfer function to depend on a few linear components (such as resistor ratio). 
+Closer examination reveals that the effectiveness of negative feedback is limited by the open loop gain 
+of the amplifier (the available gain prior to the feedback action). Constructing a 10dB gain stage out of, 
+say, a 50dB open loop amplifier provides 40dB of feedback; thus, circuit nonlinearities are corrected 
+for by a factor of 100. A 1% nonlinearity reduces to a .01% level. The same stage, when set to a gain of 
+20dB, yields only 50-20=30dB of "linearizing power"; thus the same 1% circuit nonlinearity is 
+corrected to 1/31.6 = .03%. The "obvious" solution of increasing circuit open loop gain is riddled with 
+problems ranging from impulse response settling time to loss of bandwidth.  
+ 
+Noise: The quantization (A/D conversion) of analog noise causes loss of fine signal detail. The 
+quantized noise introduces time varying signal dependent distortions. Such sample by sample deviation 
+can not be compared to the seemingly "constant" analog background noise. The interaction between the 
+noise and the quantization process effects the sonic detail at much higher amplitude than the noise level 
+itself. The source material may have its own noise level, but the A/D manufacturer is in no position to 
+decide which part of the material is signal and which part is noise. (Is it undesirable noise or is it the 
+intentional recording of the wind blowing through the trees?) Thus, any signal must be reproduced 
+accurately. All we can do, and all we should do amounts to avoiding additional A/D noise. A/D noise 
+consists of two parts: analog noise (prior to quantization), and quantization noise. The quantization 
+noise level is "fixed" by the converter itself. Model AD122-96 MX quantization noise relative full 
+scale is about 126dBFS. Keeping complete system noise level at 126dBFS requires careful treatment of 
+the analog path. Each circuit component (especially resistors and semiconductors) generates its own 
+noise. The complex electron motion within the various materials adds up to a cumulative noise. 
+Intentional amplification of signals yields undesirable amplification of noise. Once again, each dB of 
+added gain takes away a dB from the available dynamic range. 
+ 
+ 
+AD122-96 MX Input Range: You may suspect by now that our aim is to provide you with an A/D 
+converter and leave the problem of providing a "hot" signal at the hands of microphone and mic-
+preamplifier manufacturers. Like many A/D's, Model AD122-96 MX provides limited gain (0-12dB). 
+There are 4 methods for analog input signal interconnection:  
+ 
+1. Balanced/ grounded shield  
+2. Balanced/ floating shield  
+3. Unbalanced/ grounded shield  
+4. Unbalanced/ floating shield. 
+ 
+Grounded shield: analog cable shield is connected pin 1 of the XLR at both ends of the cable driver 
+end and A/D end.  
+Floating shield: analog cable shield is connected pin 1 of the XLR only at the driver end of cable. The 
+shield is floating at the A/D side (not connected to pin 1). 
+ 
+AD122-96 MX 
+ 
+Appendix II 
+ 
+ 
+17
+Note: Much information is available regarding proper shielding. The well known book "Grounding 
+And Shielding in Instrumentation" by Ralph Morrison provides an excellent explanation of the subject 
+and points out clearly that the floating shield connection is the correct configuration. Engineers using 
+the grounded configuration with 16-17 bit systems may wish to re-evaluate their interconnections for 
+20 bit systems. 
+ 
+1. Balanced input with floating shield: The unit handles up to 24dBu of peak signal with available 0-12 
+dB of front panel gain adjustment.  
+ 
+2. Balanced input with grounded shield: The unit handles up to 24dBu of peak signal with available 0-
+12 dB of front panel gain adjustment  
+ 
+3. Unbalanced input with floating shield: The unit handles up to 18dBu of peak signal with available 0-
+6 dB of front panel gain adjustment  
+ 
+4. Unbalanced input with grounded shield: The unit handles up to 18dBu of peak signal.  The front 
+panel gain range is 0-6 dB. 
+ 
+Comments: The first two configurations operate over the same range. Little attenuation is required in 
+processing of a 24dBu signal (34.72V peak to peak).  
+ 
+When applying unbalanced signals, use at least 6 dB of gain, using the gain adjustment pots located on 
+the front panel. 
+AD122-96 MX 
+ 
+Appendix III 
+ 
+ 
+18
+Appendix III: AD122-96 MX Soft Saturation 
+ 
+The SOFT SATURATION feature provides a digital emulation of an ideal magnetic tape saturation 
+characteristic. The three available settings are: 
+ 
+1. SOFT SATURATION OFF: yields normal converter operation (see lower curve VOFF). 
+2. SOFT SATURATION +3dB: provides a digital gain of 3dB for sample amplitudes below  
+-6dBFS and digital compression for amplitudes greater then -6dBFS (see middle curve V3dB). 
+3. SOFT SATURATION +6dB: provides a digital gain of 6dB for sample amplitudes below  
+-12dBFS and digital compression for amplitudes greater then -12dBFS (see upper curve 6dB). 
+ 
+The graph below shows the three transfer functions. The plots show input versus output value between 
+-20dBFS and 0dBFS. 
+ 
+ 
+ 
+ 
+The algorithm for soft saturation is fundamentally different from classical audio compression. A 
+compression algorithm provides time varying gain as a function of signal power. The gain variations 
+are slowed down (attack and decay envelopes) to minimize distortions (a sudden step in signal gain 
+generates a time decaying distortion). 
+ 
+The soft saturation algorithm operates on a sample by sample basis. All sample values below a given 
+threshold (-6dBFS or -12dBFS) are amplified by a constant gain (+3dB or +6dB) and all sample values 
+above the threshold are reduced by a pre-assigned amount emulating ideal tape magnetization curve 
+(exponential function). While signal peaks get "pushed down" (peak signal distortions), the dynamic 
+performance for signals under the selected threshold stays intact. 
+ 
+ 
+ 
+ 
+ 
+AD122-96 MX 
+ 
+Appendix III 
+ 
+ 
+19
+ 
+ 
+Below are time domain plots for the +3dB setting (left plot) and +6dB setting (right plot). 
+Each plot shows the transformation of two input signals (dotted lines) to two output signals (solid 
+lines).  The settings provide different tradeoffs between gain and "peak signal distortion". 
+ 
+ 
+ 
+The soft saturation algorithm provides a "soft limiter" function (aimed at making "hotter recording"). 
+The function provides several advantages over conventional analog limiters. 
+ 
+Analog limiters are based on physical components; thus, the attainable curves are restricted to available 
+hardware, also resulting in less then ideal transition between the linear and the non-linear portions of 
+the curve. 
+ 
+Digital processing is free of such restrictions. The curves go beyond simple gluing of two transfer 
+functions at the transition point. Our experiments showed that the two factors affecting the sonic 
+quality are the shape of the curve and the behavior around the transition point. Our choice of an 
+exponential curve was based on the nature of the distortions (crudely speaking, less distortion energy at 
+higher harmonics). The key to a smooth transition was to make the slopes of the linear and non linear 
+portions are precisely equal to 22 bit accuracy (as always, such precision is much more apparent to a 
+listener of 16 bit data then to a viewer of "9 bits graph". 
+ 
+Unlike the "analog soft knee", the digital soft saturation is a precise transformation. The user may not 
+drive the signal further and further into the saturation region (compromising between "hotter 
+recording" and "acceptable distortions"). The +3dB setting provides perfect linearity to  
+-6dBFS of the incoming signal (-3dBFS of the processed signal), and the +6dB setting provides perfect 
+linearity to -12dBFS of the incoming signal (-6dBFS of the processed signal). It is easy to justify the 
+usefulness of this function when the complete audio track is below these threshold levels. The 
+compromise is restricted to the upper 6dB (or 12dB). The choice is left up to the user. 
+ 
+Note: The maximum light is operational during soft limit. It indicates that the signal has reached full 
+scale, thus warning against overdriving into the clipping region. 
+AD122-96 MX 
+ 
+Appendix IV 
+ 
+ 
+20
+Appendix IV: Viewing Noise Floor on AD122-96 MX Display 
+ 
+The simplest form of random noise is "white noise". White noise is bounded between two limits. The 
+probability of occurrence for any amplitude value between the two limits (boundaries) is equal; thus, it 
+is also named uniform distribution noise. Analog noise is not white. It is mostly "Gaussian", with 
+higher probability of occurrence for smaller amplitudes. The large amplitudes occur less frequently and 
+the distribution follows the familiar "bell shaped curve". 
+ 
+Let us plot an "oscilloscope picture" sample of 10000 points of a Gaussian sequence: 
+ 
+ 
+To view the Gaussian data in its more familiar bell-shaped form, we use the following construction, 
+computing a histogram by grouping the values in 20 bins of width .05: 
+Computing the mean and standard deviation yields close to perfect results (mean and stdev): 
+ 
+= mean( ) gn 0.001 = stdev( ) gn 1.001 
+ 
+Gaussian noise energy is measurable via a rms. (root mean square) meter.  The proper measurement of 
+converter noise should be done using a rms. instrument (such as Lavry Engineering’s Model 3000, 
+Audio Precision test system or others). However, the known bell shaped curve coupled with a peak 
+reading offers a reasonable and quick estimate of the rms. value: 
+Step 1: Provide a low resistance path (0 to 500 Ohms) between pin 2 and pin three of the analog input 
+connector(s). 
+Step 2: Set the DC FILTER ON (remove the DC offset to overcome its effects on the Bar-graph 
+display) 
+Step 3: At the Display Control Screen, set to "METER: -90". 
+Step 4: Read the peak value on the LED Bar graph. 
+Step 5: The noise floor is at about 8dB below the reading 
+Example: The reading of peak is at -24dB. Subtracting 90dB yields -114dB of peak hold values. 
+Subtracting 8 yields -114 - 8 = -122dB of noise floor. 
+ 
+AD122-96 MX 
+ 
+Appendix IV 
+ 
+ 
+21
+Such measurement and calculation may aid in evaluating the noise of a driver device, or a series of 
+devices. The distribution due to addition of Gaussian signals is still Gaussian.  While the 8dB 
+"translation factor" is true for Gaussian noise, it does not hold true for non-Gaussian noise. Such factor 
+is 3dB for sine waves and 0dB for square waves. Higher than expected reading may indicate a pickup 
+of non-random noise such as power line hum. 
+ 
+Explanation for the 8dB factor: 
+ 
+The Gaussian bell shape curve is unbounded. Theoretically speaking, very high amplitude may occur, 
+but very high amplitudes occur very seldom (it has been said that waiting a few trillion years may 
+produce a million volt spike). Practical observations show that most of the peaks occur within 3.5 
+times of the standard deviation (sometimes referred to as a crest factor of seven). The following 
+calculation: 
+20 log (3.52/2)=7.871 
+ 
+justifies adding about 7.81dB to the peak hold reading. Given a 1dB meter resolution, we round the 
+correction factor to 8dB. 
+ 
+ 
+ 
