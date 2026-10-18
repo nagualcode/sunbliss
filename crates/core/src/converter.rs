@@ -4,16 +4,16 @@
 //!   pre-emphasis "clip filter" (optional, one pole at ~34 kHz, twice in B)
 //!   -> static knee/clip curve with second-order ADAA
 //!   -> (B only) overload memory: a held overload makes the plateau sag
-//!      toward zero (tau ~72 ms), released within ~1 ms once the input
-//!      falls back under 1.33 c. This is the "bass bloom" of the classic
+//!      toward zero (tau 72.5 ms), released within ~1 ms once the input
+//!      falls back under 1.32 c (the edge of the fitted polynomial). This is the "bass bloom" of the classic
 //!      converter model. The reference also diverges (polarity flips, output
 //!      latching) at extreme HF drive; that is deliberately not reproduced.
 
-use crate::curves::{self, ConvB, TabCurve};
+use crate::curves::{self, TabCurve};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ClipMode {
-    /// "Classic": asymmetric soft compression + overload memory.
+    /// "Classic": asymmetric polynomial compression + overload memory.
     Classic,
     /// "Modern": short knee into a 0.98 plateau.
     Modern,
@@ -45,8 +45,8 @@ impl ClipMode {
 pub const CLIP_FILTER_HZ: f64 = 32_000.0;
 /// |u| below which each curve is exactly the identity (A, B: none, Hard).
 const LINEAR_LIMIT: [f64; 3] = [crate::curves::KNEE_A, 0.0, crate::curves::HARD_LEVEL];
-pub const OVERLOAD_THRESHOLD: f64 = 1.33;
-pub const OVERLOAD_TAU_S: f64 = 0.072;
+pub const OVERLOAD_THRESHOLD: f64 = curves::CLASSIC_RANGE;
+pub const OVERLOAD_TAU_S: f64 = 0.0725;
 pub const OVERLOAD_RELEASE_S: f64 = 0.001;
 
 /// Shared, read-only curve tables.
@@ -56,11 +56,10 @@ pub struct ClipTables {
 
 impl ClipTables {
     pub fn new() -> Self {
-        let b = ConvB::from_measured(&curves::B_MEAS_X, &curves::B_MEAS_Y);
         ClipTables {
             curves: [
                 TabCurve::new(2.0, 8192, curves::conv_a),
-                TabCurve::new(2.0, 8192, move |u| b.eval(u)),
+                TabCurve::new(2.0, 8192, curves::conv_b),
                 TabCurve::new(2.0, 8192, curves::hard),
             ],
         }

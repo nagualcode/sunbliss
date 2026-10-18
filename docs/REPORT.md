@@ -38,11 +38,11 @@ Os números deste relatório vêm de `lab/` (scripts reprodutíveis) e de
 
 | Teste | Critério | Resultado | OK |
 |---|---|---|---|
-| Curva estática DC, clip A (amplitude ≥ −6 dB) | ≤ 0,5 dB | máx 0.274 dB (média 0.107) | ✅ |
-| Curva estática DC, clip B (amplitude ≥ −6 dB) | ≤ 0,5 dB | máx 0.209 dB (média 0.056) | ✅ |
-| Curva estática DC, clip Hard (amplitude ≥ −6 dB) | ≤ 0,5 dB | máx 0.271 dB (média 0.108) | ✅ |
+| Curva estática DC, clip A (amplitude ≥ −6 dB) | ≤ 0,5 dB | máx 0.022 dB (média 0.003) | ✅ |
+| Curva estática DC, clip B (amplitude ≥ −6 dB) | ≤ 0,5 dB | máx 0.000 dB (média 0.000) | ✅ |
+| Curva estática DC, clip Hard (amplitude ≥ −6 dB) | ≤ 0,5 dB | máx 0.004 dB (média 0.003) | ✅ |
 | Seno 1 kHz −12…+8 dB, clip A: RMS de saída | ≤ 0,5 dB | máx 0.015 dB | ✅ |
-| Seno 1 kHz −12…+8 dB, clip B: RMS de saída | ≤ 0,5 dB | máx 0.105 dB | ✅ |
+| Seno 1 kHz −12…+8 dB, clip B: RMS de saída | ≤ 0,5 dB | máx 0.089 dB | ✅ |
 | Seno 1 kHz −12…+8 dB, clip Hard: RMS de saída | ≤ 0,5 dB | máx 0.025 dB | ✅ |
 | Curva de saturação A, amounts 1…6 (x > −30 dB) | ≤ 0,5 dB | máx 0.143 dB | ✅ |
 | Curva de saturação B, amounts 1…6 (x > −30 dB) | ≤ 0,5 dB | máx 0.206 dB | ✅ |
@@ -50,7 +50,7 @@ Os números deste relatório vêm de `lab/` (scripts reprodutíveis) e de
 | Unity, curva B, amount 6 (nível baixo, ganho líquido) | mesmo efeito | ref -0.004 dB, nosso +0.000 dB | ✅ |
 | Contour 2 dB: estático 8 kHz e curva de frequência | ≤ 0,5 dB | máx 0.156 dB | ✅ |
 | Resposta linear filter_A (100 Hz…20 kHz) | ≤ 0,5 dB | máx 0.035 dB | ✅ |
-| Resposta linear filter_B (100 Hz…20 kHz) | ≤ 0,5 dB | máx 0.077 dB | ✅ |
+| Resposta linear filter_B (100 Hz…20 kHz) | ≤ 0,5 dB | máx 0.075 dB | ✅ |
 | Resposta linear filter_Hard (100 Hz…20 kHz) | ≤ 0,5 dB | máx 0.035 dB | ✅ |
 | Resposta linear tone_A (100 Hz…20 kHz) | ≤ 0,5 dB | máx 0.006 dB | ✅ |
 | Resposta linear tone_B (100 Hz…20 kHz) | ≤ 0,5 dB | máx 0.004 dB | ✅ |
@@ -76,21 +76,21 @@ Os números deste relatório vêm de `lab/` (scripts reprodutíveis) e de
 | Aliasing+ruído, tom 9 kHz +6 dB, clip A (dB rel. fund.) | -53.7 | -87.9 | ✅ |
 | Aliasing+ruído, tom 13 kHz +6 dB, clip A (dB rel. fund.) | -47.5 | -86.0 | ✅ |
 | Aliasing+ruído, tom 15 kHz +6 dB, clip A (dB rel. fund.) | -45.9 | -77.2 | ✅ |
-| Aliasing+ruído, tom 5 kHz +6 dB, clip B (dB rel. fund.) | 20.4 | -80.9 | ✅ |
-| Aliasing+ruído, tom 9 kHz +6 dB, clip B (dB rel. fund.) | 16.8 | -89.0 | ✅ |
-| Aliasing+ruído, tom 13 kHz +6 dB, clip B (dB rel. fund.) | 12.5 | -83.6 | ✅ |
-| Aliasing+ruído, tom 15 kHz +6 dB, clip B (dB rel. fund.) | 17.6 | -79.7 | ✅ |
+| Aliasing+ruído, tom 5 kHz +6 dB, clip B (dB rel. fund.) | 20.4 | -79.5 | ✅ |
+| Aliasing+ruído, tom 9 kHz +6 dB, clip B (dB rel. fund.) | 16.8 | -84.7 | ✅ |
+| Aliasing+ruído, tom 13 kHz +6 dB, clip B (dB rel. fund.) | 12.5 | -82.4 | ✅ |
+| Aliasing+ruído, tom 15 kHz +6 dB, clip B (dB rel. fund.) | 17.6 | -80.7 | ✅ |
 | Aliasing+ruído, tom 5 kHz +6 dB, clip Hard (dB rel. fund.) | -43.0 | -84.7 | ✅ |
 | Aliasing+ruído, tom 9 kHz +6 dB, clip Hard (dB rel. fund.) | -86.2 | -87.5 | ✅ |
 | Aliasing+ruído, tom 13 kHz +6 dB, clip Hard (dB rel. fund.) | -78.1 | -86.6 | ✅ |
 | Aliasing+ruído, tom 15 kHz +6 dB, clip Hard (dB rel. fund.) | -77.8 | -77.0 | ❌ |
 | Produtos < 18 kHz, 19+20 kHz +3 dB, clip A (dB) | -34.4 | -36.8 | ✅ |
-| Produtos < 18 kHz, 19+20 kHz +3 dB, clip B (dB) | -34.5 | -37.3 | ✅ |
+| Produtos < 18 kHz, 19+20 kHz +3 dB, clip B (dB) | -34.5 | -37.1 | ✅ |
 | Produtos < 18 kHz, 19+20 kHz +3 dB, clip Hard (dB) | -37.9 | -36.9 | ❌ |
 | True-peak na mixagem, B_+3 (dBTP; nosso com guard) | +0.21 | -0.15 | ✅ |
 |   loudness no mesmo ajuste (LUFS) | -15.92 | -15.97 | ✅ |
 | True-peak na mixagem, B_+6 (dBTP; nosso com guard) | +1.14 | -0.15 | ✅ |
-|   loudness no mesmo ajuste (LUFS) | -13.03 | -13.10 | ✅ |
+|   loudness no mesmo ajuste (LUFS) | -13.03 | -13.11 | ✅ |
 | True-peak na mixagem, B_+10 (dBTP; nosso com guard) | +0.74 | -0.14 | ✅ |
 |   loudness no mesmo ajuste (LUFS) | -9.68 | -9.62 | ✅ |
 | Resíduo abaixo do teto (−6 dB), clip A, banda 20 kHz (dB rms) | -94.5 | -108.5 | ✅ |
@@ -104,8 +104,8 @@ Os números deste relatório vêm de `lab/` (scripts reprodutíveis) e de
 | Clique na troca 'clip on->off': excesso de HF > 16 kHz em ±5 ms (dB) | -0.16 | -1.98 | ✅ |
 | Clique na troca 'tone Flat->A': excesso de HF > 16 kHz em ±5 ms (dB) | -0.00 | +0.00 | ✅ |
 | Clique na troca 'bypass on': excesso de HF > 16 kHz em ±5 ms (dB) | -0.67 | -1.90 | ✅ |
-| CPU, mesmo host (pedalboard), High, estéreo 48 kHz (% de tempo real) | 3.23 | 4.71 | ❌ |
-| CPU Pristine / Extra (nosso; a referência não expõe a troca) | — | 6.13 / 8.86 | — |
+| CPU, mesmo host (pedalboard), High, estéreo 48 kHz (% de tempo real) | 4.51 | 9.71 | ❌ |
+| CPU Pristine / Extra (nosso; a referência não expõe a troca) | — | 9.61 / 13.93 | — |
 <!-- AUTO:END -->
 
 ## O que falta

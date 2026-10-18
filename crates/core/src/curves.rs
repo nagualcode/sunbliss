@@ -196,90 +196,34 @@ pub fn conv_a(u: f64) -> f64 {
     y.copysign(u)
 }
 
-/// Converter B: static curve measured from the "classic" model with DC
-/// steps (docs/data/gc_dc_Classic.json), split into odd and even parts.
-/// Odd part: gentle compression from low level into a ~0.966 plateau.
-/// Even part: small asymmetry (2nd-harmonic source of the analog stage).
-const B_U: [f64; 27] = [
-    0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,
-    1.0, 1.05, 1.1, 1.15, 1.2, 1.25, 1.3,
+/// Converter B ("classic"): a degree-9 polynomial, least-squares fitted to the
+/// reference's DC transfer on |u| <= 1.31 (lab/fit_classic.py,
+/// docs/data/fit_classic_poly.json; residual 1.4e-7, the f32 floor of the
+/// host I/O). Odd terms give the gentle compression into a ~0.97 plateau,
+/// the small even terms the 2nd-harmonic asymmetry. Coefficients in
+/// increasing powers of u.
+pub const CLASSIC_POLY: [f64; 10] = [
+    0.0,
+    9.9938217277e-01,
+    -2.3697332645e-02,
+    -2.5738858649e-01,
+    3.6481392458e-02,
+    8.6339251973e-01,
+    -8.7098505314e-03,
+    -9.3910006576e-01,
+    -2.5033402721e-03,
+    2.7521139794e-01,
 ];
 
-/// Filled from measurement data at build time of the table (see `conv_b_tables`).
-pub struct ConvB {
-    odd: Vec<f64>,
-    even: Vec<f64>,
+/// Edge of the polynomial's valid range. Past it the polynomial diverges;
+/// the curve holds its edge value and the overload memory takes over
+/// (converter.rs).
+pub const CLASSIC_RANGE: f64 = 1.32;
+
+pub fn conv_b(u: f64) -> f64 {
+    let u = u.clamp(-CLASSIC_RANGE, CLASSIC_RANGE);
+    CLASSIC_POLY.iter().rev().fold(0.0, |acc, &c| acc * u + c)
 }
-
-impl ConvB {
-    pub fn from_measured(xs: &[f64], ys: &[f64]) -> Self {
-        // sample measured curve (both polarities) at |u| grid
-        let interp = |x: f64| -> f64 {
-            if x <= xs[0] {
-                return ys[0];
-            }
-            for i in 0..xs.len() - 1 {
-                if x <= xs[i + 1] {
-                    let t = (x - xs[i]) / (xs[i + 1] - xs[i]);
-                    return ys[i] + t * (ys[i + 1] - ys[i]);
-                }
-            }
-            ys[ys.len() - 1]
-        };
-        let mut odd: Vec<f64> = B_U.iter().map(|&u| 0.5 * (interp(u) - interp(-u))).collect();
-        let even: Vec<f64> = B_U.iter().map(|&u| 0.5 * (interp(u) + interp(-u))).collect();
-        // enforce monotone odd part (measurement noise near the plateau)
-        for i in 1..odd.len() {
-            if odd[i] < odd[i - 1] {
-                odd[i] = odd[i - 1];
-            }
-        }
-        odd[0] = 0.0;
-        ConvB { odd, even }
-    }
-
-    fn pchip(ys: &[f64], u: f64) -> f64 {
-        let h = 0.05;
-        let n = ys.len();
-        if u >= B_U[n - 1] {
-            return ys[n - 1];
-        }
-        let i = ((u / h) as usize).min(n - 2);
-        let t = (u - B_U[i]) / h;
-        let d = |k: usize| -> f64 {
-            // Fritsch-Carlson slopes
-            if k == 0 {
-                (ys[1] - ys[0]) / h
-            } else if k == n - 1 {
-                0.0
-            } else {
-                let a = (ys[k] - ys[k - 1]) / h;
-                let b = (ys[k + 1] - ys[k]) / h;
-                if a * b <= 0.0 { 0.0 } else { 2.0 / (1.0 / a + 1.0 / b) }
-            }
-        };
-        let (y0, y1, m0, m1) = (ys[i], ys[i + 1], d(i) * h, d(i + 1) * h);
-        let t2 = t * t;
-        let t3 = t2 * t;
-        (2.0 * t3 - 3.0 * t2 + 1.0) * y0 + (t3 - 2.0 * t2 + t) * m0 + (-2.0 * t3 + 3.0 * t2) * y1 + (t3 - t2) * m1
-    }
-
-    pub fn eval(&self, u: f64) -> f64 {
-        let a = u.abs();
-        Self::pchip(&self.odd, a).copysign(u) + Self::pchip(&self.even, a)
-    }
-}
-
-/// Default Converter B measurement (x, y) pairs, ceiling = 1.
-pub const B_MEAS_X: [f64; 53] = [
-    -1.3, -1.25, -1.2, -1.15, -1.1, -1.05, -1.0, -0.95, -0.9, -0.85, -0.8, -0.75, -0.7, -0.65, -0.6, -0.55, -0.5, -0.45,
-    -0.4, -0.35, -0.3, -0.25, -0.2, -0.15, -0.1, -0.05, 0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55,
-    0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.05, 1.1, 1.15, 1.2, 1.25, 1.3,
-];
-
-pub const B_MEAS_Y: [f64; 53] = [
-    -0.96352, -0.95000, -0.95320, -0.95990, -0.96219, -0.95601, -0.93993, -0.91419, -0.88006, -0.83924, -0.79357, -0.74474, -0.69419, -0.64300, -0.59191, -0.54136, -0.49149, -0.44228, -0.39355, -0.34507, -0.29661, -0.24795, -0.19897, -0.14962, -0.09992, -0.05000, -0.00000, 0.04988, 0.09946, 0.14859, 0.19719, 0.24527, 0.29292, 0.34033, 0.38776, 0.43552, 0.48391, 0.53317, 0.58341, 0.63452, 0.68614, 0.73757, 0.78771, 0.83515, 0.87813, 0.91472, 0.94307, 0.96171, 0.97008, 0.96922, 0.96270, 0.95778, 0.96688,
-];
 
 // ----------------------------------------------------------- saturation curves
 

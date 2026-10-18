@@ -17,9 +17,17 @@ from music_synth import mix
 SR = 48000
 
 
+def dc_steps(levels, seg=SR // 50, rise=SR // 500):
+    """DC plateaus with 2 ms raised-cosine edges: a hard edge rings through
+    any band-limited path, and that overshoot is not the static curve."""
+    w = 0.5 - 0.5 * np.cos(np.pi * np.arange(rise) / rise)
+    env = np.concatenate([w, np.ones(seg - 2 * rise), w[::-1], np.zeros(seg)])
+    return np.concatenate([a * env for a in levels])
+
+
 def dc_curve(fn, mode, levels=np.linspace(-1.3, 1.3, 53), **s):
     seg = SR // 50
-    x = np.concatenate([np.concatenate([np.full(seg, a), np.zeros(seg)]) for a in levels])
+    x = dc_steps(levels, seg)
     y = fn(x, SR, clip=True, mode=mode, **s)
     return np.array([np.median(y[i * 2 * seg + seg // 4:i * 2 * seg + seg // 2]) for i in range(len(levels))])
 
