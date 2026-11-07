@@ -1,16 +1,17 @@
 # Controles: mapeamento e semântica (F1)
 
-Para estudo pessoal (não distribuído), os rótulos do Sunbliss **espelham os da
-referência**: mesmos nomes, mesma ordem nas opções e mesmos padrões. Assim, um
-ajuste pode ser copiado de um plugin para o outro diretamente. O nome do
-plugin continua "Sunbliss". Nos controles que funcionam diferente, a GUI mostra
-um tooltip explicando a diferença.
+Para estudo pessoal (não distribuído), os controles do Sunbliss **seguem a
+ordem, as opções e os padrões da referência**, de modo que um ajuste pode ser
+copiado de um plugin para o outro diretamente. Os rótulos também coincidem,
+com duas exceções: os dois controles de timbre levam nomes nossos — **Sun**
+(o *Alchemy* da referência) e **Bliss** (o *Gold* dela). Nos controles que
+funcionam diferente, a GUI mostra um tooltip explicando a diferença.
 
 Fonte do inventário: `docs/goldclip_params.json` (Gold Clip 1.5.0, AU, 23
 parâmetros). Medições: `lab/probe_*.py`, com dados em `docs/data/`.
 
 Nomes internos no código do núcleo e no laboratório: Clipper Classic = modelo
-"B", Modern = "A" (vale também para Gold Mode e Box Tone).
+"B", Modern = "A" (vale também para Bliss Mode e Box Tone).
 
 ## Tabela de parâmetros
 
@@ -25,12 +26,12 @@ Nomes internos no código do núcleo e no laboratório: Clipper Classic = modelo
 | `clipper_mode` | Clipper Mode (`clipper_mode`) | Classic / Modern / Hard | Classic | sim (Classic sem a inversão de polaridade em drive extremo) |
 | `clipper_filter_on_off` | Clip Filter (`clip_filter`) | on/off | off | sim |
 | `clip_guard` | Clip Guard (`clip_guard`) | on/off | off | **diferente**: true-peak ≤ ceiling |
-| `gold_on_off` | Gold On (`gold_on`) | on/off | on | sim |
-| `gold` | Gold (`gold`) | 0 … 6 dB | 0 | sim |
-| `gold_mode` | Gold Mode (`gold_mode`) | Classic / Modern | Modern | Classic = equação do manual da Lavry |
+| `gold_on_off` | Bliss On (`bliss_on`) | on/off | on | sim |
+| `gold` | Bliss (`bliss`) | 0 … 6 dB | 0 | sim |
+| `gold_mode` | Bliss Mode (`bliss_mode`) | Classic / Modern | Modern | Classic = equação do manual da Lavry |
 | `unity` | Unity Gain (`unity_gain`) | on/off | off | sim |
-| `alchemy_on_off` | Alchemy On (`alchemy_on`) | on/off | on | sim |
-| `alchemy` | Alchemy (`alchemy`) | 0 … 2 dB | 0 | sim (lei, crossover e dinâmica medidos) |
+| `alchemy_on_off` | Sun On (`sun_on`) | on/off | on | sim |
+| `alchemy` | Sun (`sun`) | 0 … 2 dB | 0 | sim (lei, crossover e dinâmica medidos) |
 | `box_tone_mode` | Box Tone (`box_tone`) | Flat / Classic / Modern | Flat | sim (Flat bit-transparente) |
 | `wet` / `dry` | Wet / Dry | 0 … 100 % | 100 / 0 | sim |
 | `dry_wet_link` | Dry Wet Link (`dry_wet_link`) | on/off | on | sim |

@@ -416,14 +416,14 @@ impl EditorUi<SunblissParams> for SunUi {
                         });
                     });
                 });
-                self.section(ui, "Alchemy", 92.0, ch, Some((ctx, P::AlchemyOn)), |ui| {
-                    let en = self.on(ctx, P::AlchemyOn);
-                    self.knob(ui, ctx, P::Alchemy, "Alchemy", 48.0, en, None);
+                self.section(ui, "Sun", 92.0, ch, Some((ctx, P::SunOn)), |ui| {
+                    let en = self.on(ctx, P::SunOn);
+                    self.knob(ui, ctx, P::Sun, "Sun", 48.0, en, None);
                 });
-                self.section(ui, "Gold", 136.0, ch, Some((ctx, P::GoldOn)), |ui| {
-                    let en = self.on(ctx, P::GoldOn);
-                    self.knob(ui, ctx, P::Gold, "Gold", 56.0, en, None);
-                    self.seg(ui, ctx, P::GoldMode, &["Classic", "Modern"], &[TIP_GOLD_CLASSIC, ""], 56.0, en);
+                self.section(ui, "Bliss", 136.0, ch, Some((ctx, P::BlissOn)), |ui| {
+                    let en = self.on(ctx, P::BlissOn);
+                    self.knob(ui, ctx, P::Bliss, "Bliss", 56.0, en, None);
+                    self.seg(ui, ctx, P::BlissMode, &["Classic", "Modern"], &[TIP_BLISS_CLASSIC, ""], 56.0, en);
                     self.toggle(ui, ctx, P::UnityGain, "Unity Gain", 113.0);
                 });
                 let mlink = self.on(ctx, P::DryWetLink);
@@ -497,7 +497,7 @@ const TIP_CLASSIC: &str = "Igual ao Classic do Gold Clip até ~+8 dB de drive (c
 Não reproduz o colapso dele em drive extremo (inversão de polaridade).";
 const TIP_CEILING: &str = "Sem o 'ducking' do Gold Clip (até −2 dB após bordas fortes, decidido por buffer do host e \
 mantido por dois buffers: ~5 ms com buffer de 512, ~0,2 s com 8192). Picos são segurados por um limitador suave.";
-const TIP_GOLD_CLASSIC: &str = "Equação da Soft Saturation do manual da Lavry (Apêndice III, curva exponencial C1). \
+const TIP_BLISS_CLASSIC: &str = "Equação da Soft Saturation do manual da Lavry (Apêndice III, curva exponencial C1). \
 Difere ≤ 0,2 dB da curva Classic do Gold Clip.";
 const TIP_OVERSAMPLING: &str = "Mesmos fatores do Gold Clip (4/8/16× a 44,1–48 kHz). Filtro de conversor sem aliasing \
 (rejeição a partir de fs/2); a 96 kHz plano até 40 kHz.";

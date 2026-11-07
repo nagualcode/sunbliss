@@ -1,13 +1,13 @@
 uuid = "7898559f-ee3e-43b2-bf3e-b386fff97a76"
 name = "Loud and Clean"
-comment = "Hard clip with oversampling headroom; Alchemy tames the top at the peaks"
+comment = "Hard clip with oversampling headroom; Sun tames the top at the peaks"
 
 [params]
 input_trim = 4.0
 trim_link = false
 clipper_mode = 2   # 0 Classic, 1 Modern, 2 Hard
-gold = 3.0
-gold_mode = 1   # 0 Classic, 1 Modern
-alchemy = 1.2
+bliss = 3.0
+bliss_mode = 1   # 0 Classic, 1 Modern
+sun = 1.2
 clip_guard = true
 oversampling = 1   # 0 High, 1 Pristine, 2 Extra Pristine

@@ -44,7 +44,7 @@ if __name__ == "__main__":
         p = G.plugin()
     else:
         p = G._Fixed(pedalboard.load_plugin(os.path.expanduser(PC.PATHS["au"])))
-        PC.apply(p, **{**PC.BASE, "clipper_mode": "Classic", "gold_db": 3.0, "alchemy_db": 1.0,
+        PC.apply(p, **{**PC.BASE, "clipper_mode": "Classic", "bliss_db": 3.0, "sun_db": 1.0,
                        "oversampling": {"high": "High", "pristine": "Pristine", "extra": "Extra Pristine"}[quality]})
     p(x[:, :SR], SR)
     c0 = cycles()

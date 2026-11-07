@@ -11,8 +11,8 @@ import stimuli as S
 PATHS = {"vst3": "~/Library/Audio/Plug-Ins/VST3/Sunbliss.vst3",
          "au": "~/Library/Audio/Plug-Ins/Components/Sunbliss.component"}
 RANGES = {"input_trim_db": (-12, 12), "output_trim_db": (-12, 12), "trim_link_offset_db": (-12, 12),
-          "clip_ceiling_db": (-36, 0), "gold_db": (0, 6), "alchemy_db": (0, 2), "wet": (0, 1), "dry": (0, 1)}
-ENUMS = {"clipper_mode": ["Classic", "Modern", "Hard"], "gold_mode": ["Classic", "Modern"],
+          "clip_ceiling_db": (-36, 0), "bliss_db": (0, 6), "sun_db": (0, 2), "wet": (0, 1), "dry": (0, 1)}
+ENUMS = {"clipper_mode": ["Classic", "Modern", "Hard"], "bliss_mode": ["Classic", "Modern"],
          "box_tone": ["Flat", "Classic", "Modern"], "oversampling": ["High", "Pristine", "Extra Pristine"]}
 
 
@@ -30,17 +30,17 @@ def apply(sb, **kw):
             p.raw_value = 1.0 if v else 0.0
 
 
-BASE = dict(clipper=True, trim_link=False, input_trim_db=0.0, output_trim_db=0.0, gold_db=0.0, alchemy_db=0.0,
+BASE = dict(clipper=True, trim_link=False, input_trim_db=0.0, output_trim_db=0.0, bliss_db=0.0, sun_db=0.0,
             clip_guard=False, box_tone="Flat", wet=1.0, dry=0.0, dry_wet_link=True, clipper_mode="Hard",
-            gold_mode="Modern", clip_filter=False, unity_gain=False, delta=False)
+            bliss_mode="Modern", clip_filter=False, unity_gain=False, delta=False)
 
 CASES = [
     (dict(), dict(clip=True, mode="Hard")),
     (dict(input_trim_db=6.0), dict(clip=True, mode="Hard", input=6.0)),
-    (dict(input_trim_db=8.0, clipper_mode="Classic", gold_db=3.0, gold_mode="Classic", alchemy_db=1.0, clip_guard=True),
+    (dict(input_trim_db=8.0, clipper_mode="Classic", bliss_db=3.0, bliss_mode="Classic", sun_db=1.0, clip_guard=True),
      dict(clip=True, mode="B", input=8.0, sat=3.0, curve="B", contour=1.0, guard=True)),
     (dict(input_trim_db=6.0, clipper_mode="Modern", box_tone="Modern", wet=0.5), dict(clip=True, mode="A", input=6.0, tone="A", wet=50.0)),
-    (dict(input_trim_db=4.0, clipper_mode="Classic", clip_filter=True, gold_db=6.0, gold_mode="Modern", unity_gain=True),
+    (dict(input_trim_db=4.0, clipper_mode="Classic", clip_filter=True, bliss_db=6.0, bliss_mode="Modern", unity_gain=True),
      dict(clip=True, mode="B", input=4.0, filter=True, sat=6.0, curve="A", unity=True)),
 ]
 

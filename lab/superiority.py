@@ -162,7 +162,7 @@ def automation_clicks(sr=48000):
         "mode B->Hard": ((gcb | dict(clipper_mode="Classic"), dict(clipper_mode="Hard")),
                          (sbb | dict(clipper_mode="Classic"), dict(clipper_mode="Hard"))),
         "curve A->B (sat 6)": ((gcb | dict(gold_on_off=True, gold=6.0, gold_mode="Modern"), dict(gold_mode="Classic")),
-                               (sbb | dict(gold_db=6.0, gold_mode="Modern"), dict(gold_mode="Classic"))),
+                               (sbb | dict(bliss_db=6.0, bliss_mode="Modern"), dict(bliss_mode="Classic"))),
         "clip on->off": ((gcb, dict(clipper_on_off=False)), (sbb, dict(clipper=False))),
         "tone Flat->A": ((gcb | dict(box_tone_mode="Flat"), dict(box_tone_mode="Modern")),
                          (sbb | dict(box_tone="Flat"), dict(box_tone="Modern"))),

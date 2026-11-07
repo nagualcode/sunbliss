@@ -12,8 +12,9 @@ mod loudness;
 use loudness::ShortTerm;
 
 // ------------------------------------------------------------------ enums
-// Names and order follow the reference plugin so settings can be copied
-// across one to one (personal study build).
+// Order follows the reference plugin so settings can be copied across one to
+// one (personal study build); the two voicing controls carry our own names
+// (Sun, Bliss).
 
 #[derive(ParamEnum)]
 pub enum ClipperModeP {
@@ -26,7 +27,7 @@ pub enum ClipperModeP {
 }
 
 #[derive(ParamEnum)]
-pub enum GoldModeP {
+pub enum BlissModeP {
     #[name = "Classic"]
     Classic,
     #[name = "Modern"]
@@ -152,19 +153,19 @@ pub struct SunblissParams {
     #[param(name = "Clip Guard", default = false)]
     pub clip_guard: BoolParam,
 
-    #[param(name = "Gold On", default = true)]
-    pub gold_on: BoolParam,
-    #[param(name = "Gold", range = "linear(0, 6)", default = 0, unit = "dB", smooth = "none")]
-    pub gold: FloatParam,
-    #[param(name = "Gold Mode", default = 1)]
-    pub gold_mode: EnumParam<GoldModeP>,
+    #[param(name = "Bliss On", default = true)]
+    pub bliss_on: BoolParam,
+    #[param(name = "Bliss", range = "linear(0, 6)", default = 0, unit = "dB", smooth = "none")]
+    pub bliss: FloatParam,
+    #[param(name = "Bliss Mode", default = 1)]
+    pub bliss_mode: EnumParam<BlissModeP>,
     #[param(name = "Unity Gain", default = false)]
     pub unity_gain: BoolParam,
 
-    #[param(name = "Alchemy On", default = true)]
-    pub alchemy_on: BoolParam,
-    #[param(name = "Alchemy", range = "linear(0, 2)", default = 0, unit = "dB", smooth = "none")]
-    pub alchemy: FloatParam,
+    #[param(name = "Sun On", default = true)]
+    pub sun_on: BoolParam,
+    #[param(name = "Sun", range = "linear(0, 2)", default = 0, unit = "dB", smooth = "none")]
+    pub sun: FloatParam,
 
     #[param(name = "Box Tone", default = 0)]
     pub box_tone: EnumParam<BoxToneP>,
@@ -249,12 +250,12 @@ impl SunblissParams {
             clip_mode: ClipMode::from_index(self.clipper_mode.index() as usize),
             clip_filter: self.clip_filter.value(),
             guard: self.clip_guard.value(),
-            sat_on: self.gold_on.value(),
-            sat: self.gold.value(),
-            curve: if self.gold_mode.index() == 0 { Curve::Classic } else { Curve::Modern },
+            sat_on: self.bliss_on.value(),
+            sat: self.bliss.value(),
+            curve: if self.bliss_mode.index() == 0 { Curve::Classic } else { Curve::Modern },
             unity: self.unity_gain.value(),
-            contour_on: self.alchemy_on.value(),
-            contour: self.alchemy.value(),
+            contour_on: self.sun_on.value(),
+            contour: self.sun.value(),
             tone: ToneMode::from_index(self.box_tone.index() as usize),
             wet: self.wet.value(),
             dry: self.dry.value(),
