@@ -30,9 +30,12 @@ features of the **Lavry AD122-96 MkIII** converter.
 10. [Repository layout](#repository-layout)
 
 > **Naming.** Sunbliss's two voicing controls are called **Sun** (high-band taming near the
-> ceiling) and **Bliss** (soft saturation). In the reference plugin the same two blocks are
-> named *Alchemy* and *Gold*; the measurement sections below keep the reference's names when
-> they describe the reference.
+> ceiling) and **Bliss** (soft saturation). The reference plugin calls the same two blocks
+> *Alchemy* and *Gold*; this README uses our names throughout, including where it describes
+> what was measured on the reference. The reference's own names survive only in the product
+> name **Gold Clip**, in the symbols read from its binary (`MXProcessor`,
+> `SoftSaturationProcessor`, `mx_amount`), and in data and figure file names
+> (`docs/fig/gc_*.png`, `docs/goldclip_params.json`, `lab/probe_alchemy*.py`).
 
 ---
 
@@ -68,7 +71,7 @@ flowchart LR
 Sunbliss's sound has two origins:
 
 1. **The reference plugin, measured from the outside.** The controls, the chain order, the
-   clipper curves, the Gold curves, Alchemy and Box Tone were measured on the plugin and
+   clipper curves, the Bliss curves, Sun and Box Tone were measured on the plugin and
    reproduced until they were within 0.5 dB (in most cases within 0.1 dB).
 2. **The Lavry converter, read from the manual.** The **Bliss Classic** mode is the Soft
    Saturation equation from Appendix III of the AD122-96 MkIII manual. The **Converter**
@@ -121,31 +124,31 @@ a reproducible test in `lab/`**, and every number in this README comes out of
 
 | Finding | How it was proved |
 |---|---|
-| **The chain order is clipper → Alchemy → Gold**, not saturation → clipper as first assumed | The Gold curve normalized by the ceiling is identical at 0 and −6 dB (8e−5 difference): it operates on an already limited signal |
+| **The chain order is clipper → Sun → Bliss**, not saturation → clipper as first assumed | The Bliss curve normalized by the ceiling is identical at 0 and −6 dB (8e−5 difference): it operates on an already limited signal |
 | **Box Tone sits before** the Input Trim and the clipper | The 21 kHz harmonic of a clipped 7 kHz tone does not change with Tone (58.17 vs. 58.09 dB) |
 | **Clip Filter** is a 1-pole low-pass at ~34 kHz, before the clipper (applied twice in Classic mode) | Clip harmonics identical with and without the filter (Δ ≤ 0.01 dB); identical response at 48 and 96 kHz |
 | The **Classic clipper is a degree-9 polynomial**, asymmetric (H2 dominant already at −30 dBFS), valid up to 1.32 c. Above that an "overload memory" kicks in: the output decays to zero with τ = 72.5 ms | 262 DC plateaus: the degree-9 fit leaves a 1.4e−7 residual (the f32 floor); degrees 5 and 7 leave 5e−2 and 3e−2. Steps from 1.33 to 2.0 c decay together, ×0.708 every 25 ms |
 | At extreme drive Classic **diverges**: from ~2.5 c on, the decay starts with inverted polarity | DC of 3.0 → −0.83, and a high tone at +18 dB (figure below). Treated as a defect and **not** reproduced |
 | **Clip Guard** does almost nothing (−0.001 dB). What holds the peak is a per-sample clamp plus a hidden **ducking** of up to −2 dB, **decided by the host buffer** | DC steps of 2.0 and 4.0 produce −1 and −2 dB. The duration tracks the buffer: 230 ms with 8192, 60 ms with 2048, 5 ms with 512, nothing with 128 |
 | The **true-peak escapes** by up to +1.04 dB above the ceiling | Measured with 8× oversampling |
-| **Alchemy** splits the band with a linear-phase Linkwitz-Riley at 2965 Hz and pulls the high band down according to the level \|x\|/c, nearly instantaneously: it follows the waveform of a bass note (AM sidebands) but smooths that of a high tone (cubic average, τ 0.4 ms) | An 8 kHz probe riding DC plateaus (static law), carriers from 1.5 Hz to 1 kHz with a 15 kHz probe (dynamics) |
-| The **Gold Modern** curve is linear up to 0.5 c and then a C1 quadratic up to (c, c). Hence its "natural" maximum of +2.5 dB | Fit with error ≤ 0.06 dB (`docs/data/fit_modern_hermite.json`) |
+| **Sun** splits the band with a linear-phase Linkwitz-Riley at 2965 Hz and pulls the high band down according to the level \|x\|/c, nearly instantaneously: it follows the waveform of a bass note (AM sidebands) but smooths that of a high tone (cubic average, τ 0.4 ms) | An 8 kHz probe riding DC plateaus (static law), carriers from 1.5 Hz to 1 kHz with a 15 kHz probe (dynamics) |
+| The **Bliss Modern** curve is linear up to 0.5 c and then a C1 quadratic up to (c, c). Hence its "natural" maximum of +2.5 dB | Fit with error ≤ 0.06 dB (`docs/data/fit_modern_hermite.json`) |
 | Gold Clip's **Delta** includes the Input Trim gain, and its **Trim Link** only works in the GUI (automation does not see it) | Null tests |
 
 Reference curves obtained in this phase:
 
-| Clipper (DC) and Gold curves | Clipped waveforms (note Classic at +18 dB, 1 kHz) |
+| Clipper (DC) and Bliss curves | Clipped waveforms (note Classic at +18 dB, 1 kHz) |
 |---|---|
 | ![Reference static curves](docs/fig/gc_static_curves.png) | ![Reference clipper waveforms](docs/fig/gc_clip_waveforms.png) |
 
-| Gold curve gain per amount | Reference linear response (Box Tone, Clip Filter) |
+| Bliss curve gain per amount | Reference linear response (Box Tone, Clip Filter) |
 |---|---|
-| ![Gold gain](docs/fig/gc_gold_gain.png) | ![Linear response at 48 kHz](docs/fig/gc_linear_48000.png) |
+| ![Bliss gain](docs/fig/gc_gold_gain.png) | ![Linear response at 48 kHz](docs/fig/gc_linear_48000.png) |
 
-Alchemy's gain, measured on an 8 kHz tone while a bass note hits the ceiling. The modulation
+Sun's gain, measured on an 8 kHz tone while a bass note hits the ceiling. The modulation
 follows the bass waveform sample by sample:
 
-![Alchemy dynamics in the reference](docs/fig/gc_alchemy_dynamics.png)
+![Sun dynamics in the reference](docs/fig/gc_alchemy_dynamics.png)
 
 ### Hidden states
 
@@ -178,11 +181,11 @@ inspected. What turned up, and how each hint was used:
 
 | Hint in the binary | What changed in the project |
 |---|---|
-| Built with JUCE 7 + chowdsp_utils. The processors are named `BoxToneProcessor`, `ClipperProcessor`, `MXProcessor` (Alchemy, parameters `mx_amount`/`mx_on_off`), `SoftSaturationProcessor` (Gold), `DryWetProcessor` | Confirms the chain deduced in F1. The name "MX" links Alchemy to the **AD122-96 MX**, whose manual (now in `refs/manual/`) says the MX only changes the analog input clipping, with the same software as the MkIII |
+| Built with JUCE 7 + chowdsp_utils. The processors are named `BoxToneProcessor`, `ClipperProcessor`, `MXProcessor` (Sun, parameters `mx_amount`/`mx_on_off`), `SoftSaturationProcessor` (Bliss), `DryWetProcessor` | Confirms the chain deduced in F1. The name "MX" links Sun to the **AD122-96 MX**, whose manual (now in `refs/manual/`) says the MX only changes the analog input clipping, with the same software as the MkIII |
 | Clipper with `PolynomialWaveshaper<9>` and `<15>`, `HardClipper` and `chowdsp::ADAAWaveshaper` (table-based 2nd-order ADAA) | Suggested the "Classic is a polynomial" hypothesis. **Tested by black box**: 262 DC plateaus give a 1.4e−7 residual with degree 9 (`lab/fit_classic.py`). Sunbliss's Classic uses that own fit. The embedded coefficients only served as a cross-check: difference ≤ 2.7e−4 |
 | A modified copy of JUCE's oversampling class, `OversamplingWithCeiling`, with its source embedded as text. After decimation it measures the **buffer's** sample peak, applies a ramped `ceiling/peak` gain and holds the minimum for two buffers | The "ducking with 0.4 s hold" was really pedalboard's 8192 buffer. **Confirmed by black box** (230 / 60 / 5 / 0 ms with 8192 / 2048 / 512 / 128), and the lab moved to a 512 buffer |
 | Oversampling: equiripple half-band FIR (Linear) and **polyphase allpass IIR** half-band (Minimum), with JUCE's specifications | Explains the flat response up to 20 kHz and the 20–24 kHz aliasing. Studied for our own Min Phase mode (see open items) |
-| `LinearPhaseCrossover` with a low-pass SVF prototype in `MXProcessor` | Suggested "Alchemy splits the band with a 2nd-order linear-phase filter". **Measured**: the low band is 1/(1+(f/2965 Hz)⁴), with 0.0024 error |
+| `LinearPhaseCrossover` with a low-pass SVF prototype in `MXProcessor` | Suggested "Sun splits the band with a 2nd-order linear-phase filter". **Measured**: the low band is 1/(1+(f/2965 Hz)⁴), with 0.0024 error |
 | `chowdsp::LinearPhaseEQ<PeakingFilter>` in Box Tone | Confirms "linear-phase linear EQ". Our FIR is already within 0.006 dB, so it was not re-fitted |
 
 ---
@@ -213,8 +216,8 @@ threshold `T = 10^(−2G/20)`:
   Closure (b) explains the graph with **rms 0.031 dB (+3) and 0.033 dB (+6)**. The asymptotic
   closure (a) predicts −0.22 dB at 0 dBFS, which contradicts both the graph and the MAX lamp
   ("indicates that the signal has reached full scale").
-- Gold Clip's Classic curve is within 0.21 dB of this equation. In other words, Gold Classic
-  **is** Lavry's Soft Saturation.
+- The reference's Classic curve is within 0.21 dB of this equation. In other words, Bliss
+  Classic **is** Lavry's Soft Saturation.
 
 ![Bliss Classic vs. the Lavry manual](docs/fig/readme_gold_lavry.png)
 
@@ -250,7 +253,7 @@ not public.
 ```mermaid
 flowchart LR
     IN([input]) --> PRE[Converter, input<br/>Polarity Ø, DC Removal] --> TONE[Box Tone<br/>linear-phase FIR] --> TRIM[Input Trim] --> UP["↑ oversampling<br/>4/8/16×"]
-    UP --> CF[Clip Filter<br/>optional] --> CLIP[Clipper<br/>Classic/Modern/Hard<br/>2nd-order ADAA] --> ALC[Sun] --> GOLD[Bliss] --> DOWN["↓ decimation<br/>alias-free"]
+    UP --> CF[Clip Filter<br/>optional] --> CLIP[Clipper<br/>Classic/Modern/Hard<br/>2nd-order ADAA] --> SUN[Sun] --> BLISS[Bliss] --> DOWN["↓ decimation<br/>alias-free"]
     DOWN --> LIM[Output limiter<br/>peak / true-peak] --> UNITY[Unity Gain] --> MIX{Mix<br/>Wet/Dry/Delta}
     PRE -. "dry (latency-delayed)" .-> MIX
     MIX --> OUT[Output Trim] --> CONV[Converter, output<br/>word length, dither,<br/>shaping, data limit] --> BYP[Bypass<br/>crossfade] --> Y([output])
@@ -272,10 +275,11 @@ flowchart LR
 
 ## Control guide
 
-The names, option order and defaults **mirror the reference plugin**, so a setting can be copied
-from one plugin to the other — except for the two voicing controls, which carry our own names:
-**Sun** is the reference's *Alchemy*, **Bliss** is its *Gold*. On controls that behave
-differently, the GUI shows a tooltip explaining the difference (marked **≠** below).
+The option order and defaults **follow the reference plugin**, so a setting can be copied from
+one plugin to the other, and so do the labels — except for the two voicing controls, which
+carry our own names: **Sun** (the reference's *Alchemy*) and **Bliss** (its *Gold*). On
+controls that behave differently, the GUI shows a tooltip explaining the difference (marked
+**≠** below).
 
 ### Top bar
 
