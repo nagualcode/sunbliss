@@ -1,7 +1,7 @@
 # ☀️ Sunbliss
 
 **Clipper e saturação de masterização no estilo "conversor A/D sobrecarregado", em Rust.**
-Projeto de estudo: a engenharia reversa (por caixa-preta) do plugin **Gold Clip 1.5.0** e a
+Projeto de estudo: a engenharia reversa (por caixa-preta) de plugins de clip mais utilizados na industria  e a
 recriação, a partir do manual, da **Soft Saturation** e dos recursos de saída do conversor
 **Lavry AD122-96 MkIII**.
 
@@ -9,15 +9,10 @@ recriação, a partir do manual, da **Soft Saturation** e dos recursos de saída
 
 > **Aviso: uso educativo.** Este é um projeto pessoal, sem fins comerciais e sem afiliação com
 > os fabricantes citados. Os binários do próprio Sunbliss são publicados nos
-> [releases](https://github.com/nagualcode/sunbliss/releases), gratuitos e sem garantia. "Gold Clip" e "Lavry" são marcas dos
+> [releases](https://github.com/nagualcode/sunbliss/releases), gratuitos e sem garantia. Plugins citados e "Lavry" são marcas dos
 > respectivos donos e aparecem aqui só como referência técnica. Todos os números e curvas do
 > Sunbliss foram deduzidos **medindo o áudio de saída** da referência e lendo os manuais
-> públicos. Em 2026-10-17 houve também uma **leitura passiva do binário** da referência
-> (textos embutidos, nomes de classes C++ e tabelas de constantes em texto puro), sem
-> decifrar, depurar ou contornar a proteção (PACE) do plugin. Ela foi usada para orientar
-> hipóteses e conferir resultados. Nada dela foi copiado para o código: cada valor do Sunbliss
-> saiu de uma medição de caixa-preta que está em `lab/` (ver
-> [Leitura white-box](#leitura-white-box-do-binário)).
+> públicos. 
 
 ---
 
@@ -38,7 +33,7 @@ recriação, a partir do manual, da **Soft Saturation** e dos recursos de saída
 
 ## Resultados em uma tela
 
-| | Referência (Gold Clip) | Sunbliss |
+| | Referência (Outro Plugin) | Sunbliss |
 |---|---|---|
 | Paridade de som (16 testes, critério ≤ 0,5 dB) | — | **16/16**, pior caso 0,21 dB |
 | Curva Gold Classic × gráfico do manual Lavry | ≤ 0,21 dB do Sunbliss | **rms 0,03 dB** |
@@ -67,7 +62,7 @@ flowchart LR
 
 O som do Sunbliss tem duas origens:
 
-1. **O Gold Clip, medido por fora.** Os controles, a ordem da cadeia, as curvas do clipper, as
+1. **Plugin referencia, medido por fora.** Os controles, a ordem da cadeia, as curvas do clipper, as
    curvas Gold, o Alchemy e o Box Tone foram medidos no plugin e reproduzidos até ficarem a
    menos de 0,5 dB (na maioria dos casos, menos de 0,1 dB).
 2. **O conversor Lavry, lido no manual.** O modo **Gold Classic** é a equação da Soft
@@ -75,7 +70,7 @@ O som do Sunbliss tem duas origens:
    DC, word length, dither HPDF, noise shaping NS1–NS4, data limit) recria recursos do aparelho
    que o Gold Clip não tem.
 
-Quando o Gold Clip e o hardware discordam, o projeto documenta a diferença e escolhe um lado.
+Quando o Plugin referencia e o hardware discordam, o projeto documenta a diferença e escolhe um lado.
 Exemplo: o manual especifica THD+N de 0,0008 % a −6 dBFS, ou seja, o conversor real é
 transparente abaixo do clip. A distorção de baixo nível do Clipper Classic do Gold Clip (~0,5 %
 a −9 dBFS) é coloração do plugin. Mantivemos essa coloração no Classic (para paridade), e os
@@ -90,9 +85,7 @@ teste reprodutível em `lab/`**, e todo número deste README sai de `docs/data/*
 
 ### O banco de medição
 
-- O Gold Clip (só existe em AU nesta máquina) é carregado **sem interface** pelo
-  [pedalboard](https://github.com/spotify/pedalboard), em Python. O helper `lab/goldclip.py`
-  liga e desliga parâmetros e renderiza qualquer sinal.
+
 - Duas armadilhas apareceram logo na F0 e são compensadas em todo render:
   - **Latência escondida:** o plugin reporta latência 0 ao host, mas o pico da resposta ao
     impulso está em **764 amostras** (44,1/48 kHz) e **1394** (88,2/96 kHz).
@@ -225,7 +218,7 @@ Generalizamos para um knob contínuo **G** (0 a 6 dB), com ganho `g = 10^(G/20)`
 
 ### A seção Converter
 
-O Gold Clip não modela o estágio de saída do conversor. O Sunbliss recria esses recursos a
+O Plugin referencia não modela o estágio de saída do conversor. O Sunbliss recria esses recursos a
 partir da Parte I e do Apêndice I do manual (`crates/core/src/lavry.rs`):
 
 - **Dither HPDF**, o "triangle high pass" do manual: um número aleatório uniforme novo menos o
@@ -273,7 +266,7 @@ flowchart LR
 
 ## Guia dos controles
 
-Os nomes, a ordem das opções e os valores padrão **espelham os do Gold Clip**, então um ajuste
+Os nomes, a ordem das opções e os valores padrão **espelham os do Plugin Rerefencia**, então um ajuste
 pode ser copiado de um plugin para o outro. Nos controles que funcionam diferente, a GUI mostra
 um tooltip explicando a diferença (marcados com **≠** abaixo).
 
@@ -537,7 +530,7 @@ make validate     # auval -v aufx Snbl JSon
 make bench        # CPU do CLI por qualidade
 ```
 
-Laboratório (precisa do Gold Clip instalado para as comparações):
+Laboratório (precisa do Plugin Referencia instalado para as comparações):
 
 ```sh
 python3.11 -m venv .venv
