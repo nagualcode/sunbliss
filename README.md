@@ -1,3 +1,7 @@
+<a class="bmc" href="https://buymeacoffee.com/jardimsonoro" rel="noopener">
+    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" width="217" height="60" loading="lazy">
+</a>
+
 # ☀️ Sunbliss
 
 **"Overloaded A/D converter" mastering clipper and saturation, in Rust.**
