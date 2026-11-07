@@ -1,0 +1,172 @@
+name: release
+
+# Builds the plugin bundles for the three supported platforms and attaches the
+# zips (plus SHA256SUMS.txt) to a GitHub release.
+#
+#   push a tag:        git tag v0.3.0 && git push origin v0.3.0
+#   or run by hand:    Actions -> release -> Run workflow (tag input)
+#
+# A hand run without a tag uploads the zips as workflow artifacts only; it
+# never creates or touches a release.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to build and publish (blank = build only)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_TRUCE_VERSION: "6.3.0"
+
+jobs:
+  build:
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: macos-arm64
+            os: macos-latest
+            # AU v2 is macOS only; it is the format the lab measures.
+            formats: --clap --vst3 --au2
+          - label: windows-x64
+            os: windows-latest
+            formats: --clap --vst3
+          - label: linux-x64
+            os: ubuntu-latest
+            formats: --clap --vst3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - name: Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            pkg-config \
+            libx11-dev libxcursor-dev libxrandr-dev libxi-dev libxext-dev \
+            libxcb1-dev libxcb-util-dev libxcb-icccm4-dev libxcb-cursor-dev \
+            libxkbcommon-dev libxkbcommon-x11-dev \
+            libgl1-mesa-dev libegl-dev libasound2-dev
+
+      - name: Rust toolchain
+        run: |
+          rustup update stable --no-self-update
+          rustup default stable
+          rustc -vV
+          cargo -V
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            ~/.cargo/bin/cargo-truce
+            ~/.cargo/bin/cargo-truce.exe
+          key: ${{ matrix.label }}-cargo-${{ env.CARGO_TRUCE_VERSION }}-${{ hashFiles('Cargo.lock') }}
+          restore-keys: ${{ matrix.label }}-cargo-${{ env.CARGO_TRUCE_VERSION }}-
+
+      - name: Install cargo-truce
+        shell: bash
+        run: |
+          have=$(cargo install --list | sed -n "s/^cargo-truce v\([^:]*\):$/\1/p" | head -1)
+          if [ "$have" != "$CARGO_TRUCE_VERSION" ]; then
+            cargo install cargo-truce --version "$CARGO_TRUCE_VERSION" --force
+          else
+            echo "cargo-truce $have already present"
+          fi
+
+      - name: Test the DSP core
+        run: cargo test --release -p sunbliss-core
+
+      - name: Build bundles
+        run: cargo truce build ${{ matrix.formats }} -p sunbliss
+
+      - name: Validate the AU
+        if: runner.os == 'macOS'
+        run: |
+          mkdir -p ~/Library/Audio/Plug-Ins/Components
+          cp -R target/bundles/Sunbliss.component ~/Library/Audio/Plug-Ins/Components/
+          auval -v aufx Snbl JSon | tail -5
+
+      - name: Zip bundles
+        id: zip
+        shell: bash
+        run: |
+          ref="${{ inputs.tag || github.ref_name }}"
+          case "$ref" in v*) ver="$ref" ;; *) ver="v0.0.0-$(git rev-parse --short HEAD)" ;; esac
+          echo "version=$ver" >> "$GITHUB_OUTPUT"
+          mkdir -p dist
+          cd target/bundles
+          for b in Sunbliss.clap Sunbliss.vst3 Sunbliss.component; do
+            [ -e "$b" ] || continue
+            case "$b" in
+              *.clap)      fmt=clap ;;
+              *.vst3)      fmt=vst3 ;;
+              *.component) fmt=au ;;
+            esac
+            # relative, so the same path works in bash and in PowerShell
+            out="../../dist/Sunbliss-$fmt-$ver-${{ matrix.label }}.zip"
+            if command -v zip >/dev/null; then
+              zip -qry "$out" "$b"
+            else
+              powershell -NoProfile -Command \
+                "Compress-Archive -Path '$b' -DestinationPath '$out' -Force"
+            fi
+            echo "packed $out"
+          done
+          ls -l ../../dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bundles-${{ matrix.label }}
+          path: dist/*.zip
+          if-no-files-found: error
+
+  release:
+    name: publish release
+    needs: build
+    runs-on: ubuntu-latest
+    # Only publish for a real tag: a tag push, or a hand run that named one.
+    if: startsWith(github.ref, 'refs/tags/v') || startsWith(inputs.tag, 'v')
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: bundles-*
+          merge-multiple: true
+          path: dist
+
+      - name: Checksums
+        working-directory: dist
+        run: |
+          sha256sum *.zip | tee SHA256SUMS.txt
+
+      - name: Create or update the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${{ inputs.tag || github.ref_name }}"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" dist/* --clobber
+          else
+            gh release create "$tag" dist/* \
+              --title "Sunbliss $tag" \
+              --generate-notes
+          fi
