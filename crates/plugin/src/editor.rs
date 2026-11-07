@@ -482,22 +482,22 @@ impl EditorUi<SunblissParams> for SunUi {
 }
 
 const TIP_LINEAR: &str = "Filtros de oversampling de fase linear: sem rotação de fase, mais latência, pré-ringing simétrico.";
-const TIP_MINPHASE: &str = "Fase mínima: menos latência e sem pré-ringing; gira a fase perto dos agudos (o Delta e o paralelo mostram isso, como no Gold Clip).";
-const TIP_CONVERTER: &str = "Recursos do conversor original (manual do AD122-96 MkIII) que o Gold Clip não tem. Word Length/Dither/Shaping/Data Limit atuam por último, na saída.";
+const TIP_MINPHASE: &str = "Fase mínima: menos latência e sem pré-ringing; gira a fase perto dos agudos (o Delta e o paralelo mostram isso, como no plugin de referência).";
+const TIP_CONVERTER: &str = "Recursos do conversor original (manual do AD122-96 MkIII) que o plugin de referência não tem. Word Length/Dither/Shaping/Data Limit atuam por último, na saída.";
 const TIP_DITHER: &str = "HPDF: 'triangle high pass' do manual (número aleatório novo menos o anterior), a preferência da Lavry. Flat: TPDF plano. Com Dither Off o shaping é desligado, como no hardware.";
 const TIP_NS: &str = "Curvas de noise shaping traçadas das figuras do manual (vales em ~4 kHz e ~12 kHz, ruído empurrado acima de 14 kHz). NS1 é a mais suave, NS4 a mais agressiva.";
 
 // Tooltips: only on controls that behave differently from the reference.
-const TIP_GUARD: &str = "Diferente do Gold Clip: garante TRUE-PEAK abaixo do Clip Ceiling (margem 0,15 dB). \
-No Gold Clip este botão quase não muda nada (−0,001 dB) e o true-peak passa até +1 dB.";
+const TIP_GUARD: &str = "Diferente do plugin de referência: garante TRUE-PEAK abaixo do Clip Ceiling (margem 0,15 dB). \
+No plugin de referência este botão quase não muda nada (−0,001 dB) e o true-peak passa até +1 dB.";
 const TIP_DELTA: &str = "Diferente: desconta o Input Trim, então você ouve só o que o processamento muda. \
-No Gold Clip o delta inclui o próprio ganho do trim.";
-const TIP_TRIM_LINK: &str = "Diferente: o link vale também para automação e host. No Gold Clip ele só funciona pela GUI.";
-const TIP_CLASSIC: &str = "Igual ao Classic do Gold Clip até ~+8 dB de drive (curva assimétrica, H2, platô que afunda). \
+No plugin de referência o delta inclui o próprio ganho do trim.";
+const TIP_TRIM_LINK: &str = "Diferente: o link vale também para automação e host. No plugin de referência ele só funciona pela GUI.";
+const TIP_CLASSIC: &str = "Igual ao Classic do plugin de referência até ~+8 dB de drive (curva assimétrica, H2, platô que afunda). \
 Não reproduz o colapso dele em drive extremo (inversão de polaridade).";
-const TIP_CEILING: &str = "Sem o 'ducking' do Gold Clip (até −2 dB após bordas fortes, decidido por buffer do host e \
+const TIP_CEILING: &str = "Sem o 'ducking' do plugin de referência (até −2 dB após bordas fortes, decidido por buffer do host e \
 mantido por dois buffers: ~5 ms com buffer de 512, ~0,2 s com 8192). Picos são segurados por um limitador suave.";
 const TIP_BLISS_CLASSIC: &str = "Equação da Soft Saturation do manual da Lavry (Apêndice III, curva exponencial C1). \
-Difere ≤ 0,2 dB da curva Classic do Gold Clip.";
-const TIP_OVERSAMPLING: &str = "Mesmos fatores do Gold Clip (4/8/16× a 44,1–48 kHz). Filtro de conversor sem aliasing \
+Difere ≤ 0,2 dB da curva Classic do plugin de referência.";
+const TIP_OVERSAMPLING: &str = "Mesmos fatores do plugin de referência (4/8/16× a 44,1–48 kHz). Filtro de conversor sem aliasing \
 (rejeição a partir de fs/2); a 96 kHz plano até 40 kHz.";

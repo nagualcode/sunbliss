@@ -5,7 +5,7 @@
 O manual da referência (p. 23) traz este fluxograma:
 
 ```
-Input → Box Tone → Input Trim → Upsample → Clipper → Alchemy → Gold → Downsample → Output Trim → Dry/Wet → Output
+Input → Box Tone → Input Trim → Upsample → Clipper → Sun → Bliss → Downsample → Output Trim → Dry/Wet → Output
   └→ Bypass / Delay Compensation ───────────────────────────────────────────────────────────────┘
 ```
 
@@ -14,8 +14,8 @@ Confirmações por caixa-preta:
 | Afirmação | Teste | Resultado |
 |---|---|---|
 | Tone antes do clipper | clip Hard a +6 dB, seno de 7 kHz a 44,1 kHz; H3 (21 kHz) com Tone Flat × Classic | 58,17 × 58,09 dB: o Tone (−7,8 dB a 21 kHz) **não** filtrou os harmônicos ⇒ fica antes |
-| Gold depois do clipper | curva Gold normalizada pelo ceiling | idêntica a ceiling 0 e −6 (8e−5) ⇒ opera no domínio já limitado a *c* |
-| Alchemy relativo ao ceiling | 8 kHz a −0,5 dB rel. ceiling −6 | −1,86 dB, igual a ceiling 0 |
+| Bliss depois do clipper | curva Bliss normalizada pelo ceiling | idêntica a ceiling 0 e −6 (8e−5) ⇒ opera no domínio já limitado a *c* |
+| Sun relativo ao ceiling | 8 kHz a −0,5 dB rel. ceiling −6 | −1,86 dB, igual a ceiling 0 |
 | Output depois do mixer | dry-only + Output +6 | +6,0 dB |
 | Dry = entrada sem processamento | wet 0 / dry 100 | null |
 | Delta = (wet − entrada) × output | clip Hard +6 dB | null −139 dB |

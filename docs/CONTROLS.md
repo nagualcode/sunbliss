@@ -7,7 +7,7 @@ com duas exceções: os dois controles de timbre levam nomes nossos — **Sun**
 (o *Alchemy* da referência) e **Bliss** (o *Gold* dela). Nos controles que
 funcionam diferente, a GUI mostra um tooltip explicando a diferença.
 
-Fonte do inventário: `docs/goldclip_params.json` (Gold Clip 1.5.0, AU, 23
+Fonte do inventário: `docs/goldclip_params.json` (plugin de referência 1.5.0, AU, 23
 parâmetros). Medições: `lab/probe_*.py`, com dados em `docs/data/`.
 
 Nomes internos no código do núcleo e no laboratório: Clipper Classic = modelo
@@ -55,7 +55,7 @@ Todos os números são de 48 kHz, salvo indicação.
 - **Link:** Input +x ⇒ Output −x + offset. Na referência, o link vive só na GUI. No Sunbliss, o link é aplicado no DSP: `out_eff = link ? (−input + link_offset) : output`. Assim a automação e o host enxergam o mesmo comportamento.
 
 ### Ceiling
-- Tudo se normaliza pelo ceiling *c*: o clipper limita em *c*, e a saturação e o contour usam `x/c` (medido: curva Gold a −6 dB de ceiling, normalizada, difere 8e−5 da curva a 0 dB).
+- Tudo se normaliza pelo ceiling *c*: o clipper limita em *c*, e a saturação e o contour usam `x/c` (medido: curva Bliss a −6 dB de ceiling, normalizada, difere 8e−5 da curva a 0 dB).
 - Com o clipper **desligado**, a referência ignora o ceiling na saturação. Nós replicamos: c = 1 quando Clip = off.
 
 ### Clip Mode (medido com DC e senos; ver `docs/data/gc_dc_*.json`, `gc_levels_*.json`)
@@ -72,20 +72,20 @@ Todos os números são de 48 kHz, salvo indicação.
 - **Sunbliss, guard desligado:** um limitador suave de lookahead (1 ms + hold de 16 amostras) mantém os picos amostrais ≤ ceiling. Ele usa a estimativa de true-peak, que é constante em tons estáveis (os picos amostrais "batem" contra fs e modulariam o ganho). Substitui o clamp duro, que causava aliasing forte num tom agudo clipado, cuja fundamental limitada em banda chega a 4/π do platô. O clamp continua como rede de segurança.
 - **Sunbliss, guard ligado:** o mesmo limitador controla o **true-peak** com margem de 0,15 dB. Estimador 4× com refinamento parabólico, sem cliques, linkado entre canais. Resultado: TP ≤ −0,11 dBTP em todos os ajustes medidos.
 
-### Saturation (Gold) — `docs/data/gc_gold_curves.json`
+### Saturação (Bliss) — `docs/data/gc_gold_curves.json`
 - É aplicada **depois** do clipper, por amostra, sem memória (histerese < 1,5e−4).
 - **Curve B (Classic):** ganho = knob (0,5 → +0,49 dB … 6 → +6,00 dB) abaixo de T = −2·knob dBFS. Acima de T vem uma curva exponencial até (c, c). Ela coincide com a generalização da Soft Saturation da Lavry. O ajuste da exponencial com fechamento (b), y(c) = c, dá erro ≤ 0,21 dB contra a referência e **rms 0,03 dB contra o gráfico do manual** (`docs/data/lavry_fit.json`). Decisão: curva B = equação do manual, fechamento (b).
 - **Curve A (Modern):** linear até **x = 0,5 c** e depois uma **quadrática C1** até (c, c), com inclinação final 4 − 3g (erro ≤ 0,06 dB, `docs/data/fit_modern_hermite.json`). A concavidade limita g ≤ 4/3, o que explica o "máximo de +2,5 dB". O mapeamento knob → g é linear por partes: 0 → 0; 2 → 1,32 dB; 6 → 2,50 dB.
 - **Unity:** multiplica por 1/g (ganho de pequeno sinal) depois de todo o processamento wet. Medido: Classic 6 → −6,00 dB; Modern 6 → −2,53 dB.
 
-### Contour (Alchemy) — `docs/data/gc_alchemy*.json`, `alchemy_mod.json`
+### Contour (Sun) — `docs/data/gc_alchemy*.json`, `alchemy_mod.json`
 Estrutura: y = banda baixa + k · banda alta, com k ≤ 1 vindo do nível banda larga |x|/c do sinal já clipado. Cada parte foi identificada por caixa-preta:
 - **Crossover:** banda baixa = 1/(1 + (f/fc)⁴) com **fc = 2965 Hz**, de fase linear (um Linkwitz-Riley de fase zero), e banda alta = entrada − banda baixa. Esse modelo explica a forma em frequência medida com erro de 0,0024.
 - **Lei estática k(nível, amount):** sonda de 8 kHz pequena sobre platôs DC de −20 a 0 dB rel. c, amounts de 0,25 a 2 (`lab/probe_alchemy_inst.py`). O joelho desce com o amount: ≈ −1,5 dB rel. c com 0,25, −3 com 0,5, −5,7 com 1, −8,5 com 2. Com 2, k chega a −4,1 dB em −0,5 dB rel. c. Nenhuma forma fechada simples explica a lei (nem a curva da Lavry, nem uma reta em amplitude), então ela é tabelada.
 - **Dinâmica:** portadoras de 1,5 Hz a 1 kHz, sem clip, mais uma sonda em 15 kHz (`lab/probe_alchemy_mod.py`). Abaixo de ~100 Hz o ganho segue a forma de onda (bandas laterais em 15 kHz ± 2f a −18 dB com A = −1 dB). Acima disso, as bandas laterais caem 6 dB/oitava, e o ganho médio migra da média da lei para a **média cúbica**, com 0,3 dB a menos de redução. O modelo k = LPF(k_inst³)^(1/3), com um polo e τ = 0,4 ms, reproduz tudo: ganho médio em até 0,07 dB e bandas laterais em ~1 dB.
 - **Consequência:** um grave que bate no teto modula os pratos com a própria forma de onda (bandas laterais de AM), mas um tom agudo não se distorce (H3 a −46 dB num seno de 4 kHz a 0 dB, contra −22 dB de uma lei realmente instantânea).
 - **Sunbliss:** o mesmo modelo, na taxa de oversampling. A banda baixa é um FIR interpolado: taps de 1,2 ms projetados na taxa base, espaçados de M amostras, e dois boxcars de comprimento M para anular as imagens. Sem detector e sem lookahead.
-- **No binário** (só leitura de nomes, sem decifrar nada): o parâmetro se chama `mx_amount` e o processador `MXProcessor`, com um `LinearPhaseCrossover` de protótipo SVF passa-baixas. O manual do AD122-96 **MX** diz que a diferença do MX em relação ao MkIII é o clipping analógico de entrada, com o mesmo software. O Alchemy seria então o modelo do comportamento analógico do MX perto do clip.
+- **No binário** (só leitura de nomes, sem decifrar nada): o parâmetro se chama `mx_amount` e o processador `MXProcessor`, com um `LinearPhaseCrossover` de protótipo SVF passa-baixas. O manual do AD122-96 **MX** diz que a diferença do MX em relação ao MkIII é o clipping analógico de entrada, com o mesmo software. O Sun seria então o modelo do comportamento analógico do MX perto do clip.
 
 ### Tone (Box Tone) — `docs/data/gc_linear_*.json`
 - Fica **antes** do Input e do clipper. Prova: o harmônico em 21 kHz do clip não muda com o Tone.

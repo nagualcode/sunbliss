@@ -9,7 +9,7 @@ Registrado em 2026-10-16.
 | cargo-truce / truce | 6.3.0 (registry + checkout git `2579127`) |
 | `cargo truce doctor` | OK: Xcode CLI, codesign, auval, targets x86_64+aarch64. Avisos: pluginval e clap-validator ausentes; sem SDK AAX. Faltava `truce.toml` (criado na F5). |
 | Python do laboratório | 3.11.16 em `.venv/` (pedalboard 0.9.26, numpy, scipy, soundfile, matplotlib, pyloudnorm, pymupdf, pyyaml) |
-| Referência | Gold Clip **1.5.0**, apenas **AU**: `/Library/Audio/Plug-Ins/Components/Gold Clip.component` (também há `Gold Clip Track.component`). Não há VST3 instalado. |
+| Referência | Plugin de referência **1.5.0**, apenas **AU**, em `/Library/Audio/Plug-Ins/Components/` (há também a variante "Track"). O caminho exato fica em `lab/goldclip.py`. Não há VST3 instalado. |
 | Manuais | `refs/manual/lavry-ad122-96mkiii-manual.pdf`, `refs/manual/lavry-ad122-96mx-manual.pdf` (desde 2026-10-18), `refs/manual/GoldClip.pdf` (+ textos extraídos `.txt`). O manual da MX diz que a diferença do MX em relação ao MkIII é só o clipping analógico de entrada: o software é o mesmo ("Ver 2.1e"). |
 | Outros | `refs/lavry-45-second-test-tones/` (tons de teste da Lavry) |
 

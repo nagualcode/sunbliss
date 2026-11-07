@@ -32,10 +32,11 @@ features of the **Lavry AD122-96 MkIII** converter.
 > **Naming.** Sunbliss's two voicing controls are called **Sun** (high-band taming near the
 > ceiling) and **Bliss** (soft saturation). The reference plugin calls the same two blocks
 > *Alchemy* and *Gold*; this README uses our names throughout, including where it describes
-> what was measured on the reference. The reference's own names survive only in the product
-> name **Gold Clip**, in the symbols read from its binary (`MXProcessor`,
-> `SoftSaturationProcessor`, `mx_amount`), and in data and figure file names
-> (`docs/fig/gc_*.png`, `docs/goldclip_params.json`, `lab/probe_alchemy*.py`).
+> what was measured on the reference. The reference plugin itself is not named anywhere in
+> this documentation: it is "the reference plugin" throughout. Its own vocabulary survives
+> only in the symbols read from its binary (`MXProcessor`, `SoftSaturationProcessor`,
+> `mx_amount`) and in data and figure file names (`docs/fig/gc_*.png`,
+> `docs/goldclip_params.json`, `lab/probe_alchemy*.py`).
 
 ---
 
@@ -59,8 +60,8 @@ features of the **Lavry AD122-96 MkIII** converter.
 ```mermaid
 flowchart LR
     HW["<b>Lavry AD122-96 MkIII / MX</b><br/>hardware A/D converter<br/>Soft Saturation +3/+6 dB<br/>HPDF dither, NS1–NS4<br/>MX: cleaner input clipping"]
-    GC["<b>Gold Clip 1.5.0</b><br/>plugin inspired by<br/>converter overload"]
-    SB["<b>Sunbliss</b><br/>measured parity with Gold Clip<br/>+ equations from the Lavry manual<br/>+ hardware features"]
+    GC["<b>Reference plugin 1.5.0</b><br/>inspired by<br/>converter overload"]
+    SB["<b>Sunbliss</b><br/>measured parity with the reference<br/>+ equations from the Lavry manual<br/>+ hardware features"]
     MAN["AD122-96 MkIII and MX manuals<br/>(Appendix III, Figs. 11–12)"]
     HW -- "reference sound" --> GC
     GC -- "black box: 23 parameters measured<br/>white box: hints only, all checked by measurement" --> SB
@@ -76,11 +77,11 @@ Sunbliss's sound has two origins:
 2. **The Lavry converter, read from the manual.** The **Bliss Classic** mode is the Soft
    Saturation equation from Appendix III of the AD122-96 MkIII manual. The **Converter**
    section (polarity, DC, word length, HPDF dither, NS1–NS4 noise shaping, data limit)
-   recreates features of the hardware that Gold Clip does not have.
+   recreates features of the hardware that the reference plugin does not have.
 
 Where the reference plugin and the hardware disagree, the project documents the difference and
 picks a side. For example: the manual specifies 0.0008 % THD+N at −6 dBFS, i.e. the real
-converter is transparent below the clip point. The low-level distortion of Gold Clip's Classic
+converter is transparent below the clip point. The low-level distortion of the reference's Classic
 clipper (~0.5 % at −9 dBFS) is plugin coloration. We kept that coloration in Classic (for
 parity), and the Modern and Hard modes stayed faithful to the hardware (THD < −170 dB below the
 ceiling).
@@ -133,7 +134,7 @@ a reproducible test in `lab/`**, and every number in this README comes out of
 | The **true-peak escapes** by up to +1.04 dB above the ceiling | Measured with 8× oversampling |
 | **Sun** splits the band with a linear-phase Linkwitz-Riley at 2965 Hz and pulls the high band down according to the level \|x\|/c, nearly instantaneously: it follows the waveform of a bass note (AM sidebands) but smooths that of a high tone (cubic average, τ 0.4 ms) | An 8 kHz probe riding DC plateaus (static law), carriers from 1.5 Hz to 1 kHz with a 15 kHz probe (dynamics) |
 | The **Bliss Modern** curve is linear up to 0.5 c and then a C1 quadratic up to (c, c). Hence its "natural" maximum of +2.5 dB | Fit with error ≤ 0.06 dB (`docs/data/fit_modern_hermite.json`) |
-| Gold Clip's **Delta** includes the Input Trim gain, and its **Trim Link** only works in the GUI (automation does not see it) | Null tests |
+| The reference's **Delta** includes the Input Trim gain, and its **Trim Link** only works in the GUI (automation does not see it) | Null tests |
 
 Reference curves obtained in this phase:
 
@@ -152,7 +153,7 @@ follows the bass waveform sample by sample:
 
 ### Hidden states
 
-Gold Clip's oversampling (High/Pristine/Extra Pristine) and phase type (Linear/Minimum) are
+The reference's oversampling (High/Pristine/Extra Pristine) and phase type (Linear/Minimum) are
 **not parameters**: they live in an obfuscated state blob (`KLBW` header). We did not try to
 decipher it. Instead, `lab/capture_gc_states.py` records the state after each choice made in
 the plugin's own GUI, and those opaque states are reapplied before measuring
@@ -174,7 +175,7 @@ the plugin's own GUI, and those opaque states are reapplied before measuring
 
 ### White-box reading of the binary
 
-On 2026-10-17 the Gold Clip 1.5.0 binary was read **without executing it and without
+On 2026-10-17 the reference plugin's 1.5.0 binary was read **without executing it and without
 deciphering anything**: the main code is protected by PACE (Fusion/Eden), and that was
 respected. Only embedded strings, C++ class names (RTTI) and plain-text constant tables were
 inspected. What turned up, and how each hint was used:
@@ -319,7 +320,7 @@ Switching options crossfades over 10 ms. Measurements in [`docs/TONE.md`](docs/T
 | Control | What it does |
 |---|---|
 | **Input Trim** (−12…+12 dB) | Gain before the clipper. This is the "drive": the higher it is, the further the signal goes past the Clip Ceiling and the more it is clipped. |
-| **Trim Link** ≠ | Links the Output Trim to the Input Trim inversely: +3 dB at the input means −3 dB at the output. That way you hear the effect of the clip without the "louder = better" illusion. *Difference:* in Sunbliss the link also applies to automation and to the host. In Gold Clip it only works through the GUI. |
+| **Trim Link** ≠ | Links the Output Trim to the Input Trim inversely: +3 dB at the input means −3 dB at the output. That way you hear the effect of the clip without the "louder = better" illusion. *Difference:* in Sunbliss the link also applies to automation and to the host. In the reference plugin it only works through the GUI. |
 | **Link Offset** (−12…+12 dB) | With the link on, adds a fixed gain to the output: Output = −Input + Offset. |
 
 ### Clipper
@@ -371,7 +372,7 @@ Switching options crossfades over 10 ms. Measurements in [`docs/TONE.md`](docs/T
 
 Polarity Ø and DC Removal act at the input (before the dry split, so parallel use stays
 coherent). Word Length, Dither, Shaping and Data Limit act last, at the output, as in the unit.
-None of them exist in Gold Clip.
+None of them exist in the reference plugin.
 
 | Control | What it does |
 |---|---|
