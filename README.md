@@ -521,14 +521,14 @@ per format:
 | | CLAP | `~/.clap` |
 
 The file names follow `Sunbliss-<format>-<version>-<platform>.zip`, for example
-`Sunbliss-au-v0.2.0-macos-arm64.zip`. `SHA256SUMS.txt` in the release has the hashes of every
+`Sunbliss-au-v0.3.0-macos-arm64.zip`. `SHA256SUMS.txt` in the release has the hashes of every
 zip. (The [v0.2.0](https://github.com/nagualcode/sunbliss/releases/tag/v0.2.0) release predates
-CI and carries the macOS Apple Silicon zips only; Windows and Linux ship from the next tag on.)
+CI and carries the macOS Apple Silicon zips only; v0.3.0 is the first to ship Windows and Linux.)
 
 macOS:
 
 ```sh
-unzip Sunbliss-au-v0.2.0-macos-arm64.zip -d ~/Library/Audio/Plug-Ins/Components
+unzip Sunbliss-au-v0.3.0-macos-arm64.zip -d ~/Library/Audio/Plug-Ins/Components
 # the binary is only ad-hoc signed (no Developer ID, no notarization):
 xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/Components/Sunbliss.component
 auval -v aufx Snbl JSon   # should end in "AU VALIDATION SUCCEEDED"
@@ -537,7 +537,7 @@ auval -v aufx Snbl JSon   # should end in "AU VALIDATION SUCCEEDED"
 Linux:
 
 ```sh
-mkdir -p ~/.vst3 && unzip Sunbliss-vst3-v0.2.0-linux-x64.zip -d ~/.vst3
+mkdir -p ~/.vst3 && unzip Sunbliss-vst3-v0.3.0-linux-x64.zip -d ~/.vst3
 ```
 
 Windows: unzip into `C:\Program Files\Common Files\VST3` (or `...\CLAP`).
